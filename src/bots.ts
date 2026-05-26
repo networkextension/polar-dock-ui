@@ -40,6 +40,10 @@ const llmConfigTestBtn = byId<HTMLButtonElement>("llmConfigTestBtn");
 const llmConfigSubmitBtn = byId<HTMLButtonElement>("llmConfigSubmitBtn");
 const llmConfigStatus = byId<HTMLElement>("llmConfigStatus");
 const llmConfigList = byId<HTMLUListElement>("llmConfigList");
+const addLLMConfigBtn = byId<HTMLButtonElement>("addLLMConfigBtn");
+const llmConfigModal = byId<HTMLElement>("llmConfigModal");
+const llmConfigModalCloseBtn = byId<HTMLButtonElement>("llmConfigModalCloseBtn");
+const llmConfigModalTitle = byId<HTMLElement>("llmConfigModalTitle");
 
 // ── Bot User DOM ─────────────────────────────────────────────────────────────
 const botUserForm = byId<HTMLFormElement>("botUserForm");
@@ -58,6 +62,10 @@ const botUserResetBtn = byId<HTMLButtonElement>("botUserResetBtn");
 const botUserSubmitBtn = byId<HTMLButtonElement>("botUserSubmitBtn");
 const botUserStatus = byId<HTMLElement>("botUserStatus");
 const botUserList = byId<HTMLUListElement>("botUserList");
+const addBotUserBtn = byId<HTMLButtonElement>("addBotUserBtn");
+const botUserModal = byId<HTMLElement>("botUserModal");
+const botUserModalCloseBtn = byId<HTMLButtonElement>("botUserModalCloseBtn");
+const botUserModalTitle = byId<HTMLElement>("botUserModalTitle");
 
 const welcomeText = byId<HTMLElement>("welcomeText");
 const logoutBtn = byId<HTMLButtonElement>("logoutBtn");
@@ -131,6 +139,19 @@ function resetLLMConfigForm(): void {
   applyLLMProviderPreset(LLM_PROVIDER_PRESETS[0].id, false);
 }
 
+function openLLMConfigModal(mode: "add" | "edit"): void {
+  llmConfigModalTitle.textContent = mode === "edit" ? "编辑 LLM 配置" : "新建 LLM 配置";
+  llmConfigModal.classList.add("open");
+  llmConfigModal.setAttribute("aria-hidden", "false");
+  llmConfigNameInput.focus();
+}
+
+function closeLLMConfigModal(): void {
+  llmConfigModal.classList.remove("open");
+  llmConfigModal.setAttribute("aria-hidden", "true");
+  resetLLMConfigForm();
+}
+
 function renderLLMConfigList(configs: LLMConfig[]): void {
   if (!configs.length) {
     llmConfigList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.noLLMConfigs")}</li>`;
@@ -175,6 +196,19 @@ function resetBotUserForm(): void {
   applyBotKindUI();
   botUserStatus.textContent = "";
   botUserSubmitBtn.textContent = t("dashboard.saveBotBtn");
+}
+
+function openBotUserModal(mode: "add" | "edit"): void {
+  botUserModalTitle.textContent = mode === "edit" ? "编辑 Bot" : "新建 Bot";
+  botUserModal.classList.add("open");
+  botUserModal.setAttribute("aria-hidden", "false");
+  botUserNameInput.focus();
+}
+
+function closeBotUserModal(): void {
+  botUserModal.classList.remove("open");
+  botUserModal.setAttribute("aria-hidden", "true");
+  resetBotUserForm();
 }
 
 function syncBotHostSkillOptions(skills: HostSkillWithHost[]): void {
@@ -435,7 +469,7 @@ llmConfigForm.addEventListener("submit", async (event) => {
       return;
     }
     llmConfigStatus.textContent = editingLLMConfigId ? t("dashboard.llmConfigUpdated") : t("dashboard.llmConfigCreated");
-    resetLLMConfigForm();
+    closeLLMConfigModal();
     await loadData();
   } catch {
     llmConfigStatus.textContent = t("common.networkErrorRetry");
@@ -443,6 +477,13 @@ llmConfigForm.addEventListener("submit", async (event) => {
     llmConfigSubmitBtn.disabled = false;
   }
 });
+
+addLLMConfigBtn.addEventListener("click", () => {
+  resetLLMConfigForm();
+  openLLMConfigModal("add");
+});
+llmConfigModalCloseBtn.addEventListener("click", () => closeLLMConfigModal());
+llmConfigModal.querySelector<HTMLElement>("[data-close-modal]")?.addEventListener("click", () => closeLLMConfigModal());
 
 llmConfigList.addEventListener("click", async (event) => {
   const target = event.target as HTMLElement;
@@ -468,7 +509,7 @@ llmConfigList.addEventListener("click", async (event) => {
     if (llmConfigIsSystemInput) llmConfigIsSystemInput.checked = !!config.is_system;
     llmConfigSubmitBtn.textContent = t("dashboard.updateConfig");
     llmConfigStatus.textContent = config.has_api_key ? t("dashboard.apiKeySaved") : "";
-    llmConfigNameInput.focus();
+    openLLMConfigModal("edit");
     return;
   }
   if (action === "delete") {
@@ -554,7 +595,7 @@ botUserForm.addEventListener("submit", async (event) => {
       return;
     }
     botUserStatus.textContent = editingBotUserId ? t("dashboard.botUpdated") : t("dashboard.botCreated");
-    resetBotUserForm();
+    closeBotUserModal();
     await loadData();
   } catch {
     botUserStatus.textContent = t("common.networkErrorRetry");
@@ -562,6 +603,13 @@ botUserForm.addEventListener("submit", async (event) => {
     botUserSubmitBtn.disabled = false;
   }
 });
+
+addBotUserBtn.addEventListener("click", () => {
+  resetBotUserForm();
+  openBotUserModal("add");
+});
+botUserModalCloseBtn.addEventListener("click", () => closeBotUserModal());
+botUserModal.querySelector<HTMLElement>("[data-close-modal]")?.addEventListener("click", () => closeBotUserModal());
 
 botUserList.addEventListener("click", async (event) => {
   const target = event.target as HTMLElement;
@@ -599,7 +647,7 @@ botUserList.addEventListener("click", async (event) => {
     applyBotKindUI();
     botUserSubmitBtn.textContent = t("dashboard.updateBot");
     botUserStatus.textContent = "";
-    botUserNameInput.focus();
+    openBotUserModal("edit");
     return;
   }
   if (action === "delete") {

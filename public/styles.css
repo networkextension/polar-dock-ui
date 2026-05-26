@@ -2838,7 +2838,7 @@ textarea:not(.xterm-helper-textarea) {
   margin-top: 2px;
 }
 
-.message-input {
+textarea.message-input {
   flex: 1;
   margin-bottom: 0;
   background: transparent;
@@ -2850,17 +2850,18 @@ textarea:not(.xterm-helper-textarea) {
   color: var(--text);
   resize: none;
   line-height: 1.4;
+  width: auto;
   min-height: 20px;
   max-height: 168px;
   overflow-y: hidden;
   box-sizing: border-box;
 }
 
-.message-input::placeholder {
+textarea.message-input::placeholder {
   color: var(--muted);
 }
 
-.message-input:focus {
+textarea.message-input:focus {
   outline: none;
   box-shadow: none;
   border: none;

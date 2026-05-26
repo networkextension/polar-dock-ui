@@ -95,7 +95,18 @@ function proxyRequest(req, res) {
   };
 
   const proxy = client.request(options, (proxyRes) => {
-    res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
+    // Rewrite Set-Cookie so the upstream's Domain=... (and Secure on HTTPS-only
+    // dev) doesn't make the browser drop cookies on http://localhost.
+    const headers = { ...proxyRes.headers };
+    const sc = proxyRes.headers["set-cookie"];
+    if (sc) {
+      headers["set-cookie"] = sc.map((c) =>
+        c
+          .replace(/;\s*Domain=[^;]+/i, "")
+          .replace(/;\s*Secure/i, "")
+      );
+    }
+    res.writeHead(proxyRes.statusCode || 500, headers);
     proxyRes.pipe(res);
   });
 
