@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Console — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .console-grid {
+        display: grid;
+        gap: 6px;
+        padding: 6px;
+        background: #0b1220;
+        flex: 1;
+        min-height: 0;
+      }
+      .console-grid[data-cols="1"] { grid-template-columns: 1fr; }
+      .console-grid[data-cols="2"] { grid-template-columns: 1fr 1fr; }
+      .console-grid[data-cols="3"] { grid-template-columns: 1fr 1fr 1fr; }
+      .console-pane {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: #0f172a;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .console-pane-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        background: #1e293b;
+        color: #e2e8f0;
+        font-size: 12px;
+      }
+      .console-pane-head .console-pane-title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .console-pane-head select, .console-pane-head button {
+        font-size: 11px;
+      }
+      .console-pane-body {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+      }
+      .console-pane-empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 12px;
+        color: #94a3b8;
+        font-size: 12px;
+        background: #0f172a;
+        z-index: 2;
+      }
+      .console-pane-empty select {
+        max-width: 280px;
+      }
+      .console-pane-term {
+        position: absolute;
+        inset: 0;
+      }
+      /* xterm renders a hidden <textarea> for IME input + screen readers
+         at the cursor position. Belt-and-suspenders reset — the global
+         rule in styles.css already excludes .xterm-helper-textarea via
+         :not(), but defending here means any future stray rule that
+         hits "textarea" can't push the terminal rows off-screen. See
+         doc/webmux_review2.md for the original blast-radius write-up. */
+      .console-pane-term .xterm-helper-textarea {
+        position: absolute !important;
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        resize: none !important;
+        opacity: 0 !important;
+        pointer-events: none;
+      }
+      /* Keep .xterm-helpers out of normal layout flow so a bloated
+         helper-textarea (if any other CSS still hits it) can't push
+         .xterm-rows down. NO visibility:hidden here — the textarea
+         is a child of helpers and must remain focusable for keyboard
+         input + cursor blink. */
+      .console-pane-term .xterm-helpers {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      /* The width-cache element xterm uses to measure font glyph
+         widths is `position: static` + ~14px high by default and
+         can be safely hidden — it doesn't receive input. */
+      .console-pane-term .xterm-width-cache-measure-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        visibility: hidden;
+      }
+      .console-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        background: #1e293b;
+        border-bottom: 1px solid #0b1220;
+        color: #e2e8f0;
+      }
+    </style>
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span>主机</span>
+          </a>
+          <a class="lp-nav-item active" href="/console.html">
+            <span class="lp-nav-icon" data-icon="terminal">▶</span><span>Console</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+        </nav>
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">U</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main" style="overflow:hidden; display:flex; flex-direction:column;">
+        <!-- React (see src/console.tsx + components/console/*) owns
+             everything below — the toolbar + the pane grid. The page
+             chrome (sidebar, brand, theme) is shared HTML hydrated
+             imperatively in the entry script. -->
+        <div id="consoleRoot" style="display:flex; flex-direction:column; flex:1; min-height:0;"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/console.js"></script>
+  </body>
+</html>

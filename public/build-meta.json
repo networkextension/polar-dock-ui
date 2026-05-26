@@ -1,0 +1,8 @@
+{
+  "name": "gin-auth-ui",
+  "version": "0.1.0",
+  "builtAt": "2026-05-18T10:41:07.358Z",
+  "buildHash": "mpb2pyxs",
+  "output": "dist",
+  "deployHint": "Copy the contents of ui/dist into your web server ui directory."
+}

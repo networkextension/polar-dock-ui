@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM 定价与配额 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item active" href="/llm-billing.html">
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
+
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">LLM 计费</span>
+          <div class="lp-topbar-end">
+            <span id="billingStatus" class="meta-subtitle"></span>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+          <!-- Marketplace (all members) -->
+          <section class="lp-preview-main">
+            <div class="lp-preview-head">
+              <span class="badge">LLM 市场</span>
+              <span id="marketCount" class="lp-mode-badge">—</span>
+            </div>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+                平台共享的 LLM 配置。管理员设置每百万 token 单价，团队按月预算消耗，超额返回 402。
+                未开通的配置点 <strong>申请</strong> 自动审批，默认月预算见管理员配置。
+              </p>
+              <div id="marketWrap">
+                <table id="marketTable" class="lp-table" hidden>
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th>模型</th>
+                      <th>$/1M in</th>
+                      <th>$/1M out</th>
+                      <th>本月已用</th>
+                      <th>本月预算</th>
+                      <th>状态</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="marketTbody"></tbody>
+                </table>
+                <div id="marketEmpty" class="meta-subtitle" hidden>暂无共享配置。管理员先在 Bot Management 把某个 LLM 配置标记为 shared。</div>
+                <div id="marketLoading" class="meta-subtitle">加载中...</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Admin: pricing editor + all team-quotas + all applications -->
+          <section class="lp-preview-main" id="adminPricingSection" hidden>
+            <div class="lp-preview-head">
+              <span class="badge">管理员 · 单价</span>
+              <span class="meta-subtitle">点击市场表里的"✏ 价格"按钮编辑</span>
+            </div>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0;">
+                NUMERIC(10,4) — 单位 USD / 1M tokens。留空或填 0 = 回退到内置 prefix 价格表。
+              </p>
+            </div>
+          </section>
+
+          <section class="lp-preview-main" id="adminQuotasSection" hidden>
+            <div class="lp-preview-head">
+              <span class="badge">管理员 · 团队配额</span>
+              <span id="quotasCount" class="lp-mode-badge">—</span>
+            </div>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0 0 10px 0;">
+                每个 (团队, LLM 配置) 的月度预算。修改后立即生效，下一次调用按新预算执行。
+              </p>
+              <table id="quotasTable" class="lp-table" hidden>
+                <thead>
+                  <tr>
+                    <th>团队</th><th>LLM 配置</th><th>本月已用</th><th>月预算 (USD)</th><th></th>
+                  </tr>
+                </thead>
+                <tbody id="quotasTbody"></tbody>
+              </table>
+              <div id="quotasEmpty" class="meta-subtitle" hidden>暂无团队配额。第一个团队点"申请"后会自动出现。</div>
+            </div>
+          </section>
+
+          <section class="lp-preview-main" id="adminAppsSection" hidden>
+            <div class="lp-preview-head">
+              <span class="badge">管理员 · 申请记录</span>
+              <span id="appsCount" class="lp-mode-badge">—</span>
+            </div>
+            <div class="lp-preview-body">
+              <table id="appsTable" class="lp-table" hidden>
+                <thead>
+                  <tr>
+                    <th>时间</th><th>团队</th><th>申请人</th><th>LLM 配置</th><th>状态</th><th>授予预算</th><th>备注</th>
+                  </tr>
+                </thead>
+                <tbody id="appsTbody"></tbody>
+              </table>
+              <div id="appsEmpty" class="meta-subtitle" hidden>暂无申请记录。</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing edit modal (admin) -->
+    <div id="pricingModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 460px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="pricingTitle">编辑单价</span>
+          <button id="pricingCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="pricingInput">$/1M input tokens</label>
+            <input id="pricingInput" class="input" type="number" min="0" step="0.0001" placeholder="留空 = 回退" />
+          </div>
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="pricingOutput">$/1M output tokens</label>
+            <input id="pricingOutput" class="input" type="number" min="0" step="0.0001" placeholder="留空 = 回退" />
+          </div>
+          <div id="pricingError" class="status-text" style="color: var(--danger, #c00);"></div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="pricingCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+          <button id="pricingSubmitBtn" type="button" class="btn-inline btn-primary">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apply modal (member) -->
+    <div id="applyModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 460px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="applyTitle">申请 LLM 配置</span>
+          <button id="applyCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <p class="meta-subtitle" style="margin: 0 0 10px 0;" id="applyHint">
+            申请后立即自动审批，默认月预算 $10。超额后会返回 402，登录后将提示充值。
+          </p>
+          <div class="settings-section-card">
+            <label class="settings-section-title" for="applyNote">备注（可选）</label>
+            <input id="applyNote" class="input" type="text" placeholder="e.g. 给 cursor 客户端用" />
+          </div>
+          <div id="applyError" class="status-text" style="color: var(--danger, #c00);"></div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="applyCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+          <button id="applySubmitBtn" type="button" class="btn-inline btn-primary">申请</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit team quota modal (admin) -->
+    <div id="quotaModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 420px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="quotaTitle">编辑预算</span>
+          <button id="quotaCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <div class="settings-section-card">
+            <label class="settings-section-title" for="quotaBudget">月预算 (USD)</label>
+            <input id="quotaBudget" class="input" type="number" min="0" step="0.01" />
+            <div class="meta-subtitle" style="margin-top: 4px;">设 0 = 禁用该团队对此 LLM 的调用。</div>
+          </div>
+          <div id="quotaError" class="status-text" style="color: var(--danger, #c00);"></div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="quotaCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+          <button id="quotaSubmitBtn" type="button" class="btn-inline btn-primary">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/llm-billing.js"></script>
+  </body>
+</html>

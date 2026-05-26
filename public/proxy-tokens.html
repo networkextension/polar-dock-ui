@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Tokens — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html">
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item active" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
+
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">API Tokens · LLM Proxy</span>
+          <div class="lp-topbar-end">
+            <button id="newTokenBtn" class="btn-inline btn-primary" type="button">+ 新建 Token</button>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding: 12px;">
+          <section class="lp-preview-main">
+            <div class="lp-preview-head">
+              <span class="badge">已有 Token</span>
+              <span id="tokenCount" class="lp-mode-badge">—</span>
+            </div>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+                Token 用于外部客户端（Cursor / Raycast / 脚本）调用本站 OpenAI 兼容的
+                <code>/api/proxy/v1/chat/completions</code> 接口。plaintext 只在创建时显示一次。
+              </p>
+              <div id="tokenListWrap">
+                <table id="tokenTable" class="lp-table" hidden>
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th>前缀</th>
+                      <th>上游 LLM</th>
+                      <th>RPM</th>
+                      <th>创建</th>
+                      <th>最近使用</th>
+                      <th>状态</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="tokenTbody"></tbody>
+                </table>
+                <div id="tokenEmpty" class="meta-subtitle" hidden>暂无 token。点右上 "+ 新建 Token" 创建一个。</div>
+                <div id="tokenLoading" class="meta-subtitle">加载中...</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create modal -->
+    <div id="createModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 520px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title">新建 API Token</span>
+          <button id="createCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="createName">名称</label>
+            <input id="createName" class="input" type="text" placeholder='e.g. cursor-bob' />
+            <div class="meta-subtitle" style="margin-top: 4px;">用于审计 + 列表识别。</div>
+          </div>
+
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="createLLMConfig">默认 LLM 配置</label>
+            <select id="createLLMConfig" class="input">
+              <option value="">—— 加载中 ——</option>
+            </select>
+            <div class="meta-subtitle" style="margin-top: 4px;">该 token 默认路由到这个上游。</div>
+          </div>
+
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="createRPM">速率限制 (req/min)</label>
+            <input id="createRPM" class="input" type="number" min="1" value="60" />
+            <div class="meta-subtitle" style="margin-top: 4px;">P0 仅记录，不强制；P3 上线后生效。</div>
+          </div>
+
+          <div id="createError" class="status-text" style="color: var(--danger, #c00);"></div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="createCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+          <button id="createSubmitBtn" type="button" class="btn-inline btn-primary">创建 Token</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit log viewer modal -->
+    <div id="auditModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="width: 95vw; max-width: 1400px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="auditTitle">审计日志</span>
+          <button id="auditCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <div class="toolbar" style="margin-bottom: 12px; gap: 8px;">
+            <label class="meta-subtitle" for="auditDays">时间范围：</label>
+            <select id="auditDays" class="input" style="width: auto; max-width: 140px;">
+              <option value="1">最近 1 天</option>
+              <option value="7" selected>最近 7 天</option>
+              <option value="30">最近 30 天</option>
+            </select>
+            <button id="auditRefreshBtn" type="button" class="btn-inline btn-secondary">⟲ 刷新</button>
+            <span id="auditStatus" class="meta-subtitle"></span>
+          </div>
+
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <div class="settings-section-title">按模型聚合</div>
+            <table id="auditAggregateTable" class="lp-table" style="width: 100%; margin-top: 6px;" hidden>
+              <thead>
+                <tr>
+                  <th>模型</th><th>调用</th><th>OK</th><th>失败</th><th>prompt</th><th>completion</th><th>total</th><th>估算 USD</th>
+                </tr>
+              </thead>
+              <tbody id="auditAggregateTbody"></tbody>
+            </table>
+            <div id="auditAggregateEmpty" class="meta-subtitle" hidden>该时段无调用记录。</div>
+          </div>
+
+          <div class="settings-section-card">
+            <div class="settings-section-title">最近调用</div>
+            <table id="auditCallsTable" class="lp-table" style="width: 100%; margin-top: 6px;" hidden>
+              <thead>
+                <tr>
+                  <th>时间</th><th>状态</th><th>模型</th><th>tokens (P/C)</th><th>USD</th><th>延迟</th><th>错误</th>
+                </tr>
+              </thead>
+              <tbody id="auditCallsTbody"></tbody>
+            </table>
+            <div id="auditCallsEmpty" class="meta-subtitle" hidden>无调用记录。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Routes editor modal -->
+    <div id="routesModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 720px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="routesTitle">别名路由</span>
+          <button id="routesCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+            客户端请求里 <code>model</code> 字段 == 某行的"别名"时，路由到该行的上游配置；都不匹配则走 token 的默认上游。
+          </p>
+          <div class="settings-section-card">
+            <div class="settings-section-title">路由表</div>
+            <table id="routesTable" class="lp-table" style="width: 100%; margin-top: 6px;">
+              <thead>
+                <tr>
+                  <th style="width: 40%;">别名 (model 字段)</th>
+                  <th style="width: 50%;">→ 上游 LLM</th>
+                  <th style="width: 10%;"></th>
+                </tr>
+              </thead>
+              <tbody id="routesTbody"></tbody>
+            </table>
+            <button id="routesAddBtn" type="button" class="btn-inline btn-secondary" style="margin-top: 8px;">+ 添加别名</button>
+          </div>
+          <div id="routesError" class="status-text" style="color: var(--danger, #c00); margin-top: 8px;"></div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="routesCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+          <button id="routesSaveBtn" type="button" class="btn-inline btn-primary">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plaintext-shown-once modal -->
+    <div id="plaintextModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 600px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title">✓ Token 已创建</span>
+        </div>
+        <div class="lp-modal-body">
+          <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+            <strong style="color: var(--danger, #c00);">这是 plaintext，只显示一次。</strong>
+            关闭后无法找回。请立即复制到你的客户端配置。
+          </p>
+
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <div class="settings-section-title">Bearer Token</div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <input id="plaintextValue" class="input" type="text" readonly style="font-family: ui-monospace, Menlo, monospace; font-size: 12px;" />
+              <button id="plaintextCopyBtn" type="button" class="btn-inline btn-secondary">📋 复制</button>
+            </div>
+          </div>
+
+          <div class="settings-section-card">
+            <div class="settings-section-title">Base URL</div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <input id="plaintextBaseURL" class="input" type="text" readonly style="font-family: ui-monospace, Menlo, monospace; font-size: 12px;" />
+              <button id="plaintextBaseCopyBtn" type="button" class="btn-inline btn-secondary">📋 复制</button>
+            </div>
+            <div class="meta-subtitle" style="margin-top: 4px;">
+              OpenAI Python SDK: <code>client = OpenAI(api_key="&lt;token&gt;", base_url="…/api/proxy/v1")</code>
+            </div>
+          </div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="plaintextDoneBtn" type="button" class="btn-inline btn-primary">完成</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/proxy-tokens.js"></script>
+  </body>
+</html>

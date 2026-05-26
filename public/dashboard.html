@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n-title="dashboard.title">Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+
+      <!-- ── Sidebar (wide variant — entries live here) ── -->
+      <aside class="lp-sidebar lp-sidebar-wide" id="entryDrawer">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item active" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/projects.html">
+            <span class="lp-nav-icon" data-icon="folder-kanban">✦</span><span data-i18n="nav.projects">项目</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/video-studio.html">
+            <span class="lp-nav-icon" data-icon="video">▶</span><span data-i18n="nav.videoStudio">Video Studio</span>
+          </a>
+          <a class="lp-nav-item" href="/iosdist.html">
+            <span class="lp-nav-icon" data-icon="smartphone">⬇</span><span data-i18n="nav.iosDist">iOS 分发</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html">
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span data-i18n="nav.userAdmin">用户管理</span>
+          </a>
+        </nav>
+
+        <!-- Footer: user + actions -->
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">U</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings" data-i18n-tooltip="nav.settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+
+        <!-- Hidden elements kept for JS references -->
+        <img id="settingsCardAvatar" hidden alt="" />
+        <span id="settingsCardName" hidden></span>
+        <span id="settingsCardMeta" hidden></span>
+        <span id="settingsCardRoleBadge" hidden></span>
+        <button id="openSiteAdminBtn" hidden type="button" data-settings-target="site"></button>
+        <button id="drawerToggleBtn" hidden type="button"></button>
+        <button id="drawerCloseBtn" hidden type="button"></button>
+      </aside>
+
+      <!-- ── Main ── -->
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title" data-i18n="dashboard.title">Dashboard</span>
+          <div class="lp-topbar-end">
+            <span id="welcomeText" class="lp-mode-badge" data-i18n="dashboard.loading">Loading...</span>
+            <div id="dashboardRoleBadge" class="lp-mode-badge" hidden data-i18n="dashboard.adminRoleBadge">Administrator</div>
+            <button id="customizeDashboardBtn" class="lp-topbar-back" type="button" title="自定义 dashboard 显示哪些 widget">⚙ 自定义</button>
+            <button id="newEntryBtn" class="lp-topbar-back" type="button" data-i18n="dashboard.newMarkdown">＋ New Markdown</button>
+          </div>
+        </div>
+
+        <!-- Main: widget grid (markdown list + inline preview removed —
+             /markdowns.html is the dedicated library now) -->
+        <div class="lp-content" style="padding:0; overflow-y:auto; flex:1; display:flex; flex-direction:column;">
+          <div id="dashboardWidgets" class="dashboard-widgets" style="padding:14px; display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop for mobile drawer -->
+    <div id="drawerBackdrop" class="drawer-backdrop"></div>
+
+    <!-- Customize dashboard modal -->
+    <div id="dashboardCustomizeModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" style="max-width:520px;">
+        <div class="modal-header">
+          <h3>自定义 Dashboard</h3>
+          <button id="dashboardCustomizeCloseBtn" class="btn-inline btn-secondary" type="button">关闭</button>
+        </div>
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:12px; color:var(--text-muted,#888);">
+            勾选要显示的 widget，用 ↑ ↓ 调整显示顺序。修改即时保存。
+          </div>
+          <ul id="dashboardCustomizeList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px;"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tag modal -->
+    <div id="tagModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="tagModalTitle">
+        <div class="modal-header">
+          <h3 id="tagModalTitle" data-i18n="dashboard.tagModalAdd">Add Tag</h3>
+          <button id="tagModalCloseBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.modalClose">Close</button>
+        </div>
+        <form id="tagForm" class="modal-body">
+          <label class="form-label" for="tagName" data-i18n="dashboard.tagNameLabel">Name</label>
+          <input id="tagName" class="input" type="text" required data-i18n-placeholder="dashboard.tagNamePlaceholder" placeholder="e.g. Go Language" />
+
+          <label class="form-label" for="tagSlug" data-i18n="dashboard.tagSlugLabel">Identifier (optional)</label>
+          <input id="tagSlug" class="input" type="text" data-i18n-placeholder="dashboard.tagSlugPlaceholder" placeholder="e.g. golang" />
+
+          <label class="form-label" for="tagDesc" data-i18n="dashboard.tagDescLabel">Description (optional)</label>
+          <textarea id="tagDesc" class="input textarea" rows="3" data-i18n-placeholder="dashboard.tagDescPlaceholder" placeholder="Brief description"></textarea>
+
+          <label class="form-label" for="tagOrder" data-i18n="dashboard.tagOrderLabel">Order (optional)</label>
+          <input id="tagOrder" class="input" type="number" value="0" />
+
+          <div id="tagFormStatus" class="status-text"></div>
+          <div class="modal-actions">
+            <button id="tagSubmitBtn" class="btn-secondary" type="submit" data-i18n="dashboard.tagCreateBtn">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Settings / site admin modal -->
+    <div id="siteAdminModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card modal-card-wide settings-center-card" role="dialog" aria-modal="true" aria-labelledby="siteAdminModalTitle">
+        <div class="settings-center-shell">
+          <aside class="settings-center-nav">
+            <button id="siteAdminModalCloseBtn" class="settings-center-close" type="button" aria-label="Close">×</button>
+            <div class="settings-center-nav-title" data-i18n="dashboard.settingsCenterTitle">Settings Center</div>
+            <div class="settings-center-nav-list">
+              <button class="settings-center-nav-btn" type="button" data-settings-nav="profile">
+                <span class="settings-center-nav-icon" data-icon="user"></span>
+                <span data-i18n="dashboard.navProfile">Profile</span>
+              </button>
+              <button class="settings-center-nav-btn active" type="button" data-settings-nav="personalization">
+                <span class="settings-center-nav-icon" data-icon="palette"></span>
+                <span data-i18n="dashboard.navPersonalization">Personalization</span>
+              </button>
+              <button class="settings-center-nav-btn" type="button" data-settings-nav="settings">
+                <span class="settings-center-nav-icon" data-icon="settings"></span>
+                <span data-i18n="dashboard.navSettings">Settings</span>
+              </button>
+              <button class="settings-center-nav-btn" type="button" data-settings-nav="bots">
+                <span class="settings-center-nav-icon" data-icon="bot"></span>
+                <span data-i18n="dashboard.navBots">Bot Management</span>
+              </button>
+              <button class="settings-center-nav-btn" type="button" data-settings-nav="system">
+                <span class="settings-center-nav-icon" data-icon="cpu"></span>
+                <span data-i18n="dashboard.navSystem">System Info</span>
+              </button>
+              <button class="settings-center-nav-btn" type="button" data-settings-nav="site" hidden>
+                <span class="settings-center-nav-icon" data-icon="globe"></span>
+                <span data-i18n="dashboard.navSite">Site Management</span>
+              </button>
+            </div>
+          </aside>
+
+          <div class="settings-center-main">
+            <div class="settings-center-header">
+              <div>
+                <div class="badge" data-i18n="dashboard.preferencesBadge">Preferences &amp; Management</div>
+                <h3 id="siteAdminModalTitle" class="modal-title" data-i18n="dashboard.personalizationTitle">Personalization</h3>
+                <p id="settingsSectionLead" class="settings-center-lead" data-i18n="dashboard.personalizationLead">Manage the interface style and personal preferences so the workspace feels tailored to how you work.</p>
+              </div>
+            </div>
+
+            <section class="settings-panel" data-settings-panel="profile" hidden>
+              <div class="settings-section-card">
+                <div class="settings-profile-hero">
+                  <img id="userIcon" class="avatar settings-avatar-lg" alt="User avatar" />
+                  <div class="settings-profile-copy">
+                    <div class="identity-line">
+                      <div id="settingsProfileName" class="settings-profile-name" data-i18n="dashboard.loadingUser">Loading...</div>
+                      <div id="settingsProfileRoleBadge" class="role-badge role-badge-admin role-badge-inline" hidden data-i18n="dashboard.adminRoleBadge">Administrator</div>
+                    </div>
+                    <div id="settingsProfileMeta" class="settings-profile-meta" data-i18n="dashboard.userProfileMeta">Manage your profile, devices and preferences</div>
+                    <div class="inline-actions">
+                      <a class="btn-inline btn-secondary" href="/profile.html" data-i18n="dashboard.viewPublicProfile">View public Profile</a>
+                      <label class="btn-inline btn-secondary settings-upload-trigger" for="iconFile" data-i18n="dashboard.changeAvatar">Change avatar</label>
+                    </div>
+                  </div>
+                </div>
+                <input id="iconFile" type="file" accept="image/*" hidden />
+                <div id="iconEditor" class="icon-editor">
+                  <canvas id="iconCanvas" class="icon-canvas" width="160" height="160"></canvas>
+                  <div class="toolbar">
+                    <label for="iconZoom" data-i18n="dashboard.zoomLabel">Zoom</label>
+                    <input id="iconZoom" class="range-input" type="range" min="1" max="3" step="0.01" value="1" />
+                  </div>
+                  <div class="toolbar">
+                    <button id="saveIconBtn" class="btn-secondary btn-inline" type="button" data-i18n="dashboard.saveAvatar">Save avatar</button>
+                    <button id="cancelIconBtn" class="btn-secondary btn-inline" type="button" data-i18n="dashboard.cancelAvatar">Cancel</button>
+                  </div>
+                </div>
+                <div id="iconStatus" class="status-text" data-i18n="dashboard.avatarHint">Supports upload and basic cropping.</div>
+              </div>
+
+              <div class="settings-section-card">
+                <div class="settings-section-heading">
+                  <div>
+                    <div class="settings-section-title" data-i18n="dashboard.emailVerificationTitle">Email verification</div>
+                    <p class="settings-section-text" data-i18n="dashboard.emailVerificationText">Verify your email address so it can be used for account recovery and future security flows.</p>
+                  </div>
+                  <button id="sendEmailVerificationBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.sendVerificationEmail">Send verification email</button>
+                </div>
+                <ul class="meta-list">
+                  <li>
+                    <div id="emailVerificationAddress" class="meta-title">-</div>
+                    <div id="emailVerificationState" class="meta-subtitle">-</div>
+                  </li>
+                </ul>
+                <div id="emailVerificationStatus" class="status-text"></div>
+              </div>
+
+              <div class="settings-section-card">
+                <div class="settings-section-heading">
+                  <div>
+                    <div class="settings-section-title" data-i18n="dashboard.securityTitle">Account security</div>
+                    <p class="settings-section-text" data-i18n="dashboard.securityText">Bind Passkey for fingerprint or face login.</p>
+                  </div>
+                  <button id="passkeyRegisterBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.bindPasskey">Bind Passkey</button>
+                </div>
+                <div id="passkeyStatus" class="status-text"></div>
+                <ul id="passkeyList" class="meta-list"></ul>
+              </div>
+
+              <div class="settings-section-card">
+                <div class="settings-section-heading">
+                  <div>
+                    <div class="settings-section-title" data-i18n="dashboard.recentLogins">Recent logins</div>
+                    <p class="settings-section-text" data-i18n="dashboard.recentLoginsText">View recent login devices, IPs, and locations.</p>
+                  </div>
+                </div>
+                <ul id="loginHistoryList" class="meta-list"></ul>
+              </div>
+            </section>
+
+            <section class="settings-panel active" data-settings-panel="personalization">
+              <div class="settings-section-card">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-title" data-i18n="dashboard.interfaceStyle">Interface style</div>
+                    <div class="settings-row-text" data-i18n="dashboard.interfaceStyleText">Toggle between default and monochrome styles.</div>
+                  </div>
+                  <div class="settings-row-action">
+                    <span id="themeCurrentValue" class="settings-value-pill" data-i18n="dashboard.themeDefault">Default</span>
+                    <button id="themeToggleBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.switchToMonochrome">Switch to monochrome</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section-card">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-title" data-i18n="dashboard.languageTitle">Language</div>
+                    <div class="settings-row-text" data-i18n="dashboard.languageText">Choose the interface language for this browser.</div>
+                  </div>
+                  <div class="settings-row-action">
+                    <span id="languageCurrentValue" class="settings-value-pill" data-i18n="dashboard.languageEnglish">English</span>
+                    <button id="languageToggleBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.switchToChinese">Switch to Chinese</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section-card">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-title" data-i18n="dashboard.browsingHabits">Browsing preferences</div>
+                    <div class="settings-row-text" data-i18n="dashboard.browsingHabitsText">Currently keeping a clean, lightweight layout.</div>
+                  </div>
+                  <div class="settings-row-action">
+                    <span class="settings-value-pill" data-i18n="dashboard.themeDefault">Default</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-panel" data-settings-panel="settings" hidden>
+              <div class="site-admin-panel">
+                <div class="site-tags-section">
+                  <div class="site-tags-header">
+                    <div>
+                      <div class="badge" data-i18n="dashboard.llmConfigBadge">LLM Config</div>
+                    </div>
+                    <div id="llmConfigStatus" class="status-text"></div>
+                  </div>
+                  <div class="site-admin-grid site-admin-grid-wide">
+                    <form id="llmConfigForm" class="site-settings-form">
+                      <label class="form-label" for="llmProviderPresetSelect">Provider Preset</label>
+                      <select id="llmProviderPresetSelect" class="input"></select>
+                      <div id="llmProviderPresetNote" class="drawer-help"></div>
+                      <a id="llmProviderPresetDocs" class="btn-chip" href="#" target="_blank" rel="noopener noreferrer">Get API Key</a>
+
+                      <label class="form-label" for="llmConfigNameInput" data-i18n="dashboard.llmConfigNameLabel">Config name</label>
+                      <input id="llmConfigNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.llmConfigNamePlaceholder" placeholder="e.g. OpenAI production config" />
+
+                      <label class="form-label" for="llmConfigBaseUrlInput">Base URL</label>
+                      <input id="llmConfigBaseUrlInput" class="input" type="url" maxlength="300" placeholder="https://api.openai.com/v1/chat/completions" />
+
+                      <label class="form-label" for="llmConfigModelInput">Model</label>
+                      <input id="llmConfigModelInput" class="input" type="text" maxlength="120" placeholder="gpt-4.1-mini" />
+
+                      <label class="form-label" for="llmConfigApiKeyInput" data-i18n="dashboard.llmConfigApiKeyLabel">API Key</label>
+                      <input id="llmConfigApiKeyInput" class="input" type="password" maxlength="300" data-i18n-placeholder="dashboard.llmConfigApiKeyPlaceholder" placeholder="Recommended on create; leave empty when editing to keep current value" />
+
+                      <label class="form-label" for="llmConfigSystemPromptInput" data-i18n="dashboard.llmConfigSystemPromptLabel">Test Prompt (optional)</label>
+                      <textarea id="llmConfigSystemPromptInput" class="input textarea" rows="5" maxlength="5000" data-i18n-placeholder="dashboard.llmConfigSystemPromptPlaceholder" placeholder="Only for testing config connectivity, not used as Bot runtime prompt"></textarea>
+
+                      <label class="form-checkbox" for="llmConfigSharedInput">
+                        <input id="llmConfigSharedInput" type="checkbox" />
+                        <span data-i18n="dashboard.llmConfigSharedLabel">Share this LLM Config with other users</span>
+                      </label>
+
+                      <div class="site-settings-actions inline-actions">
+                        <button id="llmConfigResetBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigClear">Clear</button>
+                        <button id="llmConfigTestBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigTest">Test config</button>
+                        <button id="llmConfigSubmitBtn" class="btn-chip btn-chip-primary" type="submit" data-i18n="dashboard.llmConfigSave">Save config</button>
+                      </div>
+                    </form>
+                    <ul id="llmConfigList" class="tag-list"></ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-panel" data-settings-panel="system" hidden>
+              <div class="site-admin-panel">
+                <div class="settings-section-card">
+                  <div class="settings-section-heading">
+                    <div>
+                      <div class="settings-section-title" data-i18n="dashboard.systemRunInfo">运行信息</div>
+                      <p class="settings-section-text" data-i18n="dashboard.systemRunInfoDesc">查看当前实例的版本、系统环境和程序所在分区剩余容量。</p>
+                    </div>
+                  </div>
+                  <div class="settings-info-grid">
+                    <div class="settings-info-item">
+                      <span class="settings-info-label">Git Tag Version</span>
+                      <strong id="settingsGitTagVersion" class="settings-info-value">加载中...</strong>
+                    </div>
+                    <div class="settings-info-item">
+                      <span class="settings-info-label">OS</span>
+                      <strong id="settingsOS" class="settings-info-value">加载中...</strong>
+                    </div>
+                    <div class="settings-info-item">
+                      <span class="settings-info-label" data-i18n="dashboard.systemCpuArch">CPU 架构</span>
+                      <strong id="settingsCPUArch" class="settings-info-value">加载中...</strong>
+                    </div>
+                    <div class="settings-info-item">
+                      <span class="settings-info-label" data-i18n="dashboard.systemDiskCapacity">运行分区剩余容量</span>
+                      <strong id="settingsPartitionCapacity" class="settings-info-value">加载中...</strong>
+                      <span id="settingsPartitionPath" class="settings-info-meta"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-panel" data-settings-panel="bots" hidden>
+              <div class="site-admin-panel">
+                <div class="site-tags-section">
+                  <div class="site-tags-header">
+                    <div>
+                      <div class="badge" data-i18n="dashboard.botUserBadge">Bot User</div>
+                      <p class="drawer-help" data-i18n="dashboard.botHelp">Each Bot is a user you can chat with directly. Manage Bot model configs and prompts here.</p>
+                    </div>
+                  </div>
+                  <div class="site-admin-grid site-admin-grid-wide">
+                    <form id="botUserForm" class="site-settings-form">
+                      <label class="form-label" for="botUserNameInput" data-i18n="dashboard.botNameLabel">Bot name</label>
+                      <input id="botUserNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.botNamePlaceholder" placeholder="e.g. Translation assistant" />
+
+                      <label class="form-label" for="botUserConfigSelect" data-i18n="dashboard.botConfigLabel">Bind config</label>
+                      <select id="botUserConfigSelect" class="input"></select>
+
+                      <label class="form-label" for="botUserDescriptionInput" data-i18n="dashboard.botDescriptionLabel">Bot description</label>
+                      <textarea id="botUserDescriptionInput" class="input textarea" rows="4" maxlength="500" data-i18n-placeholder="dashboard.botDescriptionPlaceholder" placeholder="Tell users what this Bot is good at"></textarea>
+
+                      <label class="form-label" for="botUserSystemPromptInput" data-i18n="dashboard.botSystemPromptLabel">Bot config prompt</label>
+                      <textarea id="botUserSystemPromptInput" class="input textarea" rows="6" maxlength="5000" data-i18n-placeholder="dashboard.botSystemPromptPlaceholder" placeholder="Define this Bot's persona, tone, boundaries, and behavior"></textarea>
+
+                      <div class="site-settings-actions site-settings-actions-split">
+                        <button id="botUserResetBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.botClear">Clear</button>
+                        <button id="botUserSubmitBtn" class="btn-secondary" type="submit" data-i18n="dashboard.botSave">Save Bot</button>
+                      </div>
+                      <div id="botUserStatus" class="status-text"></div>
+                    </form>
+                    <ul id="botUserList" class="tag-list"></ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-panel" data-settings-panel="site" hidden>
+              <div id="siteAdminPanel" class="site-admin-panel" hidden>
+                <div class="site-tags-section">
+                  <div class="site-tags-header">
+                    <div>
+                      <div class="badge" data-i18n="dashboard.siteManagementBadge">Site Management</div>
+                      <p class="drawer-help" data-i18n="dashboard.siteHelp">Manage site logo, intro, iOS Push certs, and tags here.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="site-admin-grid">
+                  <div class="site-identity-card">
+                    <img id="siteIconPreview" class="site-icon" alt="Site icon" />
+                    <div class="site-icon-tools">
+                      <label class="form-label" for="siteIconFile" data-i18n="dashboard.siteIconLabel">Site icon</label>
+                      <input id="siteIconFile" class="input" type="file" accept="image/*" />
+                      <p class="drawer-help" data-i18n="dashboard.siteIconHint">Use a square icon. Changes take effect immediately.</p>
+                    </div>
+                  </div>
+                  <div class="site-settings-form">
+                    <label class="form-label" for="siteNameInput" data-i18n="dashboard.siteNameLabel">Site name</label>
+                    <input id="siteNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.siteNamePlaceholder" placeholder="Enter site name" />
+
+                    <label class="form-label" for="siteDescriptionInput" data-i18n="dashboard.siteDescriptionLabel">Site description</label>
+                    <textarea id="siteDescriptionInput" class="input textarea" rows="4" maxlength="300" data-i18n-placeholder="dashboard.siteDescriptionPlaceholder" placeholder="One-line description of your site"></textarea>
+
+                    <label class="form-label" for="siteRegistrationInviteRequired" data-i18n="dashboard.registrationInviteRequiredLabel">Registration requires invite code</label>
+                    <label class="switch-row" for="siteRegistrationInviteRequired">
+                      <input id="siteRegistrationInviteRequired" type="checkbox" />
+                      <span data-i18n="dashboard.registrationInviteRequiredHint">When enabled, new users must provide a valid invite code to register.</span>
+                    </label>
+
+                    <div class="site-settings-actions">
+                      <button id="saveSiteBtn" class="btn-secondary" type="button" data-i18n="dashboard.saveSite">Save site info</button>
+                    </div>
+                    <div id="siteStatus" class="status-text"></div>
+                  </div>
+                </div>
+
+                <div class="site-tags-section">
+                  <div class="site-tags-header">
+                    <div>
+                      <div class="badge" data-i18n="dashboard.inviteCodeBadge">Invite Codes</div>
+                      <p class="drawer-help" data-i18n="dashboard.inviteCodeHelp">Generate one-time invite codes for new user registration.</p>
+                    </div>
+                  </div>
+                  <div class="site-settings-actions">
+                    <input id="inviteCodeCountInput" class="input" type="number" min="1" max="50" value="5" style="max-width: 120px;" />
+                    <button id="generateInviteCodeBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.generateInviteCode">Generate</button>
+                  </div>
+                  <div id="inviteCodeStatus" class="status-text"></div>
+                  <ul id="inviteCodeList" class="tag-list"></ul>
+                </div>
+
+                <div class="site-tags-section">
+                  <div class="site-tags-header">
+                    <div>
+                      <div class="badge" data-i18n="dashboard.applePushBadge">APNs Key / .p8</div>
+                      <p class="drawer-help" data-i18n="dashboard.applePushHelp">Maintain dev and production APNs keys for future push notifications.</p>
+                    </div>
+                  </div>
+                  <div class="site-admin-grid">
+                    <div class="site-settings-form">
+                      <label class="form-label" for="applePushDevFile" data-i18n="dashboard.applePushDevLabel">Dev APNs key (.p8)</label>
+                      <input id="applePushDevFile" class="input" type="file" accept=".p8,.p12,.pem,.cer,.crt,.key" />
+                      <p id="applePushDevMeta" class="drawer-help" data-i18n="dashboard.notUploaded">Not uploaded</p>
+                      <div class="site-settings-actions">
+                        <button id="applePushDevDeleteBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.deleteDevCert">Delete dev key</button>
+                      </div>
+                    </div>
+                    <div class="site-settings-form">
+                      <label class="form-label" for="applePushProdFile" data-i18n="dashboard.applePushProdLabel">Production APNs key (.p8)</label>
+                      <input id="applePushProdFile" class="input" type="file" accept=".p8,.p12,.pem,.cer,.crt,.key" />
+                      <p id="applePushProdMeta" class="drawer-help" data-i18n="dashboard.notUploaded">Not uploaded</p>
+                      <div class="site-settings-actions">
+                        <button id="applePushProdDeleteBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.deleteProdCert">Delete prod key</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="site-tags-section">
+                  <div class="site-tags-header">
+                    <div>
+                      <div class="badge" data-i18n="dashboard.tagManagementBadge">Tag Management</div>
+                      <p class="drawer-help" data-i18n="dashboard.tagManagementHelp">Create, edit, or delete content tags.</p>
+                    </div>
+                    <button class="btn-inline btn-secondary" type="button" id="siteAddTagBtnProxy" data-i18n="dashboard.siteNewTag">New Tag</button>
+                  </div>
+                  <ul id="tagList" class="tag-list"></ul>
+                </div>
+              </div>
+            </section>
+
+          </div><!-- settings-center-main -->
+        </div><!-- settings-center-shell -->
+      </div><!-- modal-card -->
+    </div><!-- siteAdminModal -->
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script type="module" src="/scripts/dashboard.js"></script>
+  </body>
+</html>

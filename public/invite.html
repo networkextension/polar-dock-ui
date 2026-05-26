@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n-title="invite.title">邀请加入工作区</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="site-shell">
+    <div class="page-shell-narrow">
+      <a class="site-brand-banner" href="/" data-site-brand>
+        <img class="site-brand-icon" data-site-icon alt="Site icon" />
+        <div class="site-brand-copy">
+          <div class="site-brand-name" data-site-name>Polar-</div>
+          <div class="site-brand-description" data-site-description data-i18n="brand.loading">Loading site info...</div>
+        </div>
+      </a>
+
+      <div class="card" id="inviteCard">
+        <div id="inviteLoading">加载邀请信息中...</div>
+
+        <div id="inviteContent" hidden>
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+            <div id="inviteAvatarWrap" style="width:64px; height:64px; flex-shrink:0;">
+              <div id="inviteAvatarPlaceholder" style="width:64px; height:64px; border-radius:14px; background:linear-gradient(135deg,#e9e9ef,#cfd0d6); display:flex; align-items:center; justify-content:center; font-size:24px; color:#666;">⌂</div>
+              <img id="inviteAvatar" alt="" style="width:64px; height:64px; border-radius:14px; object-fit:cover; display:none;" />
+            </div>
+            <div style="flex:1; min-width:0;">
+              <h1 id="inviteTeamName" style="margin:0 0 4px 0; font-size:20px;">—</h1>
+              <div style="font-size:13px; color:var(--text-muted,#888);">
+                <span id="inviteInviterName">—</span> 邀请你加入
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px; margin:16px 0; padding:12px; background:var(--surface-muted,#f7f7f9); border-radius:8px; font-size:13px;">
+            <div>受邀邮箱：<span id="inviteEmail" style="font-family:monospace;">—</span></div>
+            <div>角色：<span id="inviteRole">—</span></div>
+            <div>过期时间：<span id="inviteExpires">—</span></div>
+          </div>
+
+          <div id="inviteActions" style="display:flex; flex-direction:column; gap:10px;">
+            <button id="inviteAcceptBtn" type="button" class="btn-primary" style="width:100%;">接受邀请</button>
+            <button id="inviteDeclineBtn" type="button" class="btn-secondary" style="width:100%;">拒绝</button>
+          </div>
+
+          <div id="inviteAuthHint" hidden style="margin-top:14px; padding:10px; background:#fff7e6; border:1px solid #f5d28a; border-radius:6px; font-size:13px;">
+            你需要先<a href="#" id="inviteLoginLink">登录</a>或<a href="#" id="inviteRegisterLink">注册</a>该邮箱后才能接受邀请。
+          </div>
+
+          <div id="inviteEmailMismatch" hidden style="margin-top:14px; padding:10px; background:#ffece6; border:1px solid #f5b6a0; border-radius:6px; font-size:13px;">
+            你当前登录的邮箱（<span id="inviteCurrentEmail">—</span>）与受邀邮箱不一致。请<a href="#" id="inviteLogoutLink">退出</a>后用受邀邮箱登录。
+          </div>
+
+          <div id="inviteStatus" class="status-text" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="inviteError" hidden>
+          <h1 style="margin-top:0;">邀请已失效</h1>
+          <p id="inviteErrorMsg" style="color:var(--text-muted,#888);">该邀请不存在、已被撤销或已过期。</p>
+          <a class="btn-secondary" href="/" style="display:inline-block; margin-top:8px;">返回首页</a>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/invite.js"></script>
+  </body>
+</html>

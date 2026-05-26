@@ -1,0 +1,142 @@
+import { byId } from "./lib/dom.js";
+import { base64URLToBuffer, credentialToJSON } from "./lib/passkey.js";
+import { buildClientHeaders } from "./lib/client.js";
+import { hydrateSiteBrand } from "./lib/site.js";
+import { injectLangToggle, t } from "./lib/i18n.js";
+
+const API_BASE = "";
+const form = byId<HTMLFormElement>("loginForm");
+const alertBox = byId<HTMLElement>("alert");
+const passkeyLoginBtn = byId<HTMLButtonElement>("passkeyLoginBtn");
+const passkeyStatus = byId<HTMLElement>("passkeyStatus");
+
+type LoginFormElements = HTMLFormControlsCollection & {
+  email: HTMLInputElement;
+  password: HTMLInputElement;
+};
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  alertBox.className = "alert";
+  alertBox.textContent = "";
+
+  const elements = form.elements as LoginFormElements;
+  const payload = {
+    email: elements.email.value.trim(),
+    password: elements.password.value,
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/login`, {
+      method: "POST",
+      headers: buildClientHeaders({ "Content-Type": "application/json" }),
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alertBox.className = "alert error";
+      alertBox.textContent = data.error || t("login.failed");
+      return;
+    }
+
+    alertBox.className = "alert success";
+    alertBox.textContent = t("login.success");
+    window.setTimeout(() => {
+      window.location.href = "/dashboard.html";
+    }, 600);
+  } catch {
+    alertBox.className = "alert error";
+    alertBox.textContent = t("common.networkError");
+  }
+});
+
+passkeyLoginBtn.addEventListener("click", async () => {
+  alertBox.className = "alert";
+  alertBox.textContent = "";
+
+  if (!window.PublicKeyCredential) {
+    passkeyStatus.textContent = t("login.passkeyNotSupported");
+    return;
+  }
+
+  const elements = form.elements as LoginFormElements;
+  const email = elements.email.value.trim();
+  if (!email) {
+    passkeyStatus.textContent = t("login.passkeyEnterEmail");
+    return;
+  }
+
+  passkeyStatus.textContent = t("login.passkeyStarting");
+
+  try {
+    const beginRes = await fetch(`${API_BASE}/api/passkey/login/begin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email }),
+    });
+    const beginResult = await beginRes.json();
+
+    if (!beginRes.ok) {
+      passkeyStatus.textContent = beginResult.error || t("login.passkeyBeginFailed");
+      return;
+    }
+
+    const publicKey = beginResult.publicKey;
+    publicKey.challenge = base64URLToBuffer(publicKey.challenge);
+    if (publicKey.allowCredentials) {
+      publicKey.allowCredentials = publicKey.allowCredentials.map((cred: { id: string }) => ({
+        ...cred,
+        id: base64URLToBuffer(cred.id),
+      }));
+    }
+
+    const credential = await navigator.credentials.get({ publicKey });
+    const payload = credentialToJSON(credential);
+
+    const finishRes = await fetch(`${API_BASE}/api/passkey/login/finish`, {
+      method: "POST",
+      headers: {
+        ...Object.fromEntries(buildClientHeaders({ "Content-Type": "application/json" })),
+        "X-Passkey-Session": beginResult.session_id,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+    const finishResult = await finishRes.json();
+
+    if (finishRes.ok) {
+      passkeyStatus.textContent = t("login.passkeySuccess");
+      window.setTimeout(() => {
+        window.location.href = "/dashboard.html";
+      }, 600);
+      return;
+    }
+
+    passkeyStatus.textContent = finishResult.error || t("login.passkeyFailed");
+  } catch {
+    passkeyStatus.textContent = t("common.networkError");
+  }
+});
+
+async function redirectIfLoggedIn(): Promise<void> {
+  try {
+    const res = await fetch("/api/me", { credentials: "include" });
+    if (res.ok) {
+      window.location.replace("/dashboard.html");
+    }
+  } catch {
+    // Ignore bootstrap failures here.
+  }
+}
+
+void redirectIfLoggedIn();
+void (async () => {
+  await hydrateSiteBrand();
+  // injectLangToggle anchors next to [data-site-brand]; needs the
+  // brand banner already in the DOM (it is, statically) and the
+  // i18n applied. Calling after hydrateSiteBrand keeps that order.
+  injectLangToggle();
+})();

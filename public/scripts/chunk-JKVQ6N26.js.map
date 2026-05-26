@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/dom.ts"],
+  "sourcesContent": ["export function byId<T extends HTMLElement>(id: string): T {\n  const element = document.getElementById(id);\n  if (!element) {\n    throw new Error(`Missing required element: #${id}`);\n  }\n  return element as T;\n}\n\nexport function query<T extends Element>(\n  root: ParentNode,\n  selector: string\n): T {\n  const element = root.querySelector(selector);\n  if (!element) {\n    throw new Error(`Missing required element: ${selector}`);\n  }\n  return element as T;\n}\n"],
+  "mappings": "+CAAO,SAASA,EAA4BC,EAAe,CACzD,IAAMC,EAAU,SAAS,eAAeD,CAAE,EAC1C,GAAI,CAACC,EACH,MAAM,IAAI,MAAM,8BAA8BD,CAAE,EAAE,EAEpD,OAAOC,CACT,CAEO,SAASC,EACdC,EACAC,EACG,CACH,IAAMH,EAAUE,EAAK,cAAcC,CAAQ,EAC3C,GAAI,CAACH,EACH,MAAM,IAAI,MAAM,6BAA6BG,CAAQ,EAAE,EAEzD,OAAOH,CACT,CAjBA,IAAAI,EAAAC,EAAA,KAAgBC,EAAAR,EAAA,QAQAQ,EAAAL,EAAA",
+  "names": ["byId", "id", "element", "query", "root", "selector", "init_dom", "__esmMin", "__name"]
+}

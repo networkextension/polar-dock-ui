@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-site-title>页面不存在</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .nf {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        background: var(--page-bg);
+        color: var(--text);
+      }
+      .nf-card {
+        max-width: 420px;
+        text-align: center;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 36px 28px;
+        box-shadow: 0 6px 24px var(--secondary-shadow, rgba(0, 0, 0, 0.08));
+      }
+      .nf-code {
+        font-size: 64px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--accent);
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        letter-spacing: -0.02em;
+      }
+      .nf-title {
+        margin: 14px 0 6px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .nf-desc {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 22px;
+        line-height: 1.5;
+      }
+      .nf-back {
+        display: inline-block;
+        padding: 8px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        background: var(--accent);
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background 0.15s;
+      }
+      .nf-back:hover {
+        background: color-mix(in srgb, var(--accent) 88%, #000);
+      }
+    </style>
+  </head>
+  <body class="lp-page">
+    <div class="nf">
+      <div class="nf-card">
+        <div class="nf-code">404</div>
+        <div class="nf-title">页面走丢了</div>
+        <div class="nf-desc">链接可能已失效，或者你来到了一个尚未上线的入口。</div>
+        <a class="nf-back" href="/dashboard.html">← 返回 Dashboard</a>
+      </div>
+    </div>
+    <script>
+      // Apply stored theme preference so the 404 page matches the
+      // rest of the app (avoids a white-on-dark / dark-on-white
+      // mismatch when the user has toggled dark theme).
+      try {
+        var stored = localStorage.getItem("app-theme");
+        document.documentElement.dataset.theme = stored === "default" ? "default" : "mono";
+      } catch (e) {}
+    </script>
+  </body>
+</html>
