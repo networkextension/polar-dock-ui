@@ -1517,6 +1517,18 @@ messageInput.addEventListener("input", autoResizeMessageInput);
 // box-sizing override → looks too tall).
 autoResizeMessageInput();
 
+// Clicking anywhere in the gray message-form bar (padding around the
+// textarea, between the 📎 and send button) focuses the textarea — so
+// users don't have to aim for the small textarea hit area.
+messageForm.addEventListener("click", (event) => {
+  const target = event.target as HTMLElement;
+  if (target.closest("button, a, label, input, textarea, select, .message-send-btn, .message-attach-btn")) {
+    return;
+  }
+  messageInput.focus();
+});
+messageForm.style.cursor = "text";
+
 // Enter sends, Shift+Enter inserts a newline. IME composition is left alone
 // so picking a candidate doesn't accidentally submit the half-typed message.
 messageInput.addEventListener("keydown", (event) => {

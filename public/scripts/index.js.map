@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/index.ts"],
+  "sourcesContent": ["import { hydrateSiteBrand } from \"./lib/site.js\";\n\nasync function bootstrap(): Promise<void> {\n  try {\n    const res = await fetch(\"/api/me\", { credentials: \"include\" });\n    if (res.ok) {\n      window.location.replace(\"/dashboard.html\");\n      return;\n    }\n  } catch {\n    // Ignore and show entry links.\n  }\n}\n\nvoid bootstrap();\nvoid hydrateSiteBrand();\n"],
+  "mappings": "8FAAA,IAAAA,EAAAC,EAAA,KAAAC,IAEA,eAAeC,GAA2B,CACxC,GAAI,CAEF,IADY,MAAM,MAAM,UAAW,CAAE,YAAa,SAAU,CAAC,GACrD,GAAI,CACV,OAAO,SAAS,QAAQ,iBAAiB,EACzC,MACF,CACF,MAAQ,CAER,CACF,CAVeC,EAAAD,EAAA,aAYVA,EAAU,EACVE,EAAiB",
+  "names": ["require_index", "__commonJSMin", "init_site", "bootstrap", "__name", "hydrateSiteBrand"]
+}

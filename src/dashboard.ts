@@ -263,7 +263,7 @@ function syncLanguageButton(): void {
 }
 
 function switchSettingsSection(section: "profile" | "personalization" | "settings" | "system" | "bots" | "site"): void {
-  if (!isAdmin && (section === "settings" || section === "site")) {
+  if (!isAdmin && section === "site") {
     section = "bots";
   }
   activeSettingsSection = section;
@@ -661,7 +661,7 @@ async function loadProfile(): Promise<void> {
       return;
     }
     if (button.dataset.settingsNav === "settings") {
-      button.hidden = !isAdmin;
+      button.hidden = false;
       return;
     }
     if (button.dataset.settingsNav === "bots") {
@@ -692,30 +692,15 @@ async function loadSiteAdminData(): Promise<void> {
       }
     })(),
     (async () => {
-      if (isAdmin) {
-        const [ownResult, availableResult] = await Promise.all([fetchLLMConfigs(), fetchAvailableLLMConfigs()]);
-        if (ownResult.response.ok) {
-          currentLLMConfigs = ownResult.data.configs || [];
-          renderLLMConfigList(currentLLMConfigs);
-        } else {
-          llmConfigStatus.textContent = ownResult.data.error || t("dashboard.llmConfigLoadFailed");
-          llmConfigList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.llmConfigLoadFailed")}</li>`;
-        }
-
-        if (availableResult.response.ok) {
-          currentAvailableLLMConfigs = availableResult.data.configs || [];
-          syncBotConfigOptions(currentAvailableLLMConfigs);
-        } else {
-          currentAvailableLLMConfigs = [];
-          botUserStatus.textContent = availableResult.data.error || t("dashboard.availableConfigLoadFailed");
-          syncBotConfigOptions(currentAvailableLLMConfigs);
-        }
-        return;
+      const [ownResult, availableResult] = await Promise.all([fetchLLMConfigs(), fetchAvailableLLMConfigs()]);
+      if (ownResult.response.ok) {
+        currentLLMConfigs = ownResult.data.configs || [];
+        renderLLMConfigList(currentLLMConfigs);
+      } else {
+        llmConfigStatus.textContent = ownResult.data.error || t("dashboard.llmConfigLoadFailed");
+        llmConfigList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.llmConfigLoadFailed")}</li>`;
       }
 
-      currentLLMConfigs = [];
-      renderLLMConfigList(currentLLMConfigs);
-      const availableResult = await fetchAvailableLLMConfigs();
       if (availableResult.response.ok) {
         currentAvailableLLMConfigs = availableResult.data.configs || [];
         syncBotConfigOptions(currentAvailableLLMConfigs);
