@@ -29,6 +29,9 @@
           <a class="lp-nav-item" href="/markdowns.html">
             <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
           </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
           <a class="lp-nav-item" href="/chat.html">
             <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
           </a>
@@ -38,17 +41,35 @@
           <a class="lp-nav-item" href="/hosts.html">
             <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
           </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
           <a class="lp-nav-item" href="/editor.html">
             <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
           </a>
-          <a class="lp-nav-item" href="/llm-billing.html">
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
           </a>
           <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
           </a>
           <a class="lp-nav-item active" href="/bots.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
           </a>
           <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
@@ -125,6 +146,11 @@
                   <label class="form-checkbox" for="llmConfigSharedInput">
                     <input id="llmConfigSharedInput" type="checkbox" />
                     <span data-i18n="dashboard.llmConfigSharedLabel">Share this LLM Config with other users</span>
+                  </label>
+
+                  <label class="form-checkbox" for="llmConfigIsSystemInput" title="平台单例：勾上之后这条 config 就是站内 system 助理（chat thread summary / task sharpen / system bot user）使用的模型。同一时间只能有一条。与「分享」互斥。">
+                    <input id="llmConfigIsSystemInput" type="checkbox" />
+                    <span>🛠 系统助理（is_system）— 互斥 shared、平台单例</span>
                   </label>
 
                   <div class="site-settings-actions inline-actions">
@@ -205,6 +231,17 @@
 
                   <label class="form-label" for="botUserSystemPromptInput" data-i18n="dashboard.botSystemPromptLabel">Bot config prompt</label>
                   <textarea id="botUserSystemPromptInput" class="input textarea" rows="5" maxlength="5000" data-i18n-placeholder="dashboard.botSystemPromptPlaceholder" placeholder="Define this Bot's persona, tone, boundaries, and behavior"></textarea>
+
+                  <!-- qunliao β: per-bot model override. Lets one LLM
+                       config (kimi base_url + api_key) power multiple
+                       bots running different model variants (k2.5 vs
+                       k1.5) for the same room — "model PK". Empty =
+                       use the LLM config's default model. -->
+                  <label class="form-label" for="botUserModelOverrideInput">模型 <span style="color:var(--text-muted,#888); font-weight:normal;">（可选 — 覆盖 LLM 默认 model）</span></label>
+                  <input id="botUserModelOverrideInput" class="input" type="text" maxlength="120" placeholder="留空 = 用 LLM 的默认 model；填了就用这个（如 kimi-k1.5、claude-opus-4-1、deepseek-r1）" />
+                  <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
+                    ⓘ 一个 LLM 配置可以派生多个 bot，每个绑定不同 model，方便在同一房间里 PK 不同模型的输出。
+                  </div>
 
                   <div class="site-settings-actions site-settings-actions-split">
                     <button id="botUserResetBtn" class="btn-chip" type="button" data-i18n="dashboard.botClear">Clear</button>

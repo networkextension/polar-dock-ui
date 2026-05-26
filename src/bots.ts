@@ -34,6 +34,7 @@ const llmConfigApiKeyInput = byId<HTMLInputElement>("llmConfigApiKeyInput");
 const llmConfigProxyUrlInput = byId<HTMLInputElement>("llmConfigProxyUrlInput");
 const llmConfigSystemPromptInput = byId<HTMLTextAreaElement>("llmConfigSystemPromptInput");
 const llmConfigSharedInput = byId<HTMLInputElement>("llmConfigSharedInput");
+const llmConfigIsSystemInput = byId<HTMLInputElement>("llmConfigIsSystemInput");
 const llmConfigResetBtn = byId<HTMLButtonElement>("llmConfigResetBtn");
 const llmConfigTestBtn = byId<HTMLButtonElement>("llmConfigTestBtn");
 const llmConfigSubmitBtn = byId<HTMLButtonElement>("llmConfigSubmitBtn");
@@ -52,6 +53,7 @@ const botKindClassicRadio = byId<HTMLInputElement>("botKindClassic");
 const botKindPassthroughRadio = byId<HTMLInputElement>("botKindPassthrough");
 const botUserDescriptionInput = byId<HTMLTextAreaElement>("botUserDescriptionInput");
 const botUserSystemPromptInput = byId<HTMLTextAreaElement>("botUserSystemPromptInput");
+const botUserModelOverrideInput = byId<HTMLInputElement>("botUserModelOverrideInput");
 const botUserResetBtn = byId<HTMLButtonElement>("botUserResetBtn");
 const botUserSubmitBtn = byId<HTMLButtonElement>("botUserSubmitBtn");
 const botUserStatus = byId<HTMLElement>("botUserStatus");
@@ -99,10 +101,25 @@ function collectLLMConfigPayloadFromForm(): LLMConfigPayload {
     proxy_url: llmConfigProxyUrlInput.value.trim(),
     system_prompt: llmConfigSystemPromptInput.value.trim(),
     shared: llmConfigSharedInput.checked,
+    is_system: llmConfigIsSystemInput?.checked ?? false,
     provider_kind: resolvePresetProviderKind(preset),
     extras: resolvePresetExtras(preset),
   };
 }
+
+// Mutual exclusion: is_system rows are internal infra and can't be in
+// the customer marketplace. The DB has a CHECK constraint; UI mirrors
+// it for instant feedback.
+llmConfigIsSystemInput?.addEventListener("change", () => {
+  if (llmConfigIsSystemInput.checked && llmConfigSharedInput.checked) {
+    llmConfigSharedInput.checked = false;
+  }
+});
+llmConfigSharedInput.addEventListener("change", () => {
+  if (llmConfigSharedInput.checked && llmConfigIsSystemInput?.checked) {
+    llmConfigIsSystemInput.checked = false;
+  }
+});
 
 // ── LLM Config ────────────────────────────────────────────────────────────────
 function resetLLMConfigForm(): void {
@@ -136,6 +153,7 @@ function renderLLMConfigList(configs: LLMConfig[]): void {
               <span class="tag-chip">${config.model}</span>
               ${config.has_api_key ? `<span class="tag-chip">${t("dashboard.keySaved")}</span>` : `<span class="tag-chip">${t("dashboard.noKey")}</span>`}
               ${config.shared ? `<span class="tag-chip">${t("dashboard.shared")}</span>` : `<span class="tag-chip">${t("dashboard.private")}</span>`}
+              ${config.is_system ? `<span class="tag-chip" style="background:#fb923c; color:#fff;">🛠 system</span>` : ""}
             </div>
             <div class="tag-item-meta">${config.base_url}</div>
             <div class="tag-item-desc">${config.system_prompt || t("dashboard.noSystemPrompt")}</div>
@@ -447,6 +465,7 @@ llmConfigList.addEventListener("click", async (event) => {
     llmConfigProxyUrlInput.value = config.proxy_url || "";
     llmConfigSystemPromptInput.value = config.system_prompt || "";
     llmConfigSharedInput.checked = config.shared;
+    if (llmConfigIsSystemInput) llmConfigIsSystemInput.checked = !!config.is_system;
     llmConfigSubmitBtn.textContent = t("dashboard.updateConfig");
     llmConfigStatus.textContent = config.has_api_key ? t("dashboard.apiKeySaved") : "";
     llmConfigNameInput.focus();
@@ -513,6 +532,7 @@ botUserForm.addEventListener("submit", async (event) => {
     llm_config_id: kind === "classic" ? Number(botUserConfigSelect.value || 0) : 0,
     bot_kind: kind,
     preferred_tool: kind === "passthrough" ? botUserPreferredToolSelect.value : "",
+    model_override: botUserModelOverrideInput.value.trim(),
     host_skill_id: hostSkillID,
   };
   if (!payload.name) {
@@ -567,6 +587,7 @@ botUserList.addEventListener("click", async (event) => {
     botUserNameInput.value = bot.name;
     botUserDescriptionInput.value = bot.description || "";
     botUserSystemPromptInput.value = bot.system_prompt || "";
+    botUserModelOverrideInput.value = bot.model_override || "";
     botUserConfigSelect.value = String(bot.llm_config_id || "");
     if (bot.bot_kind === "passthrough") {
       botKindPassthroughRadio.checked = true;

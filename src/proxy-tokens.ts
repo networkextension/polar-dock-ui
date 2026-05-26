@@ -40,6 +40,11 @@ const tokenTbody = byId<HTMLTableSectionElement>("tokenTbody");
 const tokenEmpty = byId<HTMLElement>("tokenEmpty");
 const tokenLoading = byId<HTMLElement>("tokenLoading");
 const tokenCount = byId<HTMLElement>("tokenCount");
+const showRevokedToggle = byId<HTMLInputElement>("showRevokedToggle");
+
+// Revoked tokens accumulate over time (test keys, rotated keys) and
+// add visual noise. Default: hide them; flip the toggle to audit.
+let allTokens: LLMProxyToken[] = [];
 
 const createModal = byId<HTMLElement>("createModal");
 const createCloseBtn = byId<HTMLButtonElement>("createCloseBtn");
@@ -59,8 +64,10 @@ const plaintextDoneBtn = byId<HTMLButtonElement>("plaintextDoneBtn");
 
 const auditModal = byId<HTMLElement>("auditModal");
 const auditTitle = byId<HTMLElement>("auditTitle");
+const auditSubtitle = byId<HTMLElement>("auditSubtitle");
 const auditCloseBtn = byId<HTMLButtonElement>("auditCloseBtn");
 const auditDays = byId<HTMLSelectElement>("auditDays");
+const auditDaysGroup = byId<HTMLElement>("auditDaysGroup");
 const auditRefreshBtn = byId<HTMLButtonElement>("auditRefreshBtn");
 const auditStatus = byId<HTMLElement>("auditStatus");
 const auditAggregateTable = byId<HTMLTableElement>("auditAggregateTable");
@@ -171,17 +178,33 @@ async function refreshTokenList(): Promise<void> {
 
   try {
     const { data } = await listProxyTokens();
-    const items = data.tokens ?? [];
-    tokenTbody.innerHTML = "";
-    items.forEach((tok) => tokenTbody.appendChild(renderTokenRow(tok)));
-    tokenCount.textContent = `${items.length} 个`;
-    tokenTable.hidden = items.length === 0;
-    tokenEmpty.hidden = items.length !== 0;
+    allTokens = data.tokens ?? [];
+    renderTokenTable();
   } catch (err) {
     tokenEmpty.hidden = false;
     tokenEmpty.textContent = `加载失败：${(err as Error).message}`;
   } finally {
     tokenLoading.hidden = true;
+  }
+}
+
+function renderTokenTable(): void {
+  const showRevoked = showRevokedToggle?.checked ?? false;
+  const visible = showRevoked ? allTokens : allTokens.filter((t) => !t.revoked_at);
+  const revokedCount = allTokens.filter((t) => t.revoked_at).length;
+
+  tokenTbody.innerHTML = "";
+  visible.forEach((tok) => tokenTbody.appendChild(renderTokenRow(tok)));
+
+  if (revokedCount > 0 && !showRevoked) {
+    tokenCount.textContent = `${visible.length} 个 (隐藏 ${revokedCount} 个已撤销)`;
+  } else {
+    tokenCount.textContent = `${visible.length} 个`;
+  }
+  tokenTable.hidden = visible.length === 0;
+  tokenEmpty.hidden = visible.length !== 0;
+  if (visible.length === 0 && allTokens.length > 0) {
+    tokenEmpty.textContent = '没有启用中的 token。勾选「显示已撤销」查看历史。';
   }
 }
 
@@ -284,6 +307,37 @@ async function onRevoke(tok: LLMProxyToken): Promise<void> {
   }
 }
 
+function statusBadgeColors(status: number): { bg: string; fg: string } {
+  if (status >= 500) return { bg: "#fee2e2", fg: "#991b1b" };
+  if (status >= 400) return { bg: "#ffedd5", fg: "#9a3412" };
+  if (status >= 200 && status < 300) return { bg: "#dcfce7", fg: "#166534" };
+  return { bg: "#e5e7eb", fg: "#374151" };
+}
+
+function renderStatusBadge(status: number): HTMLSpanElement {
+  const span = document.createElement("span");
+  const c = statusBadgeColors(status);
+  span.textContent = String(status);
+  span.style.cssText = `display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; font-weight:600; background:${c.bg}; color:${c.fg};`;
+  return span;
+}
+
+function renderLatencyCell(latencyMs: number): HTMLElement {
+  const wrap = document.createElement("span");
+  if (latencyMs <= 0) {
+    wrap.textContent = "—";
+    return wrap;
+  }
+  let color = "#16a34a"; // green <300ms
+  if (latencyMs >= 3000) color = "#dc2626"; // red ≥3s
+  else if (latencyMs >= 300) color = "#d97706"; // amber <3s
+  const dot = document.createElement("span");
+  dot.style.cssText = `display:inline-block; width:8px; height:8px; border-radius:50%; background:${color}; margin-right:6px; vertical-align:middle;`;
+  wrap.appendChild(dot);
+  wrap.appendChild(document.createTextNode(latencyMs >= 1000 ? `${(latencyMs / 1000).toFixed(2)}s` : `${latencyMs}ms`));
+  return wrap;
+}
+
 function renderAuditAggregateRow(a: LLMProxyCallAggregate): HTMLTableRowElement {
   const tr = document.createElement("tr");
   const mk = (text: string) => {
@@ -292,15 +346,31 @@ function renderAuditAggregateRow(a: LLMProxyCallAggregate): HTMLTableRowElement 
     return td;
   };
   tr.appendChild(mk(a.model || "—"));
-  tr.appendChild(mk(String(a.calls)));
-  tr.appendChild(mk(String(a.ok_count)));
-  const errTd = mk(String(a.error_count));
-  if (a.error_count > 0) errTd.style.color = "var(--danger, #c00)";
-  tr.appendChild(errTd);
+  tr.appendChild(mk(a.calls.toLocaleString()));
+
+  // Success rate: progress bar + "X / Y (Z%)" label
+  const rateTd = document.createElement("td");
+  const pct = a.calls > 0 ? (a.ok_count / a.calls) * 100 : 0;
+  const barColor = pct >= 99 ? "#16a34a" : pct >= 90 ? "#d97706" : "#dc2626";
+  rateTd.innerHTML = `
+    <div style="display:flex; align-items:center; gap:6px; min-width:180px;">
+      <div style="flex:1; height:6px; background:#e5e7eb; border-radius:3px; overflow:hidden;">
+        <div style="width:${pct.toFixed(1)}%; height:100%; background:${barColor};"></div>
+      </div>
+      <span style="font-size:12px; white-space:nowrap; color:#374151;">${a.ok_count}/${a.calls} (${pct.toFixed(1)}%)</span>
+    </div>`;
+  tr.appendChild(rateTd);
+
   tr.appendChild(mk(a.prompt_tokens.toLocaleString()));
   tr.appendChild(mk(a.completion_tokens.toLocaleString()));
   tr.appendChild(mk(a.total_tokens.toLocaleString()));
-  tr.appendChild(mk(a.cost_usd > 0 ? `$${a.cost_usd.toFixed(4)}` : "—"));
+
+  // USD emphasized: bold + slightly larger
+  const usdTd = document.createElement("td");
+  usdTd.textContent = a.cost_usd > 0 ? `$${a.cost_usd.toFixed(4)}` : "—";
+  usdTd.style.cssText = "font-weight:600; font-size:14px;";
+  tr.appendChild(usdTd);
+
   return tr;
 }
 
@@ -312,19 +382,30 @@ function renderAuditCallRow(c: LLMProxyCall): HTMLTableRowElement {
     return td;
   };
   tr.appendChild(mk(fmtRelative(c.created_at)));
-  const statusTd = mk(String(c.status_code));
-  if (c.status_code >= 400) statusTd.style.color = "var(--danger, #c00)";
+
+  const statusTd = document.createElement("td");
+  statusTd.appendChild(renderStatusBadge(c.status_code));
   tr.appendChild(statusTd);
+
   tr.appendChild(mk(c.model_resolved || c.model_requested || "—"));
   tr.appendChild(mk(`${c.prompt_tokens} / ${c.completion_tokens}`));
   tr.appendChild(mk(c.cost_usd != null ? `$${c.cost_usd.toFixed(4)}` : "—"));
-  tr.appendChild(mk(c.latency_ms > 0 ? `${c.latency_ms}ms` : "—"));
+
+  const latTd = document.createElement("td");
+  latTd.appendChild(renderLatencyCell(c.latency_ms));
+  tr.appendChild(latTd);
+
   const errTd = mk(c.error_text || "");
   if (c.error_text) {
     errTd.style.color = "var(--danger, #c00)";
     errTd.title = c.error_text;
   }
   tr.appendChild(errTd);
+
+  // Failed rows get a subtle red tint
+  if (c.status_code >= 400) {
+    tr.style.background = "rgba(220, 38, 38, 0.04)";
+  }
   return tr;
 }
 
@@ -360,9 +441,40 @@ async function refreshAuditModal(): Promise<void> {
 
 function openAuditModal(tok: LLMProxyToken): void {
   auditCurrentToken = tok;
-  auditTitle.textContent = `审计日志 · ${tok.name} (${tok.prefix}…)`;
+  auditTitle.textContent = `审计日志 — ${tok.name}`;
+
+  // Subtitle: truncated prefix + copy button
+  auditSubtitle.innerHTML = "";
+  const prefixSpan = document.createElement("span");
+  prefixSpan.textContent = `${tok.prefix}…`;
+  prefixSpan.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
+  auditSubtitle.appendChild(prefixSpan);
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.title = "复制完整前缀";
+  copyBtn.textContent = "📋";
+  copyBtn.style.cssText = "background: transparent; border: none; cursor: pointer; padding: 0 4px; font-size: 13px;";
+  copyBtn.addEventListener("click", () => {
+    void navigator.clipboard.writeText(tok.prefix).then(() => {
+      copyBtn.textContent = "✓";
+      window.setTimeout(() => (copyBtn.textContent = "📋"), 1200);
+    });
+  });
+  auditSubtitle.appendChild(copyBtn);
+
+  syncAuditDaysButtons();
   auditModal.hidden = false;
   void refreshAuditModal();
+}
+
+function syncAuditDaysButtons(): void {
+  const current = auditDays.value;
+  auditDaysGroup.querySelectorAll<HTMLButtonElement>(".audit-day-btn").forEach((btn) => {
+    const active = btn.dataset.days === current;
+    btn.style.background = active ? "var(--accent, #3b82f6)" : "transparent";
+    btn.style.color = active ? "#fff" : "var(--text, #374151)";
+    btn.style.fontWeight = active ? "600" : "400";
+  });
 }
 
 function closeAuditModal(): void {
@@ -501,6 +613,7 @@ async function copyToClipboard(value: string, btn: HTMLButtonElement): Promise<v
 }
 
 newTokenBtn.addEventListener("click", openCreateModal);
+showRevokedToggle?.addEventListener("change", () => renderTokenTable());
 createCloseBtn.addEventListener("click", closeCreateModal);
 createCancelBtn.addEventListener("click", closeCreateModal);
 createSubmitBtn.addEventListener("click", () => void onSubmitCreate());
@@ -512,7 +625,19 @@ plaintextCopyBtn.addEventListener("click", () => void copyToClipboard(plaintextV
 plaintextBaseCopyBtn.addEventListener("click", () => void copyToClipboard(plaintextBaseURL.value, plaintextBaseCopyBtn));
 auditCloseBtn.addEventListener("click", closeAuditModal);
 auditRefreshBtn.addEventListener("click", () => void refreshAuditModal());
-auditDays.addEventListener("change", () => void refreshAuditModal());
+auditDays.addEventListener("change", () => {
+  syncAuditDaysButtons();
+  void refreshAuditModal();
+});
+auditDaysGroup.addEventListener("click", (ev) => {
+  const target = (ev.target as HTMLElement).closest<HTMLButtonElement>(".audit-day-btn");
+  if (!target) return;
+  const days = target.dataset.days;
+  if (!days) return;
+  auditDays.value = days;
+  syncAuditDaysButtons();
+  void refreshAuditModal();
+});
 routesCloseBtn.addEventListener("click", closeRoutesModal);
 routesCancelBtn.addEventListener("click", closeRoutesModal);
 routesSaveBtn.addEventListener("click", () => void onSaveRoutes());

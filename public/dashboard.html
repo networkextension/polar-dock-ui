@@ -34,6 +34,9 @@
           <a class="lp-nav-item" href="/markdowns.html">
             <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
           </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
           <a class="lp-nav-item" href="/chat.html">
             <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
           </a>
@@ -49,17 +52,35 @@
           <a class="lp-nav-item" href="/hosts.html">
             <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
           </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
           <a class="lp-nav-item" href="/editor.html">
             <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
           </a>
-          <a class="lp-nav-item" href="/llm-billing.html">
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
           </a>
           <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
           </a>
           <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
           </a>
           <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
@@ -362,6 +383,11 @@
                         <span data-i18n="dashboard.llmConfigSharedLabel">Share this LLM Config with other users</span>
                       </label>
 
+                      <label class="form-checkbox" for="llmConfigIsSystemInput" title="平台单例：勾上之后这条 config 就是站内 system 助理（chat thread summary / task sharpen / system bot user）使用的模型。同一时间只能有一条。与「分享」互斥。">
+                        <input id="llmConfigIsSystemInput" type="checkbox" />
+                        <span>🛠 系统助理（is_system）— 互斥 shared、平台单例</span>
+                      </label>
+
                       <div class="site-settings-actions inline-actions">
                         <button id="llmConfigResetBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigClear">Clear</button>
                         <button id="llmConfigTestBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigTest">Test config</button>
@@ -468,32 +494,11 @@
                     <label class="form-label" for="siteDescriptionInput" data-i18n="dashboard.siteDescriptionLabel">Site description</label>
                     <textarea id="siteDescriptionInput" class="input textarea" rows="4" maxlength="300" data-i18n-placeholder="dashboard.siteDescriptionPlaceholder" placeholder="One-line description of your site"></textarea>
 
-                    <label class="form-label" for="siteRegistrationInviteRequired" data-i18n="dashboard.registrationInviteRequiredLabel">Registration requires invite code</label>
-                    <label class="switch-row" for="siteRegistrationInviteRequired">
-                      <input id="siteRegistrationInviteRequired" type="checkbox" />
-                      <span data-i18n="dashboard.registrationInviteRequiredHint">When enabled, new users must provide a valid invite code to register.</span>
-                    </label>
-
                     <div class="site-settings-actions">
                       <button id="saveSiteBtn" class="btn-secondary" type="button" data-i18n="dashboard.saveSite">Save site info</button>
                     </div>
                     <div id="siteStatus" class="status-text"></div>
                   </div>
-                </div>
-
-                <div class="site-tags-section">
-                  <div class="site-tags-header">
-                    <div>
-                      <div class="badge" data-i18n="dashboard.inviteCodeBadge">Invite Codes</div>
-                      <p class="drawer-help" data-i18n="dashboard.inviteCodeHelp">Generate one-time invite codes for new user registration.</p>
-                    </div>
-                  </div>
-                  <div class="site-settings-actions">
-                    <input id="inviteCodeCountInput" class="input" type="number" min="1" max="50" value="5" style="max-width: 120px;" />
-                    <button id="generateInviteCodeBtn" class="btn-inline btn-secondary" type="button" data-i18n="dashboard.generateInviteCode">Generate</button>
-                  </div>
-                  <div id="inviteCodeStatus" class="status-text"></div>
-                  <ul id="inviteCodeList" class="tag-list"></ul>
                 </div>
 
                 <div class="site-tags-section">

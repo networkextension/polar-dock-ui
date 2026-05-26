@@ -29,6 +29,9 @@
           <a class="lp-nav-item" href="/markdowns.html">
             <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
           </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
           <a class="lp-nav-item" href="/chat.html">
             <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
           </a>
@@ -38,17 +41,35 @@
           <a class="lp-nav-item" href="/hosts.html">
             <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
           </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
           <a class="lp-nav-item" href="/editor.html">
             <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
           </a>
-          <a class="lp-nav-item" href="/llm-billing.html">
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
           </a>
           <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
           </a>
           <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
           </a>
           <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
             <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
@@ -93,6 +114,10 @@
             <div class="lp-preview-head">
               <span class="badge">已有 Token</span>
               <span id="tokenCount" class="lp-mode-badge">—</span>
+              <label style="margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted, #6b7280); cursor: pointer;">
+                <input type="checkbox" id="showRevokedToggle" />
+                <span>显示已撤销</span>
+              </label>
             </div>
             <div class="lp-preview-body">
               <p class="meta-subtitle" style="margin: 0 0 12px 0;">
@@ -164,19 +189,28 @@
     <!-- Audit log viewer modal -->
     <div id="auditModal" class="lp-modal" hidden>
       <div class="lp-modal-card" style="width: 95vw; max-width: 1400px;">
-        <div class="lp-modal-head">
-          <span class="lp-modal-title" id="auditTitle">审计日志</span>
-          <button id="auditCloseBtn" type="button" class="lp-modal-close">✕</button>
+        <div class="lp-modal-head" style="flex-direction: column; align-items: stretch; gap: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span class="lp-modal-title" id="auditTitle">审计日志</span>
+            <button id="auditCloseBtn" type="button" class="lp-modal-close">✕</button>
+          </div>
+          <div id="auditSubtitle" class="meta-subtitle" style="display: flex; align-items: center; gap: 6px;"></div>
         </div>
         <div class="lp-modal-body">
-          <div class="toolbar" style="margin-bottom: 12px; gap: 8px;">
-            <label class="meta-subtitle" for="auditDays">时间范围：</label>
-            <select id="auditDays" class="input" style="width: auto; max-width: 140px;">
-              <option value="1">最近 1 天</option>
-              <option value="7" selected>最近 7 天</option>
-              <option value="30">最近 30 天</option>
+          <div class="toolbar" style="margin-bottom: 12px; gap: 8px; align-items: center;">
+            <span class="meta-subtitle">时间范围：</span>
+            <div id="auditDaysGroup" role="tablist" style="display: inline-flex; border: 1px solid var(--border, #d1d5db); border-radius: 6px; overflow: hidden;">
+              <button type="button" class="audit-day-btn" data-days="1" style="padding: 4px 12px; background: transparent; border: none; border-right: 1px solid var(--border, #d1d5db); cursor: pointer; font-size: 13px;">1d</button>
+              <button type="button" class="audit-day-btn" data-days="7" style="padding: 4px 12px; background: transparent; border: none; border-right: 1px solid var(--border, #d1d5db); cursor: pointer; font-size: 13px;">7d</button>
+              <button type="button" class="audit-day-btn" data-days="30" style="padding: 4px 12px; background: transparent; border: none; cursor: pointer; font-size: 13px;">30d</button>
+            </div>
+            <!-- Legacy select kept hidden so the existing JS reads its value -->
+            <select id="auditDays" hidden>
+              <option value="1">1</option>
+              <option value="7" selected>7</option>
+              <option value="30">30</option>
             </select>
-            <button id="auditRefreshBtn" type="button" class="btn-inline btn-secondary">⟲ 刷新</button>
+            <button id="auditRefreshBtn" type="button" class="btn-inline btn-secondary" title="刷新">⟲</button>
             <span id="auditStatus" class="meta-subtitle"></span>
           </div>
 
@@ -185,7 +219,7 @@
             <table id="auditAggregateTable" class="lp-table" style="width: 100%; margin-top: 6px;" hidden>
               <thead>
                 <tr>
-                  <th>模型</th><th>调用</th><th>OK</th><th>失败</th><th>prompt</th><th>completion</th><th>total</th><th>估算 USD</th>
+                  <th>模型</th><th>调用</th><th>成功率</th><th>prompt</th><th>completion</th><th>total</th><th>估算 USD</th>
                 </tr>
               </thead>
               <tbody id="auditAggregateTbody"></tbody>
@@ -195,14 +229,16 @@
 
           <div class="settings-section-card">
             <div class="settings-section-title">最近调用</div>
-            <table id="auditCallsTable" class="lp-table" style="width: 100%; margin-top: 6px;" hidden>
-              <thead>
-                <tr>
-                  <th>时间</th><th>状态</th><th>模型</th><th>tokens (P/C)</th><th>USD</th><th>延迟</th><th>错误</th>
-                </tr>
-              </thead>
-              <tbody id="auditCallsTbody"></tbody>
-            </table>
+            <div style="overflow-x: auto;">
+              <table id="auditCallsTable" class="lp-table" style="width: 100%; margin-top: 6px; white-space: nowrap;" hidden>
+                <thead>
+                  <tr>
+                    <th>时间</th><th>状态</th><th>模型</th><th>tokens (P/C)</th><th>USD</th><th>延迟</th><th>错误</th>
+                  </tr>
+                </thead>
+                <tbody id="auditCallsTbody"></tbody>
+              </table>
+            </div>
             <div id="auditCallsEmpty" class="meta-subtitle" hidden>无调用记录。</div>
           </div>
         </div>

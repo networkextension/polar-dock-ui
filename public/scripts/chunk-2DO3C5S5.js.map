@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/lib/assist_usage.ts"],
-  "sourcesContent": ["// Shared LLM-usage badge for the assist UIs (issue #170).\n//\n// All three \"AI \u6DA6\u8272 / \u8D77\u8349 / \u8BC4\u8BBA\u8349\u7A3F\" call sites (editor, creation\n// bubble, posts plaza post + reply) consume MarkdownAssistResponse and\n// append a status-line suffix after the model name. This helper keeps\n// the badge format consistent across them and the \"no usage from this\n// provider\" fallback graceful (Anthropic / Gemini / xAI Responses leave\n// usage nil on the non-streaming path; we render nothing in that case\n// instead of an em-dash placeholder).\n\nexport type AssistUsage = {\n  prompt_tokens: number;\n  completion_tokens: number;\n  total_tokens?: number;\n};\n\nexport function formatAssistUsageBadge(usage?: AssistUsage): string {\n  if (!usage) {\n    return \"\";\n  }\n  const total = usage.total_tokens ?? usage.prompt_tokens + usage.completion_tokens;\n  return ` \u00B7 ${total} tok (${usage.prompt_tokens}\u2192${usage.completion_tokens})`;\n}\n"],
-  "mappings": "+CAgBO,SAASA,EAAuBC,EAA6B,CAClE,OAAKA,EAIE,SADOA,EAAM,cAAgBA,EAAM,cAAgBA,EAAM,iBAC9C,SAASA,EAAM,aAAa,SAAIA,EAAM,iBAAiB,IAHhE,EAIX,CAtBA,IAAAC,EAAAC,EAAA,KAgBgBC,EAAAJ,EAAA",
-  "names": ["formatAssistUsageBadge", "usage", "init_assist_usage", "__esmMin", "__name"]
-}

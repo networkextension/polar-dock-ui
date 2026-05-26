@@ -1076,6 +1076,13 @@ type PendingAttachment = {
 
 const pendingAttachments: PendingAttachment[] = [];
 
+// In-flight uploads need to settle before the post is submitted —
+// otherwise a user who picks a large `.zip` and clicks "Publish"
+// immediately races past the upload and the post is created with
+// attachment_ids=[]. We track promises here and await them in the
+// submit handler.
+const attachmentUploadPromises: Promise<void>[] = [];
+
 function renderAttachmentChips(): void {
   postAttachmentChips.innerHTML = pendingAttachments
     .map(
@@ -1125,38 +1132,66 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-postAttachments.addEventListener("change", async () => {
+async function uploadOneAttachment(file: File): Promise<void> {
+  try {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`${API_BASE}/api/attachments`, {
+      method: "POST",
+      credentials: "include",
+      body: fd,
+    });
+    // requestJson-style robustness: nginx 413 returns HTML, not JSON,
+    // so res.json() throws. Catch + surface so the upload doesn't
+    // silently fail past the user's notice.
+    let data: { attachment?: { id: string; filename: string; size_bytes: number }; error?: string } = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = { error: `服务器返回非 JSON (HTTP ${res.status})` };
+    }
+    if (!res.ok || !data.attachment) {
+      postFormStatus.textContent = `附件 "${file.name}" 上传失败：${data.error || "服务器错误"}`;
+      return;
+    }
+    pendingAttachments.push({
+      id: data.attachment.id,
+      filename: data.attachment.filename,
+      size: data.attachment.size_bytes,
+    });
+    renderAttachmentChips();
+  } catch {
+    postFormStatus.textContent = `附件 "${file.name}" 上传失败`;
+  }
+}
+
+function updateSubmitBtnForUploads(): void {
+  const uploading = attachmentUploadPromises.length > 0;
+  postSubmitBtn.disabled = uploading;
+  if (uploading) {
+    postFormStatus.textContent = `附件上传中（${attachmentUploadPromises.length}）…`;
+  }
+}
+
+postAttachments.addEventListener("change", () => {
   const files = Array.from(postAttachments.files || []);
   if (!files.length) {
     return;
   }
   postAttachments.disabled = true;
-  for (const file of files) {
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch(`${API_BASE}/api/attachments`, {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      const data = await res.json();
-      if (!res.ok || !data.attachment) {
-        postFormStatus.textContent = `附件 "${file.name}" 上传失败：${data.error || "服务器错误"}`;
-        continue;
-      }
-      pendingAttachments.push({
-        id: data.attachment.id,
-        filename: data.attachment.filename,
-        size: data.attachment.size_bytes,
-      });
-    } catch (err) {
-      postFormStatus.textContent = `附件 "${file.name}" 上传失败`;
-    }
-  }
   postAttachments.value = "";
-  postAttachments.disabled = false;
-  renderAttachmentChips();
+  for (const file of files) {
+    const p = uploadOneAttachment(file).finally(() => {
+      const idx = attachmentUploadPromises.indexOf(p);
+      if (idx >= 0) attachmentUploadPromises.splice(idx, 1);
+      updateSubmitBtnForUploads();
+      if (attachmentUploadPromises.length === 0) {
+        postAttachments.disabled = false;
+      }
+    });
+    attachmentUploadPromises.push(p);
+  }
+  updateSubmitBtnForUploads();
 });
 
 postForm.addEventListener("submit", async (event) => {
@@ -1171,6 +1206,14 @@ postForm.addEventListener("submit", async (event) => {
       postFormStatus.textContent = t("post.taskInfoRequired");
       return;
     }
+  }
+
+  // Belt + suspenders: even though the submit button is disabled
+  // while uploads are in flight, await any leftover promises before
+  // sending the post. Otherwise a fast Enter-key could squeak past.
+  if (attachmentUploadPromises.length > 0) {
+    postFormStatus.textContent = `等待附件上传完成（${attachmentUploadPromises.length}）…`;
+    await Promise.allSettled(attachmentUploadPromises);
   }
 
   postFormStatus.textContent = t("post.publishing");

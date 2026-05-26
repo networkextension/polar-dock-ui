@@ -41,6 +41,25 @@ export async function fetchProxyTokenCallsAggregate(id: number, days = 7) {
   );
 }
 
+// B6: member-side audit. Same response shapes as the admin endpoints —
+// backend wires the same handlers under /me/ without AdminMiddleware.
+
+export async function listMyProxyTokens() {
+  return requestJson<LLMProxyTokenListResponse>("/api/me/llm-proxy/tokens");
+}
+
+export async function fetchMyProxyTokenCalls(id: number, limit = 100) {
+  return requestJson<LLMProxyCallListResponse>(
+    `/api/me/llm-proxy/tokens/${id}/calls?limit=${limit}`,
+  );
+}
+
+export async function fetchMyProxyTokenCallsAggregate(id: number, days = 7) {
+  return requestJson<LLMProxyCallAggregateResponse>(
+    `/api/me/llm-proxy/tokens/${id}/calls/aggregate?days=${days}`,
+  );
+}
+
 export async function fetchProxyTokenRoutes(id: number) {
   return requestJson<LLMProxyRouteListResponse>(`/api/llm-proxy/tokens/${id}/routes`);
 }

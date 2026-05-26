@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM 申请审核 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item active" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
+
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">LLM 申请审核</span>
+          <div class="lp-topbar-end">
+            <span id="billingStatus" class="meta-subtitle"></span>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+          <section class="lp-preview-main" id="adminAppsSection">
+            <div class="lp-preview-head">
+              <span class="badge">管理员 · 申请记录</span>
+              <span id="appsCount" class="lp-mode-badge">—</span>
+            </div>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0 0 10px 0;">
+                所有工作区对共享 LLM 配置的申请历史。当前自动审批（默认月预算 $10），未来可改为人工审批工作流。
+              </p>
+              <table id="appsTable" class="lp-table" hidden>
+                <thead>
+                  <tr>
+                    <th>时间</th><th>团队</th><th>申请人</th><th>LLM 配置</th><th>状态</th><th>授予预算</th><th>备注</th>
+                  </tr>
+                </thead>
+                <tbody id="appsTbody"></tbody>
+              </table>
+              <div id="appsEmpty" class="meta-subtitle" hidden>暂无申请记录。</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/llm-billing.js"></script>
+  </body>
+</html>

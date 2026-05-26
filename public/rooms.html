@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>群聊 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item active" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
+
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">群聊 · AI 同事工作区</span>
+          <div class="lp-topbar-end" style="display:flex; gap:8px; align-items:center;">
+            <!-- qunliao β: toggle the per-message metadata pill
+                 (model · latency · tokens · cost). Default OFF
+                 so casual viewers see clean chat; power users / ops
+                 flip it on. Preference persists via localStorage. -->
+            <label style="display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text-muted,#888); cursor:pointer;">
+              <input id="metadataToggle" type="checkbox" style="margin:0;" />
+              📊 元数据
+            </label>
+            <button id="newRoomBtn" class="btn-inline btn-primary" type="button">+ 新建房间</button>
+          </div>
+        </div>
+
+        <div class="lp-content" style="display:grid; grid-template-columns: 240px 1fr 240px; gap: 12px; padding: 12px; min-height: 0;">
+
+          <!-- Left: room list -->
+          <aside class="lp-preview-main" style="overflow-y:auto;">
+            <div class="lp-preview-head" style="align-items:center;">
+              <span class="badge">房间</span>
+              <span id="roomCount" class="lp-mode-badge">—</span>
+              <span style="flex:1;"></span>
+              <button id="roomRefreshBtn" class="btn-inline btn-secondary" type="button" title="刷新">⟲</button>
+            </div>
+            <div class="lp-preview-body">
+              <ul id="roomList" class="lp-list" style="list-style:none; padding:0; margin:0;"></ul>
+              <div id="roomEmpty" class="meta-subtitle" hidden>暂无房间。点右上「+ 新建房间」开始。</div>
+              <div id="roomLoading" class="meta-subtitle">加载中...</div>
+            </div>
+          </aside>
+
+          <!-- Center: messages -->
+          <section class="lp-preview-main" style="display:flex; flex-direction:column; min-height: 0;">
+            <div class="lp-preview-head" style="align-items:center;">
+              <span class="badge">消息</span>
+              <span id="activeRoomTitle" class="meta-subtitle" style="margin-left:8px;">选一个房间</span>
+              <span style="flex:1;"></span>
+              <span id="wsStatusDot" class="lp-mode-badge" title="WS">●</span>
+            </div>
+            <!-- Topic row: visible to all members, editable by owner. The
+                 topic is injected into the bot system prompt server-side
+                 (chat_rooms_agent.go: buildRoomBotSystemPrompt) so bots
+                 stay on-topic. Empty = no anchor passed to bots. -->
+            <div id="topicBar" style="padding:4px 12px; border-bottom:1px solid var(--border,#eee); font-size:12px; color:var(--text-muted,#888); display:flex; align-items:center; gap:6px;" hidden>
+              <span>🎯</span>
+              <span id="topicText" style="flex:1;"></span>
+              <button id="topicEditBtn" class="btn-inline btn-secondary" type="button" title="改话题" style="padding:0 6px; font-size:11px;" hidden>✎</button>
+            </div>
+            <div id="messageScroll" class="lp-preview-body" style="flex:1; overflow-y:auto; padding-bottom: 8px;">
+              <div id="messageList"></div>
+            </div>
+            <div style="border-top: 1px solid var(--border, #ddd); padding: 8px;">
+              <form id="sendForm" style="display:flex; gap:6px;">
+                <input id="sendInput" class="input" type="text" placeholder="说点什么... (@bot_name 召唤 bot, P1)" autocomplete="off" style="flex:1;" disabled />
+                <button id="sendBtn" class="btn-inline btn-primary" type="submit" disabled>发送</button>
+              </form>
+            </div>
+          </section>
+
+          <!-- Right: members -->
+          <aside class="lp-preview-main" style="overflow-y:auto;">
+            <div class="lp-preview-head" style="align-items:center;">
+              <span class="badge">成员</span>
+              <span id="memberCount" class="lp-mode-badge">—</span>
+              <span style="flex:1;"></span>
+              <button id="addMemberBtn" class="btn-inline btn-secondary" type="button" title="添加" disabled>+</button>
+            </div>
+            <div class="lp-preview-body">
+              <ul id="memberList" class="lp-list" style="list-style:none; padding:0; margin:0;"></ul>
+              <div id="memberEmpty" class="meta-subtitle" hidden>选一个房间查看成员</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- New room modal -->
+    <div id="newRoomModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 420px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title">新建房间</span>
+          <button id="newRoomCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="newRoomName">名称 *</label>
+            <input id="newRoomName" class="input" type="text" placeholder="例如：产品讨论组" />
+          </div>
+          <div class="settings-section-card" style="margin-bottom: 12px;">
+            <label class="settings-section-title" for="newRoomTopic">话题（约束 bot 不要跑题）</label>
+            <input id="newRoomTopic" class="input" type="text" placeholder="如：iOS 15 适配讨论 / Q3 OKR 拆解 / 周末 BBQ 选地点" />
+            <div style="font-size:11px; color:var(--text-muted,#888); margin-top:4px;">话题会自动加进 bot 的 system prompt — 明显跑题的消息 bot 会礼貌引回话题或拒答。留空 = 不约束。</div>
+          </div>
+          <div id="newRoomError" class="status-text" style="color: var(--danger, #c00);"></div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="newRoomCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+          <button id="newRoomSubmitBtn" type="button" class="btn-inline btn-primary">创建</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/rooms.js"></script>
+  </body>
+</html>
