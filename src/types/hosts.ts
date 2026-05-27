@@ -9,6 +9,40 @@ export type AdvertisedSkill = {
   capabilities?: Record<string, unknown>;
 };
 
+// HostInfoGPU mirrors the agent's GPU probe payload. macOS fills
+// vendor/model/cores from system_profiler; linux fills what lspci /
+// /sys give us. Any field can be empty.
+export type HostInfoGPU = {
+  vendor?: string;
+  model?: string;
+  cores?: number;
+};
+
+// HostInfo is the hardware + OS report the agent posts on connect.
+// All fields are optional: pre-v0.4 agents send {} and we render a
+// "hardware info pending agent upgrade" hint instead of blank rows.
+// Fields are intentionally flat (no nested OS struct) so json.Marshal
+// on the Go side stays compatible with future renames.
+export type HostInfo = {
+  hw_model?: string;
+  hw_vendor?: string;
+  cpu_brand?: string;
+  cpu_arch?: string;
+  cpu_cores?: number;
+  cpu_cores_perf?: number;
+  cpu_cores_eff?: number;
+  memory_bytes?: number;
+  gpu?: HostInfoGPU;
+  os_name?: string;
+  os_version?: string;
+  os_build?: string;
+  os_release_type?: string;
+  os_pretty?: string;
+  virt?: string;
+  kernel?: string;
+  boot_unix?: number;
+};
+
 export type Host = {
   id: string;
   workspace_id: string;
@@ -21,6 +55,8 @@ export type Host = {
   advertised_skills?: AdvertisedSkill[];
   last_seen_at?: string;
   created_at: string;
+  host_info?: HostInfo;
+  host_info_seen_at?: string;
 };
 
 export type HostListResponse = ErrorResponse & {
