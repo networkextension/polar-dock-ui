@@ -202,18 +202,12 @@
         <!-- Step 1: form -->
         <form id="addHostForm" style="display:flex; flex-direction:column; gap:10px;">
           <p class="meta-subtitle" style="margin:0;">
-            生成 agent token 与安装脚本。在新主机上执行脚本即可注册（agent 会上报 host_info，几秒内出现在列表）。
+            生成一次性 enroll token（1 小时 TTL）。在目标机器上执行返回的 <code>polar-agent register</code> 命令即可创建 host 记录；register 成功后 agent 自动获得永久 token，开始上报 host_info。
           </p>
 
           <label class="form-label" for="addHostName">主机别名</label>
           <input id="addHostName" class="input" type="text" maxlength="60"
-                 placeholder="polar-agent" value="polar-agent" />
-
-          <label class="form-label" for="addHostTargetOS">目标操作系统</label>
-          <select id="addHostTargetOS" class="input">
-            <option value="darwin">darwin (macOS · curl-bash 脚本)</option>
-            <option value="linux">linux (docker run 脚本)</option>
-          </select>
+                 placeholder="newmac" value="" />
 
           <div id="addHostError" class="status-text" style="color:var(--danger, #c00);" hidden></div>
 
@@ -227,14 +221,14 @@
         <div id="addHostResult" hidden style="display:flex; flex-direction:column; gap:10px;">
           <div class="meta-subtitle" id="addHostHint" style="color:var(--warning, #b58900);"></div>
 
-          <label class="form-label">Raw token（仅此一次显示，复制后立即保存）</label>
+          <label class="form-label">Enroll token（一次性、1 小时 TTL；复制后立即保存）</label>
           <div style="display:flex; gap:6px;">
             <input id="addHostRaw" class="input" type="text" readonly style="font-family:monospace; font-size:12px;" />
             <button id="addHostRawCopyBtn" class="btn-inline btn-secondary" type="button">复制</button>
           </div>
 
-          <label class="form-label">安装脚本（在新主机的 shell 中执行）</label>
-          <textarea id="addHostScript" class="input textarea" readonly rows="10"
+          <label class="form-label">注册命令（在新主机的 shell 中执行）</label>
+          <textarea id="addHostScript" class="input textarea" readonly rows="4"
                     style="font-family:monospace; font-size:12px; white-space:pre;"></textarea>
           <div style="display:flex; gap:6px; justify-content:flex-end;">
             <button id="addHostScriptCopyBtn" class="btn-inline btn-secondary" type="button">复制脚本</button>
