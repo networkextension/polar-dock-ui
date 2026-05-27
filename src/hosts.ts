@@ -17,6 +17,7 @@
 // toast.
 
 import { fetchHost, fetchHosts } from "./api/hosts.js";
+import { createAgentToken } from "./api/projects.js";
 import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
@@ -572,6 +573,124 @@ function initDetailView(hostID: string): void {
   }, 15_000);
 }
 
+// ── add-host modal ─────────────────────────────────────────────────────────
+//
+// Wraps the "+ 添加主机" topbar button. Calls POST /api/agent/tokens with
+// just {name, target_os} — coders + api_keys are bot-side concerns and
+// stay empty for a plain host registration. On success the modal swaps
+// from form mode to "show raw + install script" mode; closing the modal
+// re-fetches the host list (the new host won't appear until its agent
+// actually runs the install script and connects, but refreshing closes
+// the wizard loop cleanly).
+
+function showAddHostError(msg: string): void {
+  const el = document.getElementById("addHostError") as HTMLElement | null;
+  if (!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+}
+
+function clearAddHostError(): void {
+  const el = document.getElementById("addHostError") as HTMLElement | null;
+  if (!el) return;
+  el.hidden = true;
+  el.textContent = "";
+}
+
+function openAddHostModal(): void {
+  const modal = document.getElementById("addHostModal") as HTMLElement | null;
+  if (!modal) return;
+  // Reset state every open — fresh form, hide result panel.
+  (document.getElementById("addHostForm") as HTMLFormElement | null)?.removeAttribute("hidden");
+  const result = document.getElementById("addHostResult") as HTMLElement | null;
+  if (result) result.hidden = true;
+  clearAddHostError();
+  const nameInput = document.getElementById("addHostName") as HTMLInputElement | null;
+  if (nameInput) nameInput.value = "polar-agent";
+  const osSel = document.getElementById("addHostTargetOS") as HTMLSelectElement | null;
+  if (osSel) osSel.value = "darwin";
+  modal.hidden = false;
+}
+
+function closeAddHostModal(): void {
+  const modal = document.getElementById("addHostModal") as HTMLElement | null;
+  if (modal) modal.hidden = true;
+  // Always refresh list after the modal closes — agent may have
+  // connected by now (curl-bash flows are fast on local LAN).
+  void refreshList();
+}
+
+async function copyToClipboard(text: string, btn: HTMLButtonElement): Promise<void> {
+  const original = btn.textContent || "复制";
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "已复制 ✓";
+  } catch {
+    btn.textContent = "复制失败";
+  }
+  window.setTimeout(() => { btn.textContent = original; }, 1500);
+}
+
+async function submitAddHost(ev: Event): Promise<void> {
+  ev.preventDefault();
+  clearAddHostError();
+  const submitBtn = document.getElementById("addHostSubmitBtn") as HTMLButtonElement | null;
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    const name = (document.getElementById("addHostName") as HTMLInputElement | null)?.value.trim() || "polar-agent";
+    const targetOSRaw = (document.getElementById("addHostTargetOS") as HTMLSelectElement | null)?.value || "darwin";
+    const targetOS: "darwin" | "linux" = targetOSRaw === "linux" ? "linux" : "darwin";
+    const { response, data } = await createAgentToken({ name, target_os: targetOS });
+    if (!response.ok) {
+      showAddHostError(`创建失败：HTTP ${response.status}`);
+      return;
+    }
+    // Swap to result mode.
+    (document.getElementById("addHostForm") as HTMLFormElement | null)?.setAttribute("hidden", "");
+    const result = document.getElementById("addHostResult") as HTMLElement | null;
+    if (result) result.hidden = false;
+    const hintEl = document.getElementById("addHostHint") as HTMLElement | null;
+    if (hintEl) hintEl.textContent = data.hint || "复制 raw token 与脚本后立即保存；服务端只存哈希，事后无法重新展示";
+    const rawEl = document.getElementById("addHostRaw") as HTMLInputElement | null;
+    if (rawEl) rawEl.value = data.raw || "";
+    const scriptEl = document.getElementById("addHostScript") as HTMLTextAreaElement | null;
+    if (scriptEl) scriptEl.value = data.install_script || "";
+  } catch (err) {
+    showAddHostError(`创建失败：${(err as Error).message}`);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+function initAddHostModal(): void {
+  // Button is always present in the page chrome; only the list view
+  // currently exposes it (the detail view has its own back link).
+  const openBtn = document.getElementById("addHostBtn") as HTMLButtonElement | null;
+  openBtn?.addEventListener("click", openAddHostModal);
+
+  document.getElementById("addHostModalCloseBtn")?.addEventListener("click", closeAddHostModal);
+  document.getElementById("addHostCancelBtn")?.addEventListener("click", closeAddHostModal);
+  document.getElementById("addHostDoneBtn")?.addEventListener("click", closeAddHostModal);
+
+  // Click backdrop to close.
+  document.getElementById("addHostModal")?.addEventListener("click", (ev) => {
+    if ((ev.target as HTMLElement | null)?.id === "addHostModal") closeAddHostModal();
+  });
+
+  (document.getElementById("addHostForm") as HTMLFormElement | null)?.addEventListener("submit", (ev) => void submitAddHost(ev));
+
+  document.getElementById("addHostRawCopyBtn")?.addEventListener("click", () => {
+    const raw = (document.getElementById("addHostRaw") as HTMLInputElement | null)?.value || "";
+    const btn = document.getElementById("addHostRawCopyBtn") as HTMLButtonElement | null;
+    if (btn) void copyToClipboard(raw, btn);
+  });
+  document.getElementById("addHostScriptCopyBtn")?.addEventListener("click", () => {
+    const script = (document.getElementById("addHostScript") as HTMLTextAreaElement | null)?.value || "";
+    const btn = document.getElementById("addHostScriptCopyBtn") as HTMLButtonElement | null;
+    if (btn) void copyToClipboard(script, btn);
+  });
+}
+
 // ── bootstrap ──────────────────────────────────────────────────────────────
 
 (async () => {
@@ -585,5 +704,6 @@ function initDetailView(hostID: string): void {
     initDetailView(id);
   } else {
     initListView();
+    initAddHostModal();
   }
 })();
