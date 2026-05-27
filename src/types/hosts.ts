@@ -57,6 +57,17 @@ export type Host = {
   created_at: string;
   host_info?: HostInfo;
   host_info_seen_at?: string;
+  // Agent Identity v4 / Phase F additions. Populated by the dock once
+  // /api/hosts is updated to surface the new columns from the v4
+  // schema migration (PR #355). Until then the field is undefined and
+  // the UI shows "—". See doc/arch/agent-identity-v4.md.
+  mem_peak_bytes?: number;
+  cpu_peak_pct?: number;
+  first_seen_at?: string;
+  // Convenience: when the dock joins agents.count into the hosts
+  // payload (currently not — see follow-up PR), we render the
+  // "▾ 实例 (N)" footer with this number. Falls back to "?".
+  agents_count?: number;
 };
 
 export type HostListResponse = ErrorResponse & {

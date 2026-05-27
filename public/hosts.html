@@ -41,6 +41,9 @@
           <a class="lp-nav-item active" href="/hosts.html" hidden data-site-admin-nav>
             <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
           </a>
+          <a class="lp-nav-item" href="/agents.html" hidden data-site-admin-nav>
+            <span class="lp-nav-icon" data-icon="cpu">🤖</span><span data-i18n="nav.agents">Agents</span>
+          </a>
           <a class="lp-nav-item" href="/skills.html">
             <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
           </a>
@@ -103,11 +106,11 @@
 
       <div class="lp-main">
         <div class="lp-topbar">
-          <span class="lp-topbar-title">主机 · 状态优先</span>
+          <span class="lp-topbar-title">主机 · 物理资产视图</span>
           <div class="lp-topbar-end" style="display:flex; gap:6px; align-items:center;">
             <span id="hostsMeta" class="meta-subtitle"></span>
             <span id="detailMeta" class="meta-subtitle"></span>
-            <button id="addHostBtn" class="btn-inline" type="button" title="生成 agent token + 安装脚本，给新机器装上 polar-agent">+ 添加主机</button>
+            <button id="addHostBtn" class="btn-inline" type="button" title="生成 enroll token + 安装脚本，注册一个新 agent。host 行会在 agent 首次握手时由 machine_uuid 自动落地。">+ 注册新 agent</button>
             <button id="refreshBtn" class="btn-inline btn-secondary" type="button" title="刷新">⟲</button>
           </div>
         </div>
@@ -195,7 +198,7 @@
       <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="addHostModalTitle"
            style="background:var(--surface, #fff); padding:18px 20px; border-radius:8px; width:min(640px, 92vw); max-height:90vh; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,0.25);">
         <div class="modal-header" style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-          <h3 id="addHostModalTitle" class="modal-title" style="margin:0; flex:1;">添加主机</h3>
+          <h3 id="addHostModalTitle" class="modal-title" style="margin:0; flex:1;">注册新 agent</h3>
           <button id="addHostModalCloseBtn" class="btn-inline btn-secondary" type="button" aria-label="Close">×</button>
         </div>
 

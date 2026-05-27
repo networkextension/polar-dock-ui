@@ -1,14 +1,20 @@
-// /hosts.html — status-first host list + per-host detail view.
+// /hosts.html — physical-asset view (Agent Identity v4 / Phase F).
 //
 // One bundle, two views. On boot we check the URL query for `?id=...`:
 //   - present → render the detail view for that host id
 //   - absent  → render the list view (auto-refresh 15s)
 //
-// This is the polar-dock #351 surface. Backend already exposes
-// GET /api/hosts and GET /api/hosts/:id with the new host_info block
-// (hardware + OS + virt). Pre-v0.4 agents send host_info={}, so every
-// field in HostInfo is optional and the detail card has to gracefully
-// fall back to "hardware info pending agent upgrade".
+// v4 split this page's role: hosts are now the *physical asset*
+// (hardware + capacity peaks). Logical agents (bot binding, last
+// hello, token) live on the sibling /agents.html page. The "▾ 实例"
+// footer on each card links over with ?host_id=... pre-filled.
+//
+// Backend exposes GET /api/hosts and GET /api/hosts/:id. mem_peak_bytes
+// / cpu_peak_pct columns ship in v4 (PR #355) but aren't yet surfaced
+// in the /api/hosts SELECT — the UI gracefully shows "—" until that
+// follow-up lands. Pre-v0.4 agents send host_info={}, so every field
+// in HostInfo is optional and the detail card has to gracefully fall
+// back to "hardware info pending agent upgrade".
 //
 // Pattern mirrors admin-audit-log.ts: byId helpers, hydrateSiteBrand /
 // hydrateSidebarFoot bootstrap, plain DOM API, no framework. The edit
@@ -122,6 +128,28 @@ function virtBadge(virt?: string): string {
   return ` <span class="badge" style="background:rgba(99,102,241,0.16); color:#4338ca; font-size:11px; padding:1px 6px; border-radius:4px;">🖥️ ${escapeHTML(virt)}</span>`;
 }
 
+// v4: cpu_peak_pct badge. Color tracks "how stressed has this box
+// been in the last 24h" — green <60, yellow 60-85, red >85.
+function cpuPeakBadge(pct?: number): string {
+  if (pct === undefined || pct === null || !Number.isFinite(pct) || pct <= 0) return "";
+  let bg = "rgba(16,185,129,0.16)";
+  let fg = "#047857";
+  if (pct >= 85) { bg = "rgba(239,68,68,0.16)"; fg = "#b91c1c"; }
+  else if (pct >= 60) { bg = "rgba(245,158,11,0.16)"; fg = "#b45309"; }
+  return ` <span class="badge" title="24h CPU peak" style="background:${bg}; color:${fg}; font-size:11px; padding:1px 6px; border-radius:4px;">CPU↑ ${pct.toFixed(0)}%</span>`;
+}
+
+// v4: "48 GB / peak 32 GB" — total + peak in one cell. Empty when
+// neither field is present.
+function memWithPeak(totalBytes?: number, peakBytes?: number): string {
+  const total = totalBytes && totalBytes > 0 ? fmtBytes(totalBytes) : "";
+  const peak = peakBytes && peakBytes > 0 ? fmtBytes(peakBytes) : "";
+  if (total && peak) return `${total} / peak ${peak}`;
+  if (total) return total;
+  if (peak) return `peak ${peak}`;
+  return "";
+}
+
 function fmtCores(info: HostInfo): string {
   // Apple Silicon: prefer "12P+4E" if we know the split.
   if (info.cpu_cores_perf && info.cpu_cores_eff) {
@@ -138,6 +166,10 @@ function hostInfoEmpty(info?: HostInfo): boolean {
 
 // One-line list-row hardware summary. Returns "" when host_info is
 // empty so the caller can swap in the upgrade hint.
+//
+// v4: memory cell merges total + 24h peak ("48 GB / peak 32 GB"). The
+// peak comes from hosts.mem_peak_bytes, populated by the agent's
+// /internal/v1/hosts/hello GREATEST update.
 function fmtListSummary(h: Host): string {
   const i = h.host_info;
   if (!i || hostInfoEmpty(i)) return "";
@@ -146,7 +178,8 @@ function fmtListSummary(h: Host): string {
   if (i.cpu_brand) bits.push(escapeHTML(i.cpu_brand));
   const cores = fmtCores(i);
   if (cores) bits.push(escapeHTML(cores));
-  if (i.memory_bytes) bits.push(fmtBytes(i.memory_bytes));
+  const mem = memWithPeak(i.memory_bytes, h.mem_peak_bytes);
+  if (mem) bits.push(escapeHTML(mem));
   if (i.gpu?.model) bits.push(escapeHTML(i.gpu.model));
   if (i.os_name) {
     const ver = i.os_version ? ` ${i.os_version}` : "";
@@ -211,14 +244,15 @@ function applyFilters(rows: Host[]): Host[] {
   });
 }
 
-function renderListRow(h: Host): HTMLAnchorElement {
-  // Whole row is a single <a> so the entire surface is the click
-  // target (better than tr+JS — gives middle-click-to-open-new-tab
-  // for free, and the URL is visible on hover).
-  const a = document.createElement("a");
-  a.className = "lp-hosts-row";
-  a.href = `/hosts.html?id=${encodeURIComponent(h.id)}`;
-  a.style.cssText = "display:block; padding:10px 12px; border:1px solid var(--surface-strong, #e5e7eb); border-radius:6px; margin-bottom:6px; text-decoration:none; color:inherit; background:var(--surface, #fff);";
+function renderListRow(h: Host): HTMLDivElement {
+  // v4: outer card is a <div>, not <a>, because we now have two
+  // independent click targets inside it (the body navigates to the
+  // host detail; the "▾ 实例 (N)" footer navigates to /agents.html
+  // pre-filtered for this host). Wrapping the whole thing in <a>
+  // would nest links, which is invalid HTML and breaks middle-click.
+  const card = document.createElement("div");
+  card.className = "lp-hosts-row";
+  card.style.cssText = "display:block; padding:10px 12px; border:1px solid var(--surface-strong, #e5e7eb); border-radius:6px; margin-bottom:6px; background:var(--surface, #fff);";
 
   const summary = fmtListSummary(h);
   const summaryHTML = summary
@@ -228,16 +262,30 @@ function renderListRow(h: Host): HTMLAnchorElement {
   const lastSeenRel = h.last_seen_at ? fmtRelativeISO(h.last_seen_at) : "—";
   const ip = h.last_seen_ip ? escapeHTML(h.last_seen_ip) : "—";
 
-  a.innerHTML =
-    `<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">` +
-      `${onlineDot(h.last_seen_at)}` +
-      `<strong>${escapeHTML(h.name || h.slug || h.id)}</strong>` +
-      `${virtBadge(h.host_info?.virt)}` +
-      `<span style="color:var(--text-muted, #888); font-size:11px; margin-left:auto;">last seen ${escapeHTML(lastSeenRel)} · ${ip}</span>` +
-    `</div>` +
-    summaryHTML;
+  const detailHref = `/hosts.html?id=${encodeURIComponent(h.id)}`;
+  const agentsHref = `/agents.html?host_id=${encodeURIComponent(h.id)}`;
+  // Count comes from a server-side join (not yet wired) — show "?" when
+  // the field is missing so it's obvious it's a pending number.
+  const agentsCount = typeof h.agents_count === "number"
+    ? String(h.agents_count)
+    : "?";
 
-  return a;
+  card.innerHTML =
+    `<a href="${detailHref}" style="display:block; text-decoration:none; color:inherit;">` +
+      `<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">` +
+        `${onlineDot(h.last_seen_at)}` +
+        `<strong>${escapeHTML(h.name || h.slug || h.id)}</strong>` +
+        `${virtBadge(h.host_info?.virt)}` +
+        `${cpuPeakBadge(h.cpu_peak_pct)}` +
+        `<span style="color:var(--text-muted, #888); font-size:11px; margin-left:auto;">last seen ${escapeHTML(lastSeenRel)} · ${ip}</span>` +
+      `</div>` +
+      summaryHTML +
+    `</a>` +
+    `<div style="margin-top:8px; padding-top:6px; border-top:1px dashed var(--surface-strong, #e5e7eb);">` +
+      `<a href="${agentsHref}" style="font-size:12px; color:var(--accent, #2563eb); text-decoration:none;" title="跳转到 /agents.html 仅看本主机上的 agent 实例">▾ 实例 (${agentsCount})</a>` +
+    `</div>`;
+
+  return card;
 }
 
 function renderListView(): void {
@@ -380,13 +428,30 @@ function renderHardwareCard(host: Host): string {
     ? [i.gpu.vendor, i.gpu.model, i.gpu.cores ? `${i.gpu.cores} cores` : ""]
         .filter(Boolean).map((x) => escapeHTML(x as string)).join(" · ")
     : "";
+  // v4: surface mem_peak_bytes + cpu_peak_pct (rolling 24h peak from
+  // agent samples). When the field is undefined (older dock that
+  // doesn't yet SELECT the new columns), show "—" rather than 0 so
+  // operators can tell "no data" from "really zero".
+  const memTotal = fmtBytes(i.memory_bytes);
+  const memPeak = host.mem_peak_bytes && host.mem_peak_bytes > 0
+    ? `${fmtBytes(host.mem_peak_bytes)} <span class="meta-subtitle" style="font-size:11px;">(24h peak)</span>`
+    : `<span class="meta-subtitle">—</span>`;
+  const cpuPeak = host.cpu_peak_pct !== undefined && host.cpu_peak_pct > 0
+    ? `${host.cpu_peak_pct.toFixed(1)}% <span class="meta-subtitle" style="font-size:11px;">(24h peak)</span>`
+    : `<span class="meta-subtitle">—</span>`;
   const rows: Array<[string, string]> = [
     ["机型", i.hw_model ? escapeHTML(i.hw_model) : "—"],
     ["厂商", i.hw_vendor ? escapeHTML(i.hw_vendor) : "—"],
     ["CPU", i.cpu_brand ? escapeHTML(i.cpu_brand) : "—"],
     ["核心数", cores || "—"],
-    ["内存", fmtBytes(i.memory_bytes)],
+    ["内存总量", memTotal],
+    ["内存峰值", memPeak],
+    ["CPU 峰值", cpuPeak],
     ["GPU", gpu || "—"],
+    // Reserved for a future phase (doc/arch/agent-identity-v4.md):
+    // GPU components (multiple slots, fault history). The row is a
+    // placeholder so the card layout doesn't shift when collection lands.
+    ["GPU 组件", `<span class="meta-subtitle" style="font-style:italic;">待后续 phase — 多 GPU/组件健康追踪</span>`],
   ];
   const tbody = rows
     .map(([k, v]) => `<tr><td style="padding:4px 8px 4px 0; color:var(--text-muted, #6b7280); white-space:nowrap;">${escapeHTML(k)}</td><td style="padding:4px 0;">${v}</td></tr>`)
@@ -468,12 +533,15 @@ let detailHost: Host | null = null;
 
 function renderDetailHeader(host: Host): void {
   const h = byId<HTMLElement>("detailHeader");
+  const agentsHref = `/agents.html?host_id=${encodeURIComponent(host.id)}`;
   h.innerHTML =
     `<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">` +
       `${onlineDot(host.last_seen_at)}` +
       `<strong style="font-size:18px;">${escapeHTML(host.name || host.slug || host.id)}</strong>` +
       `<code style="font-size:11px; color:var(--text-muted, #6b7280);">${escapeHTML(host.slug || host.id)}</code>` +
       `${virtBadge(host.host_info?.virt)}` +
+      `${cpuPeakBadge(host.cpu_peak_pct)}` +
+      `<a href="${agentsHref}" class="btn-inline btn-secondary" style="margin-left:auto; text-decoration:none; font-size:12px;" title="跳转到 /agents.html 查看本主机上的 agent 实例">▾ 查看 agents</a>` +
     `</div>` +
     `<div style="font-size:12px; color:var(--text-muted, #6b7280); margin-top:4px;">workspace <code>${escapeHTML(host.workspace_id || "—")}</code></div>`;
 }
