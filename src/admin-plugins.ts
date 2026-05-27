@@ -85,12 +85,31 @@ async function refresh(): Promise<void> {
   pluginTable.hidden = true;
   pluginEmpty.hidden = true;
   try {
-    const { data } = await listPluginModules();
+    const { response, data } = await listPluginModules();
+    if (!response.ok) {
+      // P2b: distinguish forbidden from generic error so a non-site-admin
+      // who deep-links to /admin-plugins.html gets a clear message instead
+      // of a permanent "加载中..." (or an opaque "HTTP 403"). 401 lands
+      // here too if the access cookie is gone and refresh failed — same
+      // friendly framing applies.
+      pluginEmpty.hidden = false;
+      if (response.status === 403 || response.status === 401) {
+        pluginEmpty.textContent =
+          "你不是 site admin（不是 root team 成员），无法管理 plugin 注册。如确实需要，请联系 root team owner。";
+      } else {
+        const errBody = data as unknown as { error?: string };
+        pluginEmpty.textContent = `加载失败：${errBody.error || `HTTP ${response.status}`}`;
+      }
+      return;
+    }
     const items = data.plugins ?? [];
     pluginTbody.innerHTML = "";
     items.forEach((p) => pluginTbody.appendChild(renderRow(p)));
     pluginTable.hidden = items.length === 0;
     pluginEmpty.hidden = items.length !== 0;
+    if (items.length === 0) {
+      pluginEmpty.textContent = "暂无 plugin。点右上「+ 新建 Plugin」开始。";
+    }
   } catch (err) {
     pluginEmpty.hidden = false;
     pluginEmpty.textContent = `加载失败：${(err as Error).message}`;
