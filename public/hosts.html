@@ -107,6 +107,7 @@
           <div class="lp-topbar-end" style="display:flex; gap:6px; align-items:center;">
             <span id="hostsMeta" class="meta-subtitle"></span>
             <span id="detailMeta" class="meta-subtitle"></span>
+            <button id="addHostBtn" class="btn-inline" type="button" title="生成 agent token + 安装脚本，给新机器装上 polar-agent">+ 添加主机</button>
             <button id="refreshBtn" class="btn-inline btn-secondary" type="button" title="刷新">⟲</button>
           </div>
         </div>
@@ -182,6 +183,63 @@
               </form>
             </details>
           </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add-host modal: creates an agent token + renders the install
+         script. The script is meant to be copy-pasted into the new
+         host's shell (curl-bash on macOS, docker run on linux). Raw
+         token is shown once only; dock stores only the SHA-256 hash. -->
+    <div id="addHostModal" class="modal" aria-hidden="true" hidden style="position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:1000;">
+      <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="addHostModalTitle"
+           style="background:var(--surface, #fff); padding:18px 20px; border-radius:8px; width:min(640px, 92vw); max-height:90vh; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,0.25);">
+        <div class="modal-header" style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <h3 id="addHostModalTitle" class="modal-title" style="margin:0; flex:1;">添加主机</h3>
+          <button id="addHostModalCloseBtn" class="btn-inline btn-secondary" type="button" aria-label="Close">×</button>
+        </div>
+
+        <!-- Step 1: form -->
+        <form id="addHostForm" style="display:flex; flex-direction:column; gap:10px;">
+          <p class="meta-subtitle" style="margin:0;">
+            生成 agent token 与安装脚本。在新主机上执行脚本即可注册（agent 会上报 host_info，几秒内出现在列表）。
+          </p>
+
+          <label class="form-label" for="addHostName">主机别名</label>
+          <input id="addHostName" class="input" type="text" maxlength="60"
+                 placeholder="polar-agent" value="polar-agent" />
+
+          <label class="form-label" for="addHostTargetOS">目标操作系统</label>
+          <select id="addHostTargetOS" class="input">
+            <option value="darwin">darwin (macOS · curl-bash 脚本)</option>
+            <option value="linux">linux (docker run 脚本)</option>
+          </select>
+
+          <div id="addHostError" class="status-text" style="color:var(--danger, #c00);" hidden></div>
+
+          <div style="display:flex; gap:6px; justify-content:flex-end; margin-top:6px;">
+            <button id="addHostCancelBtn" class="btn-inline btn-secondary" type="button">取消</button>
+            <button id="addHostSubmitBtn" class="btn-inline" type="submit">创建</button>
+          </div>
+        </form>
+
+        <!-- Step 2: shown after successful create -->
+        <div id="addHostResult" hidden style="display:flex; flex-direction:column; gap:10px;">
+          <div class="meta-subtitle" id="addHostHint" style="color:var(--warning, #b58900);"></div>
+
+          <label class="form-label">Raw token（仅此一次显示，复制后立即保存）</label>
+          <div style="display:flex; gap:6px;">
+            <input id="addHostRaw" class="input" type="text" readonly style="font-family:monospace; font-size:12px;" />
+            <button id="addHostRawCopyBtn" class="btn-inline btn-secondary" type="button">复制</button>
+          </div>
+
+          <label class="form-label">安装脚本（在新主机的 shell 中执行）</label>
+          <textarea id="addHostScript" class="input textarea" readonly rows="10"
+                    style="font-family:monospace; font-size:12px; white-space:pre;"></textarea>
+          <div style="display:flex; gap:6px; justify-content:flex-end;">
+            <button id="addHostScriptCopyBtn" class="btn-inline btn-secondary" type="button">复制脚本</button>
+            <button id="addHostDoneBtn" class="btn-inline" type="button">完成</button>
+          </div>
         </div>
       </div>
     </div>
