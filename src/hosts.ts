@@ -164,6 +164,19 @@ function hostInfoEmpty(info?: HostInfo): boolean {
   return Object.keys(info).length === 0;
 }
 
+// fmtIPv4ByIface renders "en0: 192.168.11.35 · utun0: 10.88.0.7"
+// for the per-iface map shipped on hello frames (agent v0.3.4+).
+// Interfaces are sorted alphabetically so the display is stable
+// across reloads — operators depend on the same iface always sitting
+// in the same slot. Returns "" when the map is empty/missing so the
+// caller can skip the row entirely (no empty placeholder).
+function fmtIPv4ByIface(map?: Record<string, string>): string {
+  if (!map) return "";
+  const keys = Object.keys(map).filter((k) => map[k]).sort();
+  if (keys.length === 0) return "";
+  return keys.map((k) => `${escapeHTML(k)}: ${escapeHTML(map[k])}`).join(" · ");
+}
+
 // One-line list-row hardware summary. Returns "" when host_info is
 // empty so the caller can swap in the upgrade hint.
 //
@@ -259,6 +272,13 @@ function renderListRow(h: Host): HTMLDivElement {
     ? `<div style="font-size:12px; color:var(--text-muted, #6b7280); margin-top:2px;">${summary}</div>`
     : `<div style="font-size:12px; color:var(--text-muted, #888); margin-top:2px; font-style:italic;">主机信息待 agent 升级 (v0.4+)</div>`;
 
+  // Per-iface IPv4 line (agent v0.3.4+). Skip silently when missing —
+  // pre-v0.3.4 agents don't ship the map at all.
+  const ipv4Line = fmtIPv4ByIface(h.host_info?.ipv4_by_iface);
+  const ipv4HTML = ipv4Line
+    ? `<div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--text-muted, #6b7280); margin-top:2px;">${ipv4Line}</div>`
+    : "";
+
   const lastSeenRel = h.last_seen_at ? fmtRelativeISO(h.last_seen_at) : "—";
   const ip = h.last_seen_ip ? escapeHTML(h.last_seen_ip) : "—";
 
@@ -280,6 +300,7 @@ function renderListRow(h: Host): HTMLDivElement {
         `<span style="color:var(--text-muted, #888); font-size:11px; margin-left:auto;">last seen ${escapeHTML(lastSeenRel)} · ${ip}</span>` +
       `</div>` +
       summaryHTML +
+      ipv4HTML +
     `</a>` +
     `<div style="margin-top:8px; padding-top:6px; border-top:1px dashed var(--surface-strong, #e5e7eb);">` +
       `<a href="${agentsHref}" style="font-size:12px; color:var(--accent, #2563eb); text-decoration:none;" title="跳转到 /agents.html 仅看本主机上的 agent 实例">▾ 实例 (${agentsCount})</a>` +
@@ -492,8 +513,12 @@ function renderOSCard(host: Host): string {
 }
 
 function renderNetworkCard(host: Host): string {
+  const ipv4Line = fmtIPv4ByIface(host.host_info?.ipv4_by_iface);
   const rows: Array<[string, string]> = [
     ["最近 IP", host.last_seen_ip ? `<code>${escapeHTML(host.last_seen_ip)}</code>` : "—"],
+    ["接口 IPv4", ipv4Line
+      ? `<span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px;">${ipv4Line}</span>`
+      : `<span class="meta-subtitle">—</span>`],
     ["最近上报", host.last_seen_at
       ? `<span title="${escapeHTML(fmtAbsoluteISO(host.last_seen_at))}">${escapeHTML(fmtRelativeISO(host.last_seen_at))}</span>`
       : "—"],
