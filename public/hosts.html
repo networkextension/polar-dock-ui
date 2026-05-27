@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>主机 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item active" href="/hosts.html" hidden data-site-admin-nav>
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-audit-log.html" hidden data-site-admin-nav>
+            <span class="lp-nav-icon" data-icon="clipboard-list">📋</span><span>审计日志</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
+
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">主机 · 状态优先</span>
+          <div class="lp-topbar-end" style="display:flex; gap:6px; align-items:center;">
+            <span id="hostsMeta" class="meta-subtitle"></span>
+            <span id="detailMeta" class="meta-subtitle"></span>
+            <button id="refreshBtn" class="btn-inline btn-secondary" type="button" title="刷新">⟲</button>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding: 12px; overflow-y:auto;">
+          <!-- ── List view ─────────────────────────────────────────── -->
+          <section id="listView" hidden>
+            <div class="settings-section-card" style="margin: 0 0 12px 0; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;">
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <label class="settings-section-title" for="filterOS" style="font-size:11px;">OS</label>
+                <select id="filterOS" class="input" style="min-width:120px;">
+                  <option value="">所有</option>
+                  <option value="darwin">darwin</option>
+                  <option value="linux">linux</option>
+                  <option value="freebsd">freebsd</option>
+                </select>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <label class="settings-section-title" for="filterVirt" style="font-size:11px;">虚拟化</label>
+                <select id="filterVirt" class="input" style="min-width:140px;">
+                  <option value="">所有</option>
+                  <option value="none">none (bare-metal)</option>
+                  <option value="vmware">vmware</option>
+                  <option value="kvm">kvm</option>
+                  <option value="hyperv">hyperv</option>
+                  <option value="xen">xen</option>
+                  <option value="virtualbox">virtualbox</option>
+                  <option value="ec2-nitro">ec2-nitro</option>
+                </select>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <label class="settings-section-title" for="filterMinMem" style="font-size:11px;">最小内存</label>
+                <select id="filterMinMem" class="input" style="min-width:120px;">
+                  <option value="0">所有</option>
+                  <option value="8">&ge; 8 GB</option>
+                  <option value="16">&ge; 16 GB</option>
+                  <option value="32">&ge; 32 GB</option>
+                  <option value="64">&ge; 64 GB</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="hostsError" class="status-text" style="color: var(--danger, #c00); margin-bottom: 8px;" hidden></div>
+            <div id="hostsContainer"></div>
+          </section>
+
+          <!-- ── Detail view ───────────────────────────────────────── -->
+          <section id="detailView" hidden>
+            <div style="margin-bottom: 8px;">
+              <a id="detailBackBtn" href="/hosts.html" class="btn-inline btn-secondary" style="text-decoration:none;">← 返回主机列表</a>
+            </div>
+
+            <div id="detailError" class="status-text" style="color: var(--danger, #c00); margin-bottom: 8px;" hidden></div>
+
+            <div id="detailHeader" class="settings-section-card" style="margin-bottom: 12px;"></div>
+            <div id="detailBody"></div>
+
+            <details id="editDetails" class="settings-section-card" style="margin-top: 12px;">
+              <summary style="cursor:pointer; font-weight:600;">✎ 编辑主机</summary>
+              <form id="editForm" style="margin-top: 8px; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                  <label class="settings-section-title" for="editHostName" style="font-size:11px;">主机名</label>
+                  <input id="editHostName" class="input" type="text" maxlength="120" style="max-width: 360px;" />
+                </div>
+                <div id="editStatus" class="meta-subtitle" hidden></div>
+                <div style="display:flex; gap:6px;">
+                  <button type="submit" class="btn-inline btn-primary">保存</button>
+                  <button id="editCancelBtn" type="button" class="btn-inline btn-secondary">取消</button>
+                </div>
+                <div class="meta-subtitle" style="font-size:11px;">
+                  注：后端 PATCH 接口未实现 — 此表单当前为 UI stub。
+                </div>
+              </form>
+            </details>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/hosts.js"></script>
+  </body>
+</html>
