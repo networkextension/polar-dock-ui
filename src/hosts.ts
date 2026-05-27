@@ -16,8 +16,7 @@
 // endpoint ships in a follow-up; submitting shows a "not implemented"
 // toast.
 
-import { fetchHost, fetchHosts } from "./api/hosts.js";
-import { createAgentToken } from "./api/projects.js";
+import { enrollHost, fetchHost, fetchHosts } from "./api/hosts.js";
 import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
@@ -575,13 +574,18 @@ function initDetailView(hostID: string): void {
 
 // ── add-host modal ─────────────────────────────────────────────────────────
 //
-// Wraps the "+ 添加主机" topbar button. Calls POST /api/agent/tokens with
-// just {name, target_os} — coders + api_keys are bot-side concerns and
-// stay empty for a plain host registration. On success the modal swaps
-// from form mode to "show raw + install script" mode; closing the modal
-// re-fetches the host list (the new host won't appear until its agent
-// actually runs the install script and connects, but refreshing closes
-// the wizard loop cleanly).
+// Wraps the "+ 添加主机" topbar button. Calls POST /api/hosts/enroll with
+// just {name} — that returns a one-time enroll token (1h TTL) plus the
+// literal `polar-agent register` snippet the operator pastes on the new
+// box. On register the agent gets back a permanent agent_token and the
+// host row appears in the list within seconds.
+//
+// (Earlier this morning the button was wired to POST /api/agent/tokens by
+// mistake — that's the bot-attach agent_token flow, not the host-enroll
+// flow. Tokens from that endpoint don't satisfy
+// polar-hosts/internal/hosts/host_handlers.go:consumeEnrollmentToken and
+// `polar-agent register` rejects them. This fix moves to the correct
+// endpoint and drops the now-irrelevant target_os field.)
 
 function showAddHostError(msg: string): void {
   const el = document.getElementById("addHostError") as HTMLElement | null;
@@ -607,8 +611,6 @@ function openAddHostModal(): void {
   clearAddHostError();
   const nameInput = document.getElementById("addHostName") as HTMLInputElement | null;
   if (nameInput) nameInput.value = "polar-agent";
-  const osSel = document.getElementById("addHostTargetOS") as HTMLSelectElement | null;
-  if (osSel) osSel.value = "darwin";
   modal.hidden = false;
 }
 
@@ -638,11 +640,10 @@ async function submitAddHost(ev: Event): Promise<void> {
   if (submitBtn) submitBtn.disabled = true;
   try {
     const name = (document.getElementById("addHostName") as HTMLInputElement | null)?.value.trim() || "polar-agent";
-    const targetOSRaw = (document.getElementById("addHostTargetOS") as HTMLSelectElement | null)?.value || "darwin";
-    const targetOS: "darwin" | "linux" = targetOSRaw === "linux" ? "linux" : "darwin";
-    const { response, data } = await createAgentToken({ name, target_os: targetOS });
+    const { response, data } = await enrollHost({ name });
     if (!response.ok) {
-      showAddHostError(`创建失败：HTTP ${response.status}`);
+      const err = (data as { error?: string })?.error;
+      showAddHostError(err ? `创建失败：${err}` : `创建失败：HTTP ${response.status}`);
       return;
     }
     // Swap to result mode.
@@ -650,11 +651,28 @@ async function submitAddHost(ev: Event): Promise<void> {
     const result = document.getElementById("addHostResult") as HTMLElement | null;
     if (result) result.hidden = false;
     const hintEl = document.getElementById("addHostHint") as HTMLElement | null;
-    if (hintEl) hintEl.textContent = data.hint || "复制 raw token 与脚本后立即保存；服务端只存哈希，事后无法重新展示";
+    if (hintEl) {
+      const expiry = data.expires_at ? ` · 有效期至 ${new Date(data.expires_at).toLocaleString()}` : "";
+      hintEl.textContent = `Enroll token（一次性，1 小时 TTL${expiry}）。在目标机器上执行下方命令即可注册。`;
+    }
     const rawEl = document.getElementById("addHostRaw") as HTMLInputElement | null;
-    if (rawEl) rawEl.value = data.raw || "";
+    if (rawEl) rawEl.value = data.token || "";
     const scriptEl = document.getElementById("addHostScript") as HTMLTextAreaElement | null;
-    if (scriptEl) scriptEl.value = data.install_script || "";
+    // dock returns a ready-to-paste snippet:
+    //   polar-agent register --token=<raw> --name="<name>"
+    // Prepend a one-line comment + the server URL since `polar-agent
+    // register` requires --server too for the remote enroll path.
+    if (scriptEl) {
+      const serverURL = window.location.origin;
+      const baseSnippet = data.install_hint
+        || `polar-agent register --token=${data.token || ""} --name=${JSON.stringify(name)}`;
+      scriptEl.value =
+        `# 在新主机的 shell 中执行（需先装好 polar-agent 二进制）\n` +
+        baseSnippet.replace(
+          "polar-agent register",
+          `polar-agent register --server=${serverURL}`,
+        );
+    }
   } catch (err) {
     showAddHostError(`创建失败：${(err as Error).message}`);
   } finally {
