@@ -41,6 +41,10 @@ export type HostInfo = {
   virt?: string;
   kernel?: string;
   boot_unix?: number;
+  // ipv4_by_iface maps interface name → IPv4 dotted-quad. Populated
+  // by polar-agent v0.3.4+ from the hello frame. Older agents omit it
+  // entirely; the UI renders nothing when the map is empty/missing.
+  ipv4_by_iface?: Record<string, string>;
 };
 
 export type Host = {

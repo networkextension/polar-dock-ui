@@ -81,6 +81,17 @@ function tokenSuffix(a: Agent): string {
   return t.length <= 8 ? t : t.slice(-8);
 }
 
+// fmtIPv4ByIface renders "en0: 192.168.11.35 · utun0: 10.88.0.7"
+// for the per-iface map shipped on hello frames (agent v0.3.4+).
+// Sorted alphabetically so the display is stable. Returns "" when
+// missing/empty — caller substitutes an em dash.
+function fmtIPv4ByIface(map?: Record<string, string>): string {
+  if (!map) return "";
+  const keys = Object.keys(map).filter((k) => map[k]).sort();
+  if (keys.length === 0) return "";
+  return keys.map((k) => `${escapeHTML(k)}: ${escapeHTML(map[k])}`).join(" · ");
+}
+
 function hostLabel(a: Agent): string {
   if (a.host_name) return a.host_name;
   if (a.host_hw_model) {
@@ -127,10 +138,18 @@ function renderRow(a: Agent): HTMLTableRowElement {
   const botCell = a.bot_user_id
     ? `<code style="font-size:11px;">${escapeHTML(a.bot_user_id)}</code>`
     : `<span class="meta-subtitle" style="font-style:italic;">(none)</span>`;
+  // host_info ride-along may be absent if the agents endpoint returns
+  // the minimal shape (dock side does, polar-hosts side joins it in).
+  // Empty/missing renders as "—" so the column stays aligned.
+  const ipv4Line = fmtIPv4ByIface(a.host_info?.ipv4_by_iface);
+  const ipv4Cell = ipv4Line
+    ? `<span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px;">${ipv4Line}</span>`
+    : `<span class="meta-subtitle">—</span>`;
   tr.innerHTML =
     `<td><strong>${escapeHTML(a.name || "(unnamed)")}</strong></td>` +
     `<td><code title="${escapeHTML(a.id)}" style="font-size:11px;">${escapeHTML(idShort)}</code></td>` +
     `<td><a href="${hostHref}" title="${escapeHTML(a.host_id)}" style="color:var(--accent, #2563eb); text-decoration:none;">${escapeHTML(hostLabel(a))}</a></td>` +
+    `<td>${ipv4Cell}</td>` +
     `<td>${botCell}</td>` +
     `<td>${osArch}</td>` +
     `<td><code style="font-size:11px;">${escapeHTML(tokenSuffix(a))}</code></td>` +

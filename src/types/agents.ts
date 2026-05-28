@@ -10,6 +10,7 @@
 // doc/arch/agent-identity-v4.md for the table shape.
 
 import type { ErrorResponse } from "./dashboard.js";
+import type { HostInfo } from "./hosts.js";
 
 // Agent is the v4 logical-instance row. One host has N agents.
 //
@@ -33,6 +34,11 @@ export type Agent = {
   // UI falls back to host_id when missing.
   host_name?: string;                  // e.g. "Mac15,8 / arm64"
   host_hw_model?: string;
+  // host_info is the per-host hardware/network blob (joined from
+  // hosts.host_info_json). polar-hosts side surfaces it; dock side
+  // currently returns a minimal agents shape that omits it. UI must
+  // render gracefully when undefined.
+  host_info?: HostInfo;
 };
 
 export type AgentListResponse = ErrorResponse & {
