@@ -1,0 +1,2 @@
+import{a as o,b as i,c as t}from"./chunk-5BXKLOML.js";import{a as e,b as r}from"./chunk-BY6I6UVC.js";async function a(){return i("/api/me")}async function f(){return o("/api/logout",{method:"POST"})}async function p(){return i("/api/email-verification/send",{method:"POST"})}var n=r(()=>{t();e(a,"fetchCurrentUser");e(f,"logout");e(p,"sendEmailVerification")});export{a,f as b,p as c,n as d};
+//# sourceMappingURL=chunk-BWAQIL2N.js.map
