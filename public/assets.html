@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>资产管理 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item active" href="/assets.html">
+            <span class="lp-nav-icon" data-icon="folder">📁</span><span>资产</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html" hidden data-site-admin-nav>
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/agents.html" hidden data-site-admin-nav>
+            <span class="lp-nav-icon" data-icon="cpu">🤖</span><span data-i18n="nav.agents">Agents</span>
+          </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-audit-log.html" hidden data-site-admin-nav>
+            <span class="lp-nav-icon" data-icon="clipboard-list">📋</span><span>审计日志</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
+
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">资产 · 文件 / 模型 / 媒体</span>
+          <div class="lp-topbar-end" style="display:flex; gap:6px; align-items:center;">
+            <button id="uploadOpenBtn" class="btn-inline btn-primary">⬆ 上传</button>
+            <button id="refreshBtn" class="btn-inline btn-secondary">↻ 刷新</button>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding:16px;">
+          <!-- Quota bar -->
+          <section style="margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
+              <span class="meta-subtitle" style="min-width:60px;">配额</span>
+              <div style="flex:1; height:8px; background:var(--surface-2, #e5e7eb); border-radius:4px; overflow:hidden;">
+                <div id="quotaBar" style="height:100%;"></div>
+              </div>
+              <span id="quotaLabel" style="font-size:12px; white-space:nowrap;">—</span>
+            </div>
+            <div id="quotaBanner" hidden style="margin-top:4px; padding:8px; background:#fee2e2; color:#991b1b; border-radius:4px; font-size:13px;"></div>
+          </section>
+
+          <!-- Asset table -->
+          <section style="margin-bottom:24px;">
+            <h3 style="margin:0 0 8px 0; font-size:14px;">资产列表</h3>
+            <div id="assetsEmpty" class="meta-subtitle" hidden style="padding:24px; text-align:center;">还没有资产。</div>
+            <table class="lp-table" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>名称</th>
+                  <th>kind</th>
+                  <th>version</th>
+                  <th style="text-align:right;">大小</th>
+                  <th>visibility</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="assetsTbody"></tbody>
+            </table>
+          </section>
+
+          <!-- Share links -->
+          <section>
+            <h3 style="margin:0 0 8px 0; font-size:14px;">我创建的分享链接</h3>
+            <div id="shareLinksEmpty" class="meta-subtitle" hidden style="padding:12px; text-align:center;">还没有分享链接。</div>
+            <table class="lp-table" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>短码</th>
+                  <th>URL</th>
+                  <th>过期</th>
+                  <th>下载次数</th>
+                  <th>访问</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="shareLinksTbody"></tbody>
+            </table>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload modal -->
+    <div id="uploadModal" hidden class="lp-modal">
+      <div class="lp-modal-card" style="max-width:520px;">
+        <h3 style="margin:0 0 12px;">上传资产</h3>
+        <div style="display:grid; gap:8px;">
+          <label>文件
+            <input type="file" id="uploadFile" class="input" />
+          </label>
+          <label>名称（path-like，留空使用文件名）
+            <input type="text" id="uploadName" class="input" placeholder="例如 videos/q3/clip01.mp4" />
+          </label>
+          <label>kind
+            <select id="uploadKind" class="input">
+              <option value="media">media</option>
+              <option value="model">model</option>
+              <option value="package">package</option>
+              <option value="lib">lib</option>
+              <option value="app_data">app_data</option>
+            </select>
+          </label>
+          <label>version
+            <input type="text" id="uploadVersion" class="input" value="v1" />
+          </label>
+          <label>visibility
+            <select id="uploadVisibility" class="input">
+              <option value="private">private</option>
+              <option value="workspace">workspace</option>
+              <option value="link">link</option>
+              <option value="public">public</option>
+            </select>
+          </label>
+          <label>来源 URL（可选，仅作为出处记录）
+            <input type="text" id="uploadSourceUrl" class="input" placeholder="https://..." />
+          </label>
+          <label>metadata（可选 JSON）
+            <textarea id="uploadMetadata" class="input" rows="3" placeholder='{"tags":["a","b"]}'></textarea>
+          </label>
+          <div id="uploadError" style="color:#dc2626; font-size:13px;"></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button id="uploadCancel" class="btn-inline btn-secondary">取消</button>
+          <button id="uploadSubmit" class="btn-inline btn-primary">上传</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share modal -->
+    <div id="shareModal" hidden class="lp-modal">
+      <div class="lp-modal-card" style="max-width:480px;">
+        <h3 style="margin:0 0 12px;">分享 <span id="shareAssetName"></span></h3>
+        <div style="display:grid; gap:8px;">
+          <label>过期时间（留空 = 永久）
+            <input type="datetime-local" id="shareExpires" class="input" />
+          </label>
+          <label>最大下载次数（留空 = 无限）
+            <input type="number" id="shareMaxDownloads" class="input" min="1" />
+          </label>
+          <label style="display:flex; gap:6px; align-items:center;">
+            <input type="checkbox" id="shareRequireLogin" />
+            <span>需要登录才能下载</span>
+          </label>
+          <div id="shareError" style="color:#dc2626; font-size:13px;"></div>
+          <div id="shareResult"></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button id="shareCancel" class="btn-inline btn-secondary">关闭</button>
+          <button id="shareSubmit" class="btn-inline btn-primary">生成链接</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/assets.js"></script>
+  </body>
+</html>
