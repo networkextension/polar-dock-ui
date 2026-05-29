@@ -3,18 +3,23 @@
 // page pattern: list table + create modal + plaintext one-time modal.
 
 import {
+  approvePluginAccessRequest,
   createPluginModule,
   deletePluginModule,
+  denyPluginAccessRequest,
   disablePluginModule,
   enablePluginModule,
+  listPluginAccessRequests,
   listPluginModules,
   rotatePluginModuleKey,
+  setPluginModuleAcceptsApplications,
+  setPluginModulePublished,
 } from "./api/plugin_modules.js";
 import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
-import type { PluginModule } from "./types/plugin_modules.js";
+import type { PluginAccessRequest, PluginModule } from "./types/plugin_modules.js";
 
 initStoredTheme();
 bindThemeSync();
@@ -27,6 +32,11 @@ const pluginTbody = byId<HTMLTableSectionElement>("pluginTbody");
 const pluginEmpty = byId<HTMLElement>("pluginEmpty");
 const pluginLoading = byId<HTMLElement>("pluginLoading");
 const logoutBtn = byId<HTMLButtonElement>("logoutBtn");
+
+// R3 marketplace: tenant access-request queue.
+const reqTable = byId<HTMLTableElement>("reqTable");
+const reqTbody = byId<HTMLTableSectionElement>("reqTbody");
+const reqEmpty = byId<HTMLElement>("reqEmpty");
 
 const createModal = byId<HTMLElement>("createModal");
 const createCloseBtn = byId<HTMLButtonElement>("createCloseBtn");
@@ -57,18 +67,27 @@ function fmt(ts?: string): string {
 function renderRow(p: PluginModule): HTMLTableRowElement {
   const tr = document.createElement("tr");
   if (!p.enabled) tr.style.opacity = "0.55";
+  const marketBadges =
+    (p.published ? ' · <span title="已上架到市场">🛒上架</span>' : "") +
+    (p.accepts_applications ? ' · <span title="允许租户申请">📝可申请</span>' : "");
   const cells = [
     `<code>${escapeHTML(p.name)}</code>`,
     escapeHTML(p.display_name || ""),
     p.endpoint ? `<code>${escapeHTML(p.endpoint)}</code>` : "—",
-    p.enabled ? "🟢 enabled" : "💤 disabled",
+    `${p.enabled ? "🟢 enabled" : "💤 disabled"}${marketBadges}`,
     fmt(p.last_heartbeat),
     p.version ? escapeHTML(p.version) : "—",
     fmt(p.created_at),
-    `<div style="display:flex; gap:4px;">
+    `<div style="display:flex; gap:4px; flex-wrap:wrap;">
        <button class="btn-inline btn-secondary" data-rotate="${escapeHTML(p.name)}" title="rotate key">🔄</button>
        <button class="btn-inline btn-secondary" data-toggle="${escapeHTML(p.name)}" data-enabled="${p.enabled}">
          ${p.enabled ? "停用" : "启用"}
+       </button>
+       <button class="btn-inline btn-secondary" data-publish="${escapeHTML(p.name)}" data-pub="${!!p.published}">
+         ${p.published ? "下架" : "上架"}
+       </button>
+       <button class="btn-inline btn-secondary" data-accepts="${escapeHTML(p.name)}" data-acc="${!!p.accepts_applications}">
+         ${p.accepts_applications ? "关申请" : "开申请"}
        </button>
        <button class="btn-inline btn-secondary" data-delete="${escapeHTML(p.name)}" style="color:var(--danger,#c00);">🗑</button>
      </div>`,
@@ -76,6 +95,8 @@ function renderRow(p: PluginModule): HTMLTableRowElement {
   tr.innerHTML = cells.map((c) => `<td>${c}</td>`).join("");
   tr.querySelector("[data-rotate]")?.addEventListener("click", () => void onRotate(p.name));
   tr.querySelector("[data-toggle]")?.addEventListener("click", () => void onToggle(p.name, p.enabled));
+  tr.querySelector("[data-publish]")?.addEventListener("click", () => void onTogglePublish(p.name, !!p.published));
+  tr.querySelector("[data-accepts]")?.addEventListener("click", () => void onToggleAccepts(p.name, !!p.accepts_applications));
   tr.querySelector("[data-delete]")?.addEventListener("click", () => void onDelete(p.name));
   return tr;
 }
@@ -215,8 +236,94 @@ async function onDelete(name: string): Promise<void> {
   }
 }
 
+async function onTogglePublish(name: string, published: boolean): Promise<void> {
+  try {
+    await setPluginModulePublished(name, !published);
+    await refresh();
+  } catch (err) {
+    alert(`上架切换失败：${(err as Error).message}`);
+  }
+}
+
+async function onToggleAccepts(name: string, accepts: boolean): Promise<void> {
+  try {
+    await setPluginModuleAcceptsApplications(name, !accepts);
+    await refresh();
+  } catch (err) {
+    alert(`申请开关切换失败：${(err as Error).message}`);
+  }
+}
+
+// ---- R3 marketplace: access-request queue ----
+function renderRequestRow(r: PluginAccessRequest): HTMLTableRowElement {
+  const tr = document.createElement("tr");
+  const scope = r.scope === "api" ? `api：<code>${escapeHTML(r.api_route || "")}</code>` : "整个模块";
+  const cells = [
+    `<code>${escapeHTML(r.plugin_name)}</code>`,
+    `<code>${escapeHTML(r.workspace_id)}</code>`,
+    scope,
+    escapeHTML(r.requested_by_user_id),
+    r.reason ? escapeHTML(r.reason) : "—",
+    fmt(r.created_at),
+    `<div style="display:flex; gap:4px;">
+       <button class="btn-inline btn-primary" data-approve="${r.id}">批准</button>
+       <button class="btn-inline btn-secondary" data-deny="${r.id}" style="color:var(--danger,#c00);">拒绝</button>
+     </div>`,
+  ];
+  tr.innerHTML = cells.map((c) => `<td>${c}</td>`).join("");
+  tr.querySelector("[data-approve]")?.addEventListener("click", () => void onApprove(r.id, r.plugin_name));
+  tr.querySelector("[data-deny]")?.addEventListener("click", () => void onDeny(r.id, r.plugin_name));
+  return tr;
+}
+
+async function refreshRequests(): Promise<void> {
+  try {
+    const { response, data } = await listPluginAccessRequests();
+    if (!response.ok) {
+      // 403/401 already surfaced by the module list; keep the queue quiet.
+      reqTable.hidden = true;
+      reqEmpty.hidden = false;
+      reqEmpty.textContent = "（无法加载申请队列）";
+      return;
+    }
+    const items = data.requests ?? [];
+    reqTbody.innerHTML = "";
+    items.forEach((r) => reqTbody.appendChild(renderRequestRow(r)));
+    reqTable.hidden = items.length === 0;
+    reqEmpty.hidden = items.length !== 0;
+    if (items.length === 0) reqEmpty.textContent = "暂无待处理的模块申请。";
+  } catch (err) {
+    reqTable.hidden = true;
+    reqEmpty.hidden = false;
+    reqEmpty.textContent = `加载失败：${(err as Error).message}`;
+  }
+}
+
+async function onApprove(id: number, plugin: string): Promise<void> {
+  if (!confirm(`批准对「${plugin}」的申请？将为该工作区开通此模块。`)) return;
+  try {
+    await approvePluginAccessRequest(id);
+    await refreshRequests();
+  } catch (err) {
+    alert(`批准失败：${(err as Error).message}`);
+  }
+}
+
+async function onDeny(id: number, plugin: string): Promise<void> {
+  if (!confirm(`拒绝对「${plugin}」的申请？`)) return;
+  try {
+    await denyPluginAccessRequest(id);
+    await refreshRequests();
+  } catch (err) {
+    alert(`拒绝失败：${(err as Error).message}`);
+  }
+}
+
 // ---- bootstrap ----
-refreshBtn.addEventListener("click", () => void refresh());
+refreshBtn.addEventListener("click", () => {
+  void refresh();
+  void refreshRequests();
+});
 logoutBtn?.addEventListener("click", () => {
   void logout();
 });
@@ -225,4 +332,5 @@ logoutBtn?.addEventListener("click", () => {
   hydrateSiteBrand();
   hydrateSidebarFoot();
   await refresh();
+  await refreshRequests();
 })();

@@ -1,5 +1,6 @@
 import { request, requestJson } from "./http.js";
 import type {
+  PluginAccessRequestListResponse,
   PluginModuleCreatePayload,
   PluginModuleCreateResponse,
   PluginModuleListResponse,
@@ -42,4 +43,38 @@ export async function deletePluginModule(name: string) {
   return request(`/api/admin/plugin-modules/${encodeURIComponent(name)}`, {
     method: "DELETE",
   });
+}
+
+// ── R3 marketplace ───────────────────────────────────────────────────
+
+export async function setPluginModulePublished(name: string, published: boolean) {
+  return requestJson<{ ok: boolean; published: boolean }>(
+    `/api/admin/plugin-modules/${encodeURIComponent(name)}/publish`,
+    { method: "PATCH", body: { published } },
+  );
+}
+
+export async function setPluginModuleAcceptsApplications(name: string, accepts: boolean) {
+  return requestJson<{ ok: boolean; accepts_applications: boolean }>(
+    `/api/admin/plugin-modules/${encodeURIComponent(name)}/accepts-applications`,
+    { method: "PATCH", body: { accepts } },
+  );
+}
+
+export async function listPluginAccessRequests() {
+  return requestJson<PluginAccessRequestListResponse>("/api/admin/plugin-access-requests");
+}
+
+export async function approvePluginAccessRequest(id: number) {
+  return requestJson<{ ok: boolean; status: string }>(
+    `/api/admin/plugin-access-requests/${id}/approve`,
+    { method: "POST" },
+  );
+}
+
+export async function denyPluginAccessRequest(id: number) {
+  return requestJson<{ ok: boolean; status: string }>(
+    `/api/admin/plugin-access-requests/${id}/deny`,
+    { method: "POST" },
+  );
 }
