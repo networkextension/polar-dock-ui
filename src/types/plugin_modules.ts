@@ -43,6 +43,20 @@ export interface PluginAccessRequest {
 export interface PluginAccessRequestListResponse {
   requests: PluginAccessRequest[];
 }
+
+// R3-3b — one row of the tenant marketplace discovery view. Mirrors
+// internal/app/dock/plugin_access_store.go::AvailableModule.
+export interface AvailableModule {
+  name: string;
+  display_name: string;
+  accepts_applications: boolean;
+  enabled: boolean;          // workspace_plugin_access granted+enabled
+  pending_request: boolean;  // an open request already exists
+}
+
+export interface AvailableModulesResponse {
+  modules: AvailableModule[];
+}
 export interface PluginModuleCreatePayload {
   name: string;
   display_name?: string;
