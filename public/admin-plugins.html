@@ -145,6 +145,27 @@
           </table>
           <div id="pluginEmpty" class="meta-subtitle" hidden>暂无 plugin。点右上「+ 新建 Plugin」开始。</div>
           <div id="pluginLoading" class="meta-subtitle">加载中...</div>
+
+          <h3 style="margin: 24px 0 6px 0;">模块申请（待审批）</h3>
+          <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+            团队管理员对「已上架且允许申请」模块发起的开通申请。批准后会为该工作区写入
+            <code>workspace_plugin_access</code> 授权（api 级申请同样按模块开通，路由记录用于审计 / 后续细粒度控制）。
+          </p>
+          <table id="reqTable" class="lp-table" hidden>
+            <thead>
+              <tr>
+                <th>模块</th>
+                <th>工作区</th>
+                <th>范围</th>
+                <th>申请人</th>
+                <th>理由</th>
+                <th>申请于</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="reqTbody"></tbody>
+          </table>
+          <div id="reqEmpty" class="meta-subtitle">暂无待处理的模块申请。</div>
         </div>
       </div>
     </div>
