@@ -2,6 +2,7 @@ import { makeDefaultAvatar } from "./avatar.js";
 import { hydrateIcons } from "./icons.js";
 import { applyI18n, t } from "./i18n.js";
 import { installWorkspaceSwitcher } from "./workspace.js";
+import { renderSidebar, wireBrandHome } from "./sidebar.js";
 
 type SiteSettings = {
   name?: string;
@@ -168,6 +169,12 @@ export async function hydrateSiteBrand(): Promise<void> {
   hydrateIcons();
   initSidebarToggle();
   initSettingsButton();
+  // Build the sidebar nav from the single NAV config + make the logo always
+  // navigate home. renderSidebar() runs BEFORE hydrateSidebarFoot() so the
+  // freshly-rendered [data-admin-nav]/[data-site-admin-nav] items get gated by
+  // the role check inside renderSidebarFoot().
+  renderSidebar();
+  wireBrandHome();
   await hydrateSidebarFoot();
   // Workspace switcher (T4): runs after the foot hydrate so the
   // sidebar is fully laid out. No-op on pages without .lp-nav (e.g.,
