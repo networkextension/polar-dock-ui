@@ -78,3 +78,12 @@ export async function denyPluginAccessRequest(id: number) {
     { method: "POST" },
   );
 }
+
+// Track 3 (OTA): pin the version a module rolls to on its next heartbeat.
+// Empty version clears the pin (follow latest).
+export async function updatePluginModule(name: string, version: string) {
+  return requestJson<{ ok: boolean; target_version: string }>(
+    `/api/admin/plugin-modules/${encodeURIComponent(name)}/update`,
+    { method: "POST", body: { version } },
+  );
+}
