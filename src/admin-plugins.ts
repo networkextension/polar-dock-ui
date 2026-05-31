@@ -14,6 +14,7 @@ import {
   rotatePluginModuleKey,
   setPluginModuleAcceptsApplications,
   setPluginModulePublished,
+  updatePluginModule,
 } from "./api/plugin_modules.js";
 import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
@@ -64,6 +65,23 @@ function fmt(ts?: string): string {
   return new Date(ts).toLocaleString();
 }
 
+// versionCell shows the running version and, when a newer published build
+// exists (Track 3 OTA), the latest version + a 更新 button that pins it.
+// A pending pin (target_version set but not yet rolled) shows ⏳.
+function versionCell(p: PluginModule): string {
+  const running = p.version ? escapeHTML(p.version) : "—";
+  const pinned = (p.target_version ?? "").trim();
+  if (pinned && pinned !== p.version) {
+    return `${running} <span style="opacity:.7">⏳ → ${escapeHTML(pinned)}</span>`;
+  }
+  if (p.update_available && p.latest_version) {
+    return `${running} <span style="opacity:.7">→ ${escapeHTML(p.latest_version)}</span>
+      <button class="btn-inline btn-primary" data-update="${escapeHTML(p.name)}"
+        data-version="${escapeHTML(p.latest_version)}" title="roll to ${escapeHTML(p.latest_version)}">更新</button>`;
+  }
+  return running;
+}
+
 function renderRow(p: PluginModule): HTMLTableRowElement {
   const tr = document.createElement("tr");
   if (!p.enabled) tr.style.opacity = "0.55";
@@ -76,7 +94,7 @@ function renderRow(p: PluginModule): HTMLTableRowElement {
     p.endpoint ? `<code>${escapeHTML(p.endpoint)}</code>` : "—",
     `${p.enabled ? "🟢 enabled" : "💤 disabled"}${marketBadges}`,
     fmt(p.last_heartbeat),
-    p.version ? escapeHTML(p.version) : "—",
+    versionCell(p),
     fmt(p.created_at),
     `<div style="display:flex; gap:4px; flex-wrap:wrap;">
        <button class="btn-inline btn-secondary" data-rotate="${escapeHTML(p.name)}" title="rotate key">🔄</button>
@@ -98,6 +116,8 @@ function renderRow(p: PluginModule): HTMLTableRowElement {
   tr.querySelector("[data-publish]")?.addEventListener("click", () => void onTogglePublish(p.name, !!p.published));
   tr.querySelector("[data-accepts]")?.addEventListener("click", () => void onToggleAccepts(p.name, !!p.accepts_applications));
   tr.querySelector("[data-delete]")?.addEventListener("click", () => void onDelete(p.name));
+  const updBtn = tr.querySelector<HTMLButtonElement>("[data-update]");
+  updBtn?.addEventListener("click", () => void onUpdate(p.name, updBtn.dataset.version || ""));
   return tr;
 }
 
@@ -233,6 +253,22 @@ async function onDelete(name: string): Promise<void> {
     await refresh();
   } catch (err) {
     alert(`删除失败：${(err as Error).message}`);
+  }
+}
+
+async function onUpdate(name: string, version: string): Promise<void> {
+  if (!version) return;
+  if (!confirm(`把 plugin「${name}」更新到 ${version}？\n下一次心跳（≤60s）时模块会拉取新二进制、校验、热替换并重启。`)) return;
+  try {
+    const { response, data } = await updatePluginModule(name, version);
+    if (!response.ok) {
+      const errBody = data as unknown as { error?: string };
+      alert(`更新失败：${errBody.error || `HTTP ${response.status}`}`);
+      return;
+    }
+    await refresh();
+  } catch (err) {
+    alert(`更新失败：${(err as Error).message}`);
   }
 }
 

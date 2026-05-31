@@ -13,6 +13,13 @@ export interface PluginModule {
   published?: boolean;
   accepts_applications?: boolean;
   created_at: string;
+  // Track 3 (OTA). latest_version is the newest published stable build;
+  // update_available is (latest != running). target_version is the pinned
+  // roll target ("" = follow latest); the module rolls on its next
+  // heartbeat after it is set via the 更新 button.
+  latest_version?: string;
+  update_available?: boolean;
+  target_version?: string;
   // Plaintext appears ONLY on POST /api/admin/plugin-modules and
   // POST /api/admin/plugin-modules/:name/rotate-key responses. Never
   // returned from list/get.
