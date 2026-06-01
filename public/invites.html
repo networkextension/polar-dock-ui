@@ -16,7 +16,77 @@
           <span class="lp-brand-name" data-site-name>Polar-</span>
         </a>
 
-        <nav class="lp-nav"></nav>
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item active" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span>用户管理</span>
+          </a>
+        </nav>
 
         <div class="lp-sidebar-foot">
           <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
@@ -36,35 +106,40 @@
           <span class="lp-topbar-title">邀请码</span>
         </div>
 
-        <div class="lp-content" style="padding: 16px; display: flex; flex-direction: column; gap: 12px; max-width: 560px;">
-          <section class="lp-preview-main" style="border-radius: 10px;">
-            <div class="lp-preview-head" style="padding: 8px 12px;">
+        <div class="lp-content" style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+          <section class="lp-preview-main">
+            <div class="lp-preview-head">
               <span class="badge">注册需要邀请码</span>
             </div>
-            <div class="lp-preview-body" style="padding: 10px 12px;">
-              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <label class="switch-row" for="invitesRequiredToggle" style="margin: 0;">
-                  <input id="invitesRequiredToggle" type="checkbox" />
-                  <span>启用邀请码注册</span>
-                </label>
-                <button id="invitesSaveToggleBtn" class="btn-inline btn-secondary" type="button" style="padding: 6px 12px; font-size: 12px; margin-left: auto;">保存</button>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+                开启后，新用户注册必须填写有效邀请码。
+              </p>
+              <label class="switch-row" for="invitesRequiredToggle" style="margin-bottom: 12px;">
+                <input id="invitesRequiredToggle" type="checkbox" />
+                <span>启用邀请码注册</span>
+              </label>
+              <div class="site-settings-actions">
+                <button id="invitesSaveToggleBtn" class="btn-inline btn-secondary" type="button">保存</button>
               </div>
-              <div id="invitesToggleStatus" class="status-text" style="margin-top: 6px; font-size: 12px;"></div>
+              <div id="invitesToggleStatus" class="status-text"></div>
             </div>
           </section>
 
-          <section class="lp-preview-main" style="border-radius: 10px;">
-            <div class="lp-preview-head" style="padding: 8px 12px;">
+          <section class="lp-preview-main">
+            <div class="lp-preview-head">
               <span class="badge">生成一次性邀请码</span>
             </div>
-            <div class="lp-preview-body" style="padding: 10px 12px;">
-              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                <input id="invitesGenerateCount" class="input" type="number" min="1" max="50" value="5" style="max-width: 80px; padding: 6px 8px; font-size: 12px;" />
-                <span style="font-size: 12px; color: var(--muted);">个</span>
-                <button id="invitesGenerateBtn" class="btn-inline btn-secondary" type="button" style="padding: 6px 12px; font-size: 12px; margin-left: auto;">生成</button>
+            <div class="lp-preview-body">
+              <p class="meta-subtitle" style="margin: 0 0 12px 0;">
+                为新用户注册生成一次性邀请码。每个码只能使用一次。
+              </p>
+              <div class="site-settings-actions" style="display: flex; gap: 8px; align-items: center;">
+                <input id="invitesGenerateCount" class="input" type="number" min="1" max="50" value="5" style="max-width: 120px;" />
+                <button id="invitesGenerateBtn" class="btn-inline btn-secondary" type="button">生成</button>
               </div>
-              <div id="invitesGenerateStatus" class="status-text" style="margin-top: 6px; font-size: 12px;"></div>
-              <ul id="invitesCodeList" class="tag-list" style="margin-top: 10px;"></ul>
+              <div id="invitesGenerateStatus" class="status-text"></div>
+              <ul id="invitesCodeList" class="tag-list" style="margin-top: 12px;"></ul>
             </div>
           </section>
         </div>

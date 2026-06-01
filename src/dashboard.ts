@@ -263,7 +263,7 @@ function syncLanguageButton(): void {
 }
 
 function switchSettingsSection(section: "profile" | "personalization" | "settings" | "system" | "bots" | "site"): void {
-  if (!isAdmin && section === "site") {
+  if (!isAdmin && (section === "settings" || section === "site")) {
     section = "bots";
   }
   activeSettingsSection = section;
@@ -412,9 +412,7 @@ function renderSiteSettings(site?: SiteSettings): void {
   const safeSite: SiteSettings = site || { name: "Polar-", description: "", icon_url: "" };
   siteNameInput.value = safeSite.name || "Polar-";
   siteDescriptionInput.value = safeSite.description || "";
-  if (siteRegistrationInviteRequired) {
-    siteRegistrationInviteRequired.checked = Boolean(safeSite.registration_requires_invite);
-  }
+  siteRegistrationInviteRequired.checked = Boolean(safeSite.registration_requires_invite);
   siteIconPreview.src = safeSite.icon_url || defaultSiteIcon(safeSite.name || "Polar-");
   applePushDevMeta.textContent = formatCertificateMeta(safeSite.apple_push_dev_cert);
   applePushProdMeta.textContent = formatCertificateMeta(safeSite.apple_push_prod_cert);
@@ -425,11 +423,6 @@ function renderSiteSettings(site?: SiteSettings): void {
 }
 
 function renderInviteCodeList(codes: InviteCode[]): void {
-  // Moved to /invites.html as of the invites-extraction PR — dashboard
-  // still loads codes (for legacy use) but the list element no longer
-  // exists here, so bail early. Kept the function so loadInviteCodes()
-  // and the dashboard.ts call sites still compile.
-  if (!inviteCodeList) return;
   if (!codes.length) {
     inviteCodeList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.noInviteCodes")}</li>`;
     return;
@@ -458,14 +451,9 @@ async function loadInviteCodes(): Promise<void> {
   if (!isAdmin) {
     return;
   }
-  if (!inviteCodeList && !inviteCodeStatus) {
-    // Both UI surfaces moved to /invites.html — nothing to populate
-    // here, skip the fetch entirely.
-    return;
-  }
   const { response, data } = await fetchInviteCodes(40);
   if (!response.ok) {
-    if (inviteCodeStatus) inviteCodeStatus.textContent = data.error || t("dashboard.inviteCodeLoadFailed");
+    inviteCodeStatus.textContent = data.error || t("dashboard.inviteCodeLoadFailed");
     return;
   }
   currentInviteCodes = data.codes || [];
@@ -661,7 +649,7 @@ async function loadProfile(): Promise<void> {
       return;
     }
     if (button.dataset.settingsNav === "settings") {
-      button.hidden = false;
+      button.hidden = !isAdmin;
       return;
     }
     if (button.dataset.settingsNav === "bots") {
@@ -692,15 +680,30 @@ async function loadSiteAdminData(): Promise<void> {
       }
     })(),
     (async () => {
-      const [ownResult, availableResult] = await Promise.all([fetchLLMConfigs(), fetchAvailableLLMConfigs()]);
-      if (ownResult.response.ok) {
-        currentLLMConfigs = ownResult.data.configs || [];
-        renderLLMConfigList(currentLLMConfigs);
-      } else {
-        llmConfigStatus.textContent = ownResult.data.error || t("dashboard.llmConfigLoadFailed");
-        llmConfigList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.llmConfigLoadFailed")}</li>`;
+      if (isAdmin) {
+        const [ownResult, availableResult] = await Promise.all([fetchLLMConfigs(), fetchAvailableLLMConfigs()]);
+        if (ownResult.response.ok) {
+          currentLLMConfigs = ownResult.data.configs || [];
+          renderLLMConfigList(currentLLMConfigs);
+        } else {
+          llmConfigStatus.textContent = ownResult.data.error || t("dashboard.llmConfigLoadFailed");
+          llmConfigList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.llmConfigLoadFailed")}</li>`;
+        }
+
+        if (availableResult.response.ok) {
+          currentAvailableLLMConfigs = availableResult.data.configs || [];
+          syncBotConfigOptions(currentAvailableLLMConfigs);
+        } else {
+          currentAvailableLLMConfigs = [];
+          botUserStatus.textContent = availableResult.data.error || t("dashboard.availableConfigLoadFailed");
+          syncBotConfigOptions(currentAvailableLLMConfigs);
+        }
+        return;
       }
 
+      currentLLMConfigs = [];
+      renderLLMConfigList(currentLLMConfigs);
+      const availableResult = await fetchAvailableLLMConfigs();
       if (availableResult.response.ok) {
         currentAvailableLLMConfigs = availableResult.data.configs || [];
         syncBotConfigOptions(currentAvailableLLMConfigs);
@@ -1176,18 +1179,12 @@ saveSiteBtn.addEventListener("click", async () => {
   saveSiteBtn.disabled = true;
 
   try {
-    // registration_requires_invite moved to /invites.html — only
-    // include if the legacy toggle still exists on this page (it
-    // doesn't post-extraction; left guarded for safety).
-    const payload: Parameters<typeof updateSiteSettings>[0] = {
+    const { response, data } = await updateSiteSettings({
       name: siteNameInput.value.trim(),
       description: siteDescriptionInput.value.trim(),
       icon_url: siteIconPreview.src,
-    };
-    if (siteRegistrationInviteRequired) {
-      payload.registration_requires_invite = siteRegistrationInviteRequired.checked;
-    }
-    const { response, data } = await updateSiteSettings(payload);
+      registration_requires_invite: siteRegistrationInviteRequired.checked,
+    });
     if (!response.ok) {
       siteStatus.textContent = data.error || t("common.saveFailed");
       return;
@@ -1201,11 +1198,7 @@ saveSiteBtn.addEventListener("click", async () => {
   }
 });
 
-generateInviteCodeBtn?.addEventListener("click", async () => {
-  // Handler retained for back-compat. UI moved to /invites.html so
-  // this listener almost never fires here; if a stale dashboard.html
-  // still has the button, the original behavior remains.
-  if (!inviteCodeCountInput || !inviteCodeStatus) return;
+generateInviteCodeBtn.addEventListener("click", async () => {
   const count = Math.max(1, Math.min(50, Number(inviteCodeCountInput.value || "1")));
   inviteCodeStatus.textContent = t("dashboard.generatingInviteCode");
   generateInviteCodeBtn.disabled = true;

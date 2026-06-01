@@ -45,7 +45,7 @@ function mergeHeaders(headers?: HeadersInit): Headers {
 // refresh cookie (30 days, Path=/api/token). When the access cookie has
 // expired any API call returns 401; the interceptor below catches that,
 // serializes a single call to /api/token/refresh, and retries the
-// original request. See doc/auth/auth-refresh.md for the full flow.
+// original request. See doc/auth-refresh.md for the full flow.
 //
 // The install is a module-level side effect: any page that pulls anything
 // from ./api/* gets the interceptor automatically. Login/register/index

@@ -2,7 +2,6 @@ import { makeDefaultAvatar } from "./avatar.js";
 import { hydrateIcons } from "./icons.js";
 import { applyI18n, t } from "./i18n.js";
 import { installWorkspaceSwitcher } from "./workspace.js";
-import { renderSidebar, wireBrandHome } from "./sidebar.js";
 
 type SiteSettings = {
   name?: string;
@@ -14,12 +13,6 @@ type SidebarUser = {
   username?: string;
   role?: string;
   icon_url?: string;
-  // site_admin: P2 permission-model field from /api/me. When the
-  // backend ships it, we use it to gate [data-site-admin-nav]
-  // entries (audit log + future root-team-only pages). When the
-  // field is missing/undefined we fall back to the legacy
-  // role==='admin' check so older dock builds keep working.
-  site_admin?: boolean;
 };
 
 const fallbackSite: Required<SiteSettings> = {
@@ -169,12 +162,6 @@ export async function hydrateSiteBrand(): Promise<void> {
   hydrateIcons();
   initSidebarToggle();
   initSettingsButton();
-  // Build the sidebar nav from the single NAV config + make the logo always
-  // navigate home. renderSidebar() runs BEFORE hydrateSidebarFoot() so the
-  // freshly-rendered [data-admin-nav]/[data-site-admin-nav] items get gated by
-  // the role check inside renderSidebarFoot().
-  renderSidebar();
-  wireBrandHome();
   await hydrateSidebarFoot();
   // Workspace switcher (T4): runs after the foot hydrate so the
   // sidebar is fully laid out. No-op on pages without .lp-nav (e.g.,
@@ -233,24 +220,6 @@ export function renderSidebarFoot(user?: SidebarUser): void {
   document.querySelectorAll<HTMLElement>("[data-admin-nav]").forEach((el) => {
     el.hidden = !isAdmin;
   });
-
-  // P2 site-admin gating. Show [data-site-admin-nav] entries only to
-  // users whose /api/me response sets site_admin=true. Older backends
-  // that don't ship site_admin yet are treated as "legacy admin =
-  // show" so we don't accidentally hide working pages mid-rollout.
-  const siteAdminKnown = typeof user?.site_admin === "boolean";
-  const showSiteAdmin = siteAdminKnown ? user!.site_admin === true : isAdmin;
-  document.querySelectorAll<HTMLElement>("[data-site-admin-nav]").forEach((el) => {
-    el.hidden = !showSiteAdmin;
-  });
-}
-
-// P2 helper: pages that need to guard their own body (not just the
-// sidebar) can call this after hydrateSidebarFoot() resolves. Returns
-// the cached whoami payload from the most recent fetch.
-let cachedWhoami: SidebarUser | null = null;
-export function getCachedWhoami(): SidebarUser | null {
-  return cachedWhoami;
 }
 
 export async function hydrateSidebarFoot(): Promise<void> {
@@ -265,7 +234,6 @@ export async function hydrateSidebarFoot(): Promise<void> {
       return;
     }
     const data = await response.json();
-    cachedWhoami = data as SidebarUser;
     renderSidebarFoot(data);
   } catch {
     // Keep static placeholders on network failure.

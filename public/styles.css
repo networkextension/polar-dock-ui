@@ -889,74 +889,6 @@ button:hover {
   display: flex;
 }
 
-/* lp-modal — alternative modal flavor used by /proxy-tokens, /library,
-   /wg-tokens. Same fixed-overlay shape as .modal but toggled via the
-   HTML `hidden` attribute (handlers set .hidden = true/false rather
-   than swapping a .open class). [hidden] above wins via !important. */
-.lp-modal {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 24px 12px;
-  background: var(--overlay, rgba(0, 0, 0, 0.5));
-  z-index: 60;
-  overflow-y: auto;
-}
-
-.lp-modal-card {
-  position: relative;
-  width: min(92vw, 520px);
-  max-height: calc(100vh - 48px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.lp-modal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.lp-modal-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
-}
-
-.lp-modal-close {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--muted, #888);
-  font-size: 18px;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-.lp-modal-close:hover { background: var(--secondary-bg, rgba(0,0,0,0.05)); }
-
-.lp-modal-body {
-  padding: 16px 18px;
-  overflow-y: auto;
-  flex: 1 1 auto;
-}
-
-.lp-modal-foot {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 18px;
-  border-top: 1px solid var(--border);
-}
-
 .modal-backdrop {
   position: absolute;
   inset: 0;
@@ -1876,12 +1808,7 @@ button:hover {
   margin-bottom: 0;
 }
 
-/* :not(.xterm-helper-textarea) excludes xterm.js's invisible IME-proxy
- * textarea — it's positioned absolutely at the cursor for screen-reader /
- * IME input and must stay ~7×14px. Without this exclusion, the global
- * width:100%; min-height:320px makes the helper 1228×320px, pushing the
- * actual terminal rows below the pane viewport. See doc/webmux_review2.md. */
-textarea:not(.xterm-helper-textarea) {
+textarea {
   width: 100%;
   min-height: 320px;
   background: var(--card);
@@ -2729,7 +2656,7 @@ textarea:not(.xterm-helper-textarea) {
   background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: 22px;
-  padding: 4px 8px 4px 10px;
+  padding: 6px 8px 6px 10px;
 }
 
 .message-attach-btn {
@@ -2838,30 +2765,27 @@ textarea:not(.xterm-helper-textarea) {
   margin-top: 2px;
 }
 
-textarea.message-input {
+.message-input {
   flex: 1;
   margin-bottom: 0;
   background: transparent;
   border: none;
   box-shadow: none;
-  padding: 4px 6px;
-  font-family: inherit;
-  font-size: 14px;
+  padding: 6px 4px;
+  font: inherit;
   color: var(--text);
   resize: none;
-  line-height: 1.4;
-  width: auto;
-  min-height: 20px;
+  line-height: 1.5;
+  min-height: 24px;
   max-height: 168px;
   overflow-y: hidden;
-  box-sizing: border-box;
 }
 
-textarea.message-input::placeholder {
+.message-input::placeholder {
   color: var(--muted);
 }
 
-textarea.message-input:focus {
+.message-input:focus {
   outline: none;
   box-shadow: none;
   border: none;
@@ -4995,143 +4919,3 @@ textarea:focus-visible,
   font-style: italic;
 }
 
-
-/* System info widget (dashboard) — see ui/src/lib/dashboard-widgets.ts. */
-.sysinfo-grid {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 4px 12px;
-  align-items: baseline;
-  font-size: 12px;
-}
-.sysinfo-row { display: contents; }
-.sysinfo-row .sysinfo-k {
-  color: var(--text-muted, #888);
-  white-space: nowrap;
-}
-.sysinfo-row .sysinfo-v code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-  padding: 1px 5px;
-  border-radius: 3px;
-}
-.sysinfo-uname {
-  max-width: 100%;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
-}
-.sysinfo-ips { display: flex; flex-wrap: wrap; gap: 4px; }
-.sysinfo-ip { white-space: nowrap; }
-.sysinfo-iface {
-  color: var(--text-muted, #888);
-  font-weight: normal;
-  margin-left: 2px;
-}
-.sysinfo-disks {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.sysinfo-disk-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 11px;
-}
-.sysinfo-mount {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-.sysinfo-disk-meta {
-  color: var(--text-muted, #888);
-  font-size: 11px;
-}
-.sysinfo-disk-bar {
-  margin-top: 2px;
-  height: 4px;
-  background: color-mix(in srgb, var(--text-muted) 15%, transparent);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.sysinfo-disk-bar-fill {
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-/* /system.html — ops view tables */
-.sysinfo-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-.sysinfo-table th, .sysinfo-table td {
-  text-align: left;
-  padding: 5px 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--text-muted) 12%, transparent);
-}
-.sysinfo-table th {
-  color: var(--text-muted, #888);
-  font-weight: normal;
-  width: 110px;
-  vertical-align: top;
-}
-.sysinfo-table .sysinfo-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11.5px;
-  word-break: break-all;
-}
-.sysinfo-table tr:last-child th, .sysinfo-table tr:last-child td {
-  border-bottom: none;
-}
-
-/* LLM Proxy dashboard stats widget (P7c) */
-.proxy-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.proxy-stats-card {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.12s ease;
-}
-.proxy-stats-card:hover {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-.proxy-stats-label {
-  font-size: 11px;
-  color: var(--text-muted, #888);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.proxy-stats-value {
-  font-size: 22px;
-  font-weight: 600;
-  margin-top: 2px;
-}
-.proxy-stats-sub {
-  font-size: 10.5px;
-  color: var(--text-muted, #888);
-  margin-top: 2px;
-}
-.proxy-stats-down {
-  margin-top: 8px;
-  font-size: 11.5px;
-  color: var(--danger, #c00);
-  padding: 6px 8px;
-  border-left: 2px solid var(--danger, #c00);
-  background: color-mix(in srgb, var(--danger) 6%, transparent);
-  border-radius: 0 4px 4px 0;
-}

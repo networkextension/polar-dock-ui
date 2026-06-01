@@ -16,7 +16,77 @@
           <span class="lp-brand-name" data-site-name>Polar-</span>
         </a>
 
-        <nav class="lp-nav"></nav>
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+          <a class="lp-nav-item" href="/teams.html">
+            <span class="lp-nav-icon" data-icon="users-round">⌂</span><span data-i18n="nav.teams">工作区</span>
+          </a>
+          <a class="lp-nav-item" href="/posts.html">
+            <span class="lp-nav-icon" data-icon="message-square">◎</span><span>Posts</span>
+          </a>
+          <a class="lp-nav-item" href="/markdowns.html">
+            <span class="lp-nav-icon" data-icon="file-text">◈</span><span>Markdowns</span>
+          </a>
+          <a class="lp-nav-item" href="/rooms.html">
+            <span class="lp-nav-icon" data-icon="users">👥</span><span>群聊</span>
+          </a>
+          <a class="lp-nav-item" href="/chat.html">
+            <span class="lp-nav-icon" data-icon="message-circle">◉</span><span>Chat</span>
+          </a>
+          <a class="lp-nav-item" href="/creation.html">
+            <span class="lp-nav-icon" data-icon="pen-line">✍</span><span data-i18n="nav.creation">Creation</span>
+          </a>
+          <a class="lp-nav-item" href="/hosts.html">
+            <span class="lp-nav-icon" data-icon="server">▣</span><span data-i18n="nav.hosts">主机</span>
+          </a>
+          <a class="lp-nav-item" href="/skills.html">
+            <span class="lp-nav-icon" data-icon="package">📦</span><span>Skills</span>
+          </a>
+          <a class="lp-nav-item" href="/editor.html">
+            <span class="lp-nav-icon" data-icon="code">✎</span><span>Editor</span>
+          </a>
+          <a class="lp-nav-item" href="/llm.html">
+            <span class="lp-nav-icon" data-icon="sparkles">🤖</span><span>LLM</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-billing.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="dollar-sign">¤</span><span>LLM 计费</span>
+          </a>
+          <a class="lp-nav-item" href="/llm-apps.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="inbox">📥</span><span>LLM 申请</span>
+          </a>
+          <a class="lp-nav-item" href="/expense.html">
+            <span class="lp-nav-icon" data-icon="receipt">💰</span><span>家庭账本</span>
+          </a>
+          <a class="lp-nav-item" href="/latch.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="settings">⚙</span><span data-i18n="nav.latch">Latch</span>
+          </a>
+          <a class="lp-nav-item active" href="/bots.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="bot">◉</span><span data-i18n="nav.bots">Bot Management</span>
+          </a>
+          <a class="lp-nav-item" href="/invites.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="ticket">🎟</span><span>邀请码</span>
+          </a>
+          <a class="lp-nav-item" href="/admin-plugins.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="puzzle">🧩</span><span>Plugin 注册</span>
+          </a>
+          <a class="lp-nav-item" href="/wg-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="network">🔐</span><span>WG Mesh</span>
+          </a>
+          <a class="lp-nav-item" href="/proxy-tokens.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="key">🔑</span><span>API Tokens</span>
+          </a>
+          <a class="lp-nav-item" href="/prompts.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="sparkles">✦</span><span>Prompt 模板</span>
+          </a>
+          <a class="lp-nav-item" href="/grafana/" target="_blank" rel="noopener" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="line-chart">📊</span><span>Grafana</span>
+          </a>
+          <a class="lp-nav-item" href="/admin.html" hidden data-admin-nav>
+            <span class="lp-nav-icon" data-icon="users-cog">☍</span><span data-i18n="nav.userAdmin">用户管理</span>
+          </a>
+        </nav>
 
         <div class="lp-sidebar-foot">
           <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
@@ -41,97 +111,148 @@
 
         <div class="lp-content" style="display:flex; flex-direction:column; gap:12px; padding:12px; overflow-y:auto;">
 
+          <!-- LLM Config section -->
+          <section class="lp-preview-main" style="min-height:0;">
+            <div class="lp-preview-head">
+              <span class="badge" data-i18n="dashboard.llmConfigBadge">LLM Config</span>
+              <div id="llmConfigStatus" class="status-text"></div>
+            </div>
+            <div class="lp-preview-body">
+              <div class="site-admin-grid site-admin-grid-wide">
+                <form id="llmConfigForm" class="site-settings-form">
+                  <label class="form-label" for="llmProviderPresetSelect">Provider Preset</label>
+                  <select id="llmProviderPresetSelect" class="input"></select>
+                  <div id="llmProviderPresetNote" class="drawer-help"></div>
+                  <a id="llmProviderPresetDocs" class="btn-chip" href="#" target="_blank" rel="noopener noreferrer">Get API Key</a>
+
+                  <label class="form-label" for="llmConfigNameInput" data-i18n="dashboard.llmConfigNameLabel">Config name</label>
+                  <input id="llmConfigNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.llmConfigNamePlaceholder" placeholder="e.g. OpenAI production config" />
+
+                  <label class="form-label" for="llmConfigBaseUrlInput">Base URL</label>
+                  <input id="llmConfigBaseUrlInput" class="input" type="url" maxlength="300" placeholder="https://api.openai.com/v1/chat/completions" />
+
+                  <label class="form-label" for="llmConfigModelInput">Model</label>
+                  <input id="llmConfigModelInput" class="input" type="text" maxlength="120" placeholder="gpt-4.1-mini" />
+
+                  <label class="form-label" for="llmConfigApiKeyInput" data-i18n="dashboard.llmConfigApiKeyLabel">API Key</label>
+                  <input id="llmConfigApiKeyInput" class="input" type="password" maxlength="300" data-i18n-placeholder="dashboard.llmConfigApiKeyPlaceholder" placeholder="Recommended on create; leave empty when editing to keep current value" />
+
+                  <label class="form-label" for="llmConfigProxyUrlInput">Proxy URL（可选）</label>
+                  <input id="llmConfigProxyUrlInput" class="input" type="text" maxlength="300" placeholder="http://127.0.0.1:10082（留空 = 用 dock 默认网络）" />
+
+                  <label class="form-label" for="llmConfigSystemPromptInput" data-i18n="dashboard.llmConfigSystemPromptLabel">Test Prompt (optional)</label>
+                  <textarea id="llmConfigSystemPromptInput" class="input textarea" rows="4" maxlength="5000" data-i18n-placeholder="dashboard.llmConfigSystemPromptPlaceholder" placeholder="Only for testing config connectivity, not used as Bot runtime prompt"></textarea>
+
+                  <label class="form-checkbox" for="llmConfigSharedInput">
+                    <input id="llmConfigSharedInput" type="checkbox" />
+                    <span data-i18n="dashboard.llmConfigSharedLabel">Share this LLM Config with other users</span>
+                  </label>
+
+                  <label class="form-checkbox" for="llmConfigIsSystemInput" title="平台单例：勾上之后这条 config 就是站内 system 助理（chat thread summary / task sharpen / system bot user）使用的模型。同一时间只能有一条。与「分享」互斥。">
+                    <input id="llmConfigIsSystemInput" type="checkbox" />
+                    <span>🛠 系统助理（is_system）— 互斥 shared、平台单例</span>
+                  </label>
+
+                  <div class="site-settings-actions inline-actions">
+                    <button id="llmConfigResetBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigClear">Clear</button>
+                    <button id="llmConfigTestBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigTest">Test config</button>
+                    <button id="llmConfigSubmitBtn" class="btn-chip btn-chip-primary" type="submit" data-i18n="dashboard.llmConfigSave">Save config</button>
+                  </div>
+                </form>
+                <ul id="llmConfigList" class="tag-list"></ul>
+              </div>
+            </div>
+          </section>
+
           <!-- Bot User section -->
           <section class="lp-preview-main" style="min-height:0;">
             <div class="lp-preview-head">
               <span class="badge" data-i18n="dashboard.botUserBadge">Bot User</span>
-              <button id="addBotUserBtn" class="btn-chip btn-chip-primary" type="button">＋ 新建 Bot</button>
               <div id="botUserStatus" class="status-text"></div>
             </div>
             <div style="margin:8px 12px; padding:10px 12px; background:#fff7e6; border:1px solid #f5d28a; border-radius:6px; font-size:12px; color:#6a4a00;">
               ⚠️ Classic bot 创建表单将下架。新流程：跑 polar-agent docker 容器，agent 启动时 auto-register coder bot（kimi/claude/codex 各一条），自动出现在下方列表中——零手工 bot 管理。<a href="/projects.html" style="color:#6a4a00; text-decoration:underline;">→ 去新建 agent token</a>
             </div>
             <div class="lp-preview-body">
-              <ul id="botUserList" class="tag-list"></ul>
+              <div class="site-admin-grid site-admin-grid-wide">
+                <form id="botUserForm" class="site-settings-form">
+                  <label class="form-label" for="botUserNameInput" data-i18n="dashboard.botNameLabel">Bot name</label>
+                  <input id="botUserNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.botNamePlaceholder" placeholder="e.g. Translation assistant" />
+
+                  <label class="form-label">Bot 类型</label>
+                  <div style="display:flex; gap:14px; align-items:center; padding:6px 0; flex-wrap:wrap;">
+                    <label style="display:flex; gap:6px; align-items:center; cursor:pointer; white-space:nowrap;">
+                      <input type="radio" name="botKind" value="classic" id="botKindClassic" checked style="width:auto; margin:0; padding:0; flex-shrink:0;" />
+                      <span>经典 LLM</span>
+                      <span style="color:var(--text-muted,#888); font-size:11px;">(用平台的 LLM 配置回复)</span>
+                    </label>
+                    <label style="display:flex; gap:6px; align-items:center; cursor:pointer; white-space:nowrap;">
+                      <input type="radio" name="botKind" value="passthrough" id="botKindPassthrough" style="width:auto; margin:0; padding:0; flex-shrink:0;" />
+                      <span>本地工具接管</span>
+                      <span style="color:var(--text-muted,#888); font-size:11px;">(只配 polar-agent + kimi/claude/codex)</span>
+                    </label>
+                  </div>
+
+                  <div id="botUserConfigBlock">
+                    <label class="form-label" for="botUserConfigSelect" data-i18n="dashboard.botConfigLabel">Bind config</label>
+                    <select id="botUserConfigSelect" class="input"></select>
+                  </div>
+
+                  <div id="botUserPreferredToolBlock" style="display:none;">
+                    <label class="form-label" for="botUserPreferredToolSelect">首选编码工具</label>
+                    <select id="botUserPreferredToolSelect" class="input">
+                      <option value="">（不指定）</option>
+                      <option value="kimi">kimi-cli</option>
+                      <option value="claude">claude</option>
+                      <option value="codex">codex</option>
+                    </select>
+                    <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
+                      ⓘ 仅作 UI 标签——实际工具由 polar-agent attach 时的 <code>--tool=</code> 决定。
+                    </div>
+                  </div>
+
+                  <!-- P1d: host_skill binding picker. Available to both
+                       classic and passthrough bots; sets bot.host_skill_id
+                       on save. When non-null, dock dispatches via the
+                       host module's skill.start protocol instead of the
+                       legacy paths. -->
+                  <div id="botUserHostSkillBlock">
+                    <label class="form-label" for="botUserHostSkillSelect">绑定主机能力 <span style="color:var(--text-muted,#888); font-weight:normal;">（可选）</span></label>
+                    <select id="botUserHostSkillSelect" class="input">
+                      <option value="">（不绑定 — 使用 Bot 自身的 LLM / 本地 polar-agent）</option>
+                    </select>
+                    <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
+                      ⓘ 绑定后，Bot 的对话会走对应主机的 <code>skill.start</code> 分发，由该主机上的 polar-agent 执行编码工具并返回结果。
+                    </div>
+                  </div>
+
+                  <label class="form-label" for="botUserDescriptionInput" data-i18n="dashboard.botDescriptionLabel">Bot description</label>
+                  <textarea id="botUserDescriptionInput" class="input textarea" rows="3" maxlength="500" data-i18n-placeholder="dashboard.botDescriptionPlaceholder" placeholder="Tell users what this Bot is good at"></textarea>
+
+                  <label class="form-label" for="botUserSystemPromptInput" data-i18n="dashboard.botSystemPromptLabel">Bot config prompt</label>
+                  <textarea id="botUserSystemPromptInput" class="input textarea" rows="5" maxlength="5000" data-i18n-placeholder="dashboard.botSystemPromptPlaceholder" placeholder="Define this Bot's persona, tone, boundaries, and behavior"></textarea>
+
+                  <!-- qunliao β: per-bot model override. Lets one LLM
+                       config (kimi base_url + api_key) power multiple
+                       bots running different model variants (k2.5 vs
+                       k1.5) for the same room — "model PK". Empty =
+                       use the LLM config's default model. -->
+                  <label class="form-label" for="botUserModelOverrideInput">模型 <span style="color:var(--text-muted,#888); font-weight:normal;">（可选 — 覆盖 LLM 默认 model）</span></label>
+                  <input id="botUserModelOverrideInput" class="input" type="text" maxlength="120" placeholder="留空 = 用 LLM 的默认 model；填了就用这个（如 kimi-k1.5、claude-opus-4-1、deepseek-r1）" />
+                  <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
+                    ⓘ 一个 LLM 配置可以派生多个 bot，每个绑定不同 model，方便在同一房间里 PK 不同模型的输出。
+                  </div>
+
+                  <div class="site-settings-actions site-settings-actions-split">
+                    <button id="botUserResetBtn" class="btn-chip" type="button" data-i18n="dashboard.botClear">Clear</button>
+                    <button id="botUserSubmitBtn" class="btn-chip btn-chip-primary" type="submit" data-i18n="dashboard.botSave">Save Bot</button>
+                  </div>
+                </form>
+                <ul id="botUserList" class="tag-list"></ul>
+              </div>
             </div>
           </section>
 
-        </div>
-      </div>
-    </div>
-
-    <!-- Bot User modal -->
-    <div id="botUserModal" class="modal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-modal="botUser"></div>
-      <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="botUserModalTitle">
-        <div class="modal-header">
-          <h3 id="botUserModalTitle" class="modal-title">新建 Bot</h3>
-          <button id="botUserModalCloseBtn" class="btn-inline btn-secondary" type="button" aria-label="Close">×</button>
-        </div>
-        <div class="modal-body">
-          <form id="botUserForm" class="site-settings-form">
-            <label class="form-label" for="botUserNameInput" data-i18n="dashboard.botNameLabel">Bot name</label>
-            <input id="botUserNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.botNamePlaceholder" placeholder="e.g. Translation assistant" />
-
-            <label class="form-label">Bot 类型</label>
-            <div style="display:flex; gap:14px; align-items:center; padding:6px 0; flex-wrap:wrap;">
-              <label style="display:flex; gap:6px; align-items:center; cursor:pointer; white-space:nowrap;">
-                <input type="radio" name="botKind" value="classic" id="botKindClassic" checked style="width:auto; margin:0; padding:0; flex-shrink:0;" />
-                <span>经典 LLM</span>
-                <span style="color:var(--text-muted,#888); font-size:11px;">(用平台的 LLM 配置回复)</span>
-              </label>
-              <label style="display:flex; gap:6px; align-items:center; cursor:pointer; white-space:nowrap;">
-                <input type="radio" name="botKind" value="passthrough" id="botKindPassthrough" style="width:auto; margin:0; padding:0; flex-shrink:0;" />
-                <span>本地工具接管</span>
-                <span style="color:var(--text-muted,#888); font-size:11px;">(只配 polar-agent + kimi/claude/codex)</span>
-              </label>
-            </div>
-
-            <div id="botUserConfigBlock">
-              <label class="form-label" for="botUserConfigSelect" data-i18n="dashboard.botConfigLabel">Bind config</label>
-              <select id="botUserConfigSelect" class="input"></select>
-            </div>
-
-            <div id="botUserPreferredToolBlock" style="display:none;">
-              <label class="form-label" for="botUserPreferredToolSelect">首选编码工具</label>
-              <select id="botUserPreferredToolSelect" class="input">
-                <option value="">（不指定）</option>
-                <option value="kimi">kimi-cli</option>
-                <option value="claude">claude</option>
-                <option value="codex">codex</option>
-              </select>
-              <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
-                ⓘ 仅作 UI 标签——实际工具由 polar-agent attach 时的 <code>--tool=</code> 决定。
-              </div>
-            </div>
-
-            <div id="botUserHostSkillBlock">
-              <label class="form-label" for="botUserHostSkillSelect">绑定主机能力 <span style="color:var(--text-muted,#888); font-weight:normal;">（可选）</span></label>
-              <select id="botUserHostSkillSelect" class="input">
-                <option value="">（不绑定 — 使用 Bot 自身的 LLM / 本地 polar-agent）</option>
-              </select>
-              <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
-                ⓘ 绑定后，Bot 的对话会走对应主机的 <code>skill.start</code> 分发，由该主机上的 polar-agent 执行编码工具并返回结果。
-              </div>
-            </div>
-
-            <label class="form-label" for="botUserDescriptionInput" data-i18n="dashboard.botDescriptionLabel">Bot description</label>
-            <textarea id="botUserDescriptionInput" class="input textarea" rows="3" maxlength="500" data-i18n-placeholder="dashboard.botDescriptionPlaceholder" placeholder="Tell users what this Bot is good at"></textarea>
-
-            <label class="form-label" for="botUserSystemPromptInput" data-i18n="dashboard.botSystemPromptLabel">Bot config prompt</label>
-            <textarea id="botUserSystemPromptInput" class="input textarea" rows="5" maxlength="5000" data-i18n-placeholder="dashboard.botSystemPromptPlaceholder" placeholder="Define this Bot's persona, tone, boundaries, and behavior"></textarea>
-
-            <label class="form-label" for="botUserModelOverrideInput">模型 <span style="color:var(--text-muted,#888); font-weight:normal;">（可选 — 覆盖 LLM 默认 model）</span></label>
-            <input id="botUserModelOverrideInput" class="input" type="text" maxlength="120" placeholder="留空 = 用 LLM 的默认 model；填了就用这个（如 kimi-k1.5、claude-opus-4-1、deepseek-r1）" />
-            <div style="font-size:11px; color:var(--text-muted,#888); margin:4px 0 8px 0;">
-              ⓘ 一个 LLM 配置可以派生多个 bot，每个绑定不同 model，方便在同一房间里 PK 不同模型的输出。
-            </div>
-
-            <div class="site-settings-actions site-settings-actions-split">
-              <button id="botUserResetBtn" class="btn-chip" type="button" data-i18n="dashboard.botClear">Clear</button>
-              <button id="botUserSubmitBtn" class="btn-chip btn-chip-primary" type="submit" data-i18n="dashboard.botSave">Save Bot</button>
-            </div>
-          </form>
         </div>
       </div>
     </div>
