@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polar — 为 AI 服务构建操作系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070708;
+  --bg-elev:#0d0d10;
+  --line:#1c1c20;
+  --line-soft:#141417;
+  --text:#ededec;
+  --text-dim:#9b9b9b;
+  --text-faint:#5e5e62;
+  --accent:#3b82f6;
+  --accent-deep:#2563eb;
+  --accent-glow:rgba(59,130,246,.30);
+  --font-sans:"PingFang SC","Hiragino Sans GB","Space Grotesk","Microsoft YaHei",-apple-system,sans-serif;
+  --font-lat:"Space Grotesk","PingFang SC",sans-serif;
+  --font-mono:"IBM Plex Mono","SFMono-Regular",ui-monospace,monospace;
+  --maxw:1180px;
+  --gut:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-size:18px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:.01em;
+  overflow-x:hidden;
+}
+/* subtle fixed dot-grid + vignette */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0);
+  background-size:42px 42px;
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 30%, transparent 90%);
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 50% at 50% 0%, var(--accent-glow), transparent 60%);
+  opacity:.5;
+}
+.wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+a{color:inherit;text-decoration:none}
+
+/* ---------- NAV ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px var(--gut);
+  backdrop-filter:blur(10px);
+  background:linear-gradient(180deg, rgba(7,7,8,.82), rgba(7,7,8,0));
+  transition:background .4s, border-color .4s;
+}
+.nav .brand{font-family:var(--font-lat);font-weight:700;font-size:19px;letter-spacing:.14em;display:flex;align-items:center;gap:11px}
+.nav .brand .mk{width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);position:relative}
+.nav .brand .mk::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--bg)}
+.nav .status{font-family:var(--font-mono);font-size:12.5px;color:var(--text-dim);letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+.nav .status .blip{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ---------- HERO ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:120px;padding-bottom:80px}
+.term-prompt{font-family:var(--font-mono);font-size:13.5px;color:var(--text-faint);letter-spacing:.04em;margin-bottom:34px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.term-prompt .gt{color:var(--accent)}
+.term-prompt .cmd{color:var(--text-dim)}
+.hero h1{
+  font-family:var(--font-sans);
+  font-weight:600;
+  font-size:clamp(33px,5.6vw,72px);
+  line-height:1.22;
+  letter-spacing:-.005em;
+  max-width:17ch;
+  min-height:2.4em;
+}
+.hero h1 .accent{color:var(--accent);text-shadow:0 0 24px var(--accent-glow)}
+.hero h1 .dim{color:var(--text-dim)}
+.cursor{display:inline-block;width:.5em;height:1.05em;background:var(--accent);box-shadow:0 0 14px var(--accent-glow);transform:translateY(.16em);margin-left:.06em;animation:blink 1.05s steps(1) infinite}
+.cursor.done{animation:blink 1.05s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.hero-foot{margin-top:54px;display:flex;align-items:center;gap:14px;font-family:var(--font-mono);font-size:13px;color:var(--text-faint);opacity:0;transition:opacity 1s .2s}
+.hero-foot.show{opacity:1}
+.hero-foot .scroll-ar{width:22px;height:36px;border:1.5px solid var(--text-faint);border-radius:12px;position:relative;flex:none}
+.hero-foot .scroll-ar::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;border-radius:2px;background:var(--accent);transform:translateX(-50%);animation:scrolldot 1.8s infinite}
+@keyframes scrolldot{0%{opacity:0;transform:translate(-50%,0)}30%{opacity:1}80%{opacity:0;transform:translate(-50%,11px)}100%{opacity:0}}
+
+/* ---------- SECTION SCAFFOLD ---------- */
+section{padding:clamp(90px,13vh,150px) 0;position:relative}
+.kicker{font-family:var(--font-mono);font-size:13px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:14px;margin-bottom:30px}
+.kicker .num{color:var(--text-faint)}
+.kicker .bar{height:1px;width:46px;background:var(--accent);opacity:.6}
+h2.head{font-family:var(--font-sans);font-weight:600;font-size:clamp(28px,4.2vw,52px);line-height:1.28;letter-spacing:-.01em;max-width:20ch}
+h2.head .g{color:var(--accent)}
+.lede{font-size:clamp(17px,1.6vw,21px);line-height:1.85;color:var(--text-dim);max-width:62ch;margin-top:28px}
+.lede strong{color:var(--text);font-weight:500}
+.lede .g{color:var(--accent);font-weight:500}
+.divider{height:1px;background:var(--line);margin:0 var(--gut)}
+
+/* ---------- PROBLEM model chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:46px;max-width:760px}
+.chip{font-family:var(--font-mono);font-size:14px;color:var(--text-dim);border:1px solid var(--line);background:var(--bg-elev);padding:11px 17px;border-radius:2px;display:flex;align-items:center;gap:10px;position:relative}
+.chip .d{width:6px;height:6px;border-radius:50%;background:var(--text-faint)}
+.frag-note{margin-top:26px;font-family:var(--font-mono);font-size:13px;color:var(--text-faint);letter-spacing:.03em}
+.frag-note .x{color:#ff5a4d}
+
+/* ---------- VISION big statement ---------- */
+.vision-stmt{font-family:var(--font-sans);font-weight:500;font-size:clamp(22px,3vw,38px);line-height:1.5;letter-spacing:-.005em;max-width:24ch;margin-top:8px}
+.vision-stmt .muted{color:var(--text-faint)}
+.vision-stmt .g{color:var(--accent)}
+
+/* ---------- ANALOGIES ---------- */
+.analogy{display:grid;grid-template-columns:1fr;gap:0;margin-top:50px;border-top:1px solid var(--line)}
+.an-row{display:grid;grid-template-columns:minmax(120px,180px) 40px 1fr;align-items:center;gap:0;padding:26px 4px;border-bottom:1px solid var(--line);transition:background .3s}
+.an-row:hover{background:var(--bg-elev)}
+.an-name{font-family:var(--font-lat);font-weight:700;font-size:clamp(22px,2.6vw,30px);letter-spacing:.01em}
+.an-arrow{color:var(--accent);font-family:var(--font-mono);font-size:18px;text-align:center}
+.an-desc{color:var(--text-dim);font-size:clamp(16px,1.6vw,19px)}
+.an-desc b{color:var(--text);font-weight:500}
+
+/* ---------- CORE CONCEPTS ---------- */
+.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1px;margin-top:54px;background:var(--line);border:1px solid var(--line)}
+.concept{background:var(--bg);padding:38px 32px 42px;position:relative;transition:background .35s}
+.concept:hover{background:var(--bg-elev)}
+.concept .cn-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
+.concept .cn-en{font-family:var(--font-lat);font-weight:700;font-size:14px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.concept .cn-idx{font-family:var(--font-mono);font-size:12px;color:var(--text-faint)}
+.concept h3{font-family:var(--font-sans);font-weight:600;font-size:25px;margin-bottom:14px;letter-spacing:.01em}
+.concept p{color:var(--text-dim);font-size:16px;line-height:1.8}
+.concept .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+.concept .tags span{font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);border:1px solid var(--line);padding:3px 9px;border-radius:2px}
+
+/* ---------- ARCHITECTURE DIAGRAM ---------- */
+.arch{margin-top:60px;display:grid;grid-template-columns:1fr;gap:0;position:relative;max-width:880px}
+.layer{
+  position:relative;display:grid;grid-template-columns:64px 1fr;align-items:stretch;
+  border:1px solid var(--line);background:var(--bg-elev);
+  margin-bottom:26px;border-radius:3px;overflow:hidden;
+  transition:border-color .4s, box-shadow .4s, transform .4s;
+}
+.layer:last-child{margin-bottom:0}
+.layer.on{border-color:rgba(57,255,20,.45);box-shadow:0 0 0 1px rgba(57,255,20,.12),0 14px 40px -20px var(--accent-glow)}
+.layer .lnum{display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:15px;color:var(--text-faint);border-right:1px solid var(--line);background:rgba(255,255,255,.012)}
+.layer.on .lnum{color:var(--accent)}
+.layer .lbody{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:24px 28px;flex-wrap:wrap}
+.layer .lname{display:flex;flex-direction:column;gap:4px}
+.layer .lname .en{font-family:var(--font-lat);font-weight:700;font-size:clamp(20px,2.3vw,28px);letter-spacing:.01em}
+.layer .lname .zh{font-size:14px;color:var(--text-dim);letter-spacing:.04em}
+.layer .lrole{font-family:var(--font-mono);font-size:13px;color:var(--text-faint);text-align:right;max-width:42ch}
+.arch-flow{display:flex;justify-content:center;height:26px;margin:-26px 0;position:relative;z-index:2;pointer-events:none}
+.arch-flow svg{overflow:visible}
+.arrow-line{stroke:var(--line);stroke-width:1.5}
+.arrow-head{fill:var(--text-faint)}
+/* control plane bracket */
+.cp-brace{
+  position:absolute;right:-26px;top:0;bottom:0;
+  display:flex;align-items:center;
+}
+.cp-label{
+  writing-mode:vertical-rl;font-family:var(--font-mono);font-size:12.5px;letter-spacing:.16em;
+  color:var(--accent);text-transform:uppercase;padding-left:14px;border-left:2px solid var(--accent);
+  height:100%;display:flex;align-items:center;text-shadow:0 0 16px var(--accent-glow);
+}
+.arch-anno{margin-top:34px;font-family:var(--font-mono);font-size:13.5px;color:var(--text-dim);letter-spacing:.02em;max-width:64ch;line-height:1.9}
+.arch-anno .g{color:var(--accent)}
+
+/* ---------- CURRENT FOCUS ---------- */
+.focus-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:18px;margin-top:52px}
+.focus-card{border:1px solid var(--line);background:var(--bg-elev);padding:30px 28px 34px;border-radius:3px;transition:border-color .35s,transform .35s}
+.focus-card:hover{border-color:rgba(57,255,20,.4);transform:translateY(-3px)}
+.focus-card .fc-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:9px}
+.focus-card .fc-tag .sq{width:7px;height:7px;background:var(--accent);box-shadow:0 0 9px var(--accent)}
+.focus-card h4{font-family:var(--font-lat);font-weight:600;font-size:19px;margin-bottom:8px;letter-spacing:.01em}
+.focus-card p{color:var(--text-dim);font-size:16px}
+
+/* ---------- WHAT WE BUILD ---------- */
+.build-stmt{margin-top:8px}
+.build-neg{font-family:var(--font-sans);font-weight:500;font-size:clamp(22px,3.2vw,40px);line-height:1.45;color:var(--text-faint);letter-spacing:-.005em}
+.build-neg s{text-decoration-color:rgba(255,90,77,.55);text-decoration-thickness:2px}
+.build-pos{font-family:var(--font-sans);font-weight:600;font-size:clamp(26px,4vw,52px);line-height:1.35;margin-top:28px;letter-spacing:-.01em;max-width:22ch}
+.build-pos .g{color:var(--accent);text-shadow:0 0 28px var(--accent-glow)}
+.build-pos small{display:block;font-size:clamp(15px,1.7vw,20px);font-weight:400;color:var(--text-dim);margin-top:18px;letter-spacing:0}
+
+/* ---------- CTA / FOOTER ---------- */
+.cta{padding:clamp(110px,16vh,180px) 0 90px;text-align:center}
+.cta .word{font-family:var(--font-lat);font-weight:700;font-size:clamp(72px,18vw,230px);line-height:.92;letter-spacing:-.02em;color:var(--text);position:relative;display:inline-block}
+.cta .word .dot{color:var(--accent);text-shadow:0 0 40px var(--accent-glow)}
+.cta .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 26px;margin-top:48px;font-family:var(--font-mono);font-size:13.5px;color:var(--text-dim);letter-spacing:.06em}
+.cta .tags span{display:flex;align-items:center;gap:9px}
+.cta .tags span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.foot-bar{border-top:1px solid var(--line);margin-top:90px;padding:30px var(--gut);display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:12.5px;color:var(--text-faint);flex-wrap:wrap;gap:12px}
+
+/* ---------- REVEAL ---------- */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.15,1),transform .9s cubic-bezier(.2,.7,.15,1)}
+.reveal.in{opacity:1;transform:none}
+.stagger>*{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.15,1),transform .7s cubic-bezier(.2,.7,.15,1)}
+.stagger.in>*{opacity:1;transform:none}
+.stagger.in>*:nth-child(1){transition-delay:.04s}
+.stagger.in>*:nth-child(2){transition-delay:.12s}
+.stagger.in>*:nth-child(3){transition-delay:.20s}
+.stagger.in>*:nth-child(4){transition-delay:.28s}
+.stagger.in>*:nth-child(5){transition-delay:.36s}
+.stagger.in>*:nth-child(6){transition-delay:.44s}
+
+@media (max-width:680px){
+  body{font-size:16.5px}
+  .an-row{grid-template-columns:1fr;gap:6px;padding:22px 2px}
+  .an-arrow{display:none}
+  .layer .lbody{flex-direction:column;align-items:flex-start;gap:12px}
+  .layer .lrole{text-align:left}
+  .cp-brace{display:none}
+  .nav .status .txt{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .reveal,.stagger>*{opacity:1!important;transform:none!important}
+  *{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <a class="brand" href="#top"><span class="mk"></span>POLAR</a>
+  <div class="status"><span class="blip"></span><span class="txt">早期探索中 · BUILDING IN PUBLIC</span></div>
+</nav>
+
+<div id="top"></div>
+
+<!-- ============ HERO ============ -->
+<header class="hero wrap" data-screen-label="Hero">
+  <div class="term-prompt">
+    <span class="gt">polar</span><span>~</span><span class="cmd">describe --vision</span>
+  </div>
+  <h1 id="typed"><span class="cursor" id="cursor"></span></h1>
+  <div class="hero-foot" id="heroFoot">
+    <span class="scroll-ar"></span>
+    <span>向下滚动，了解我们为什么存在</span>
+  </div>
+</header>
+
+<div class="divider"></div>
+
+<!-- ============ PROBLEM ============ -->
+<section data-screen-label="问题">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">01</span><span class="bar"></span>问题 / THE PROBLEM</div>
+    <h2 class="head reveal">模型越来越强，<br>地基却越来越<span class="g">碎</span>。</h2>
+    <p class="lede reveal">今天的大模型生态高度碎片化。开发者需要同时管理 <strong>OpenAI</strong>、<strong>Anthropic</strong>、<strong>Gemini</strong>、<strong>DeepSeek</strong> 以及本地模型——而每一个，都拥有不同的 API、计费方式、权限体系、文件格式与工具调用规则。</p>
+    <div class="chips stagger reveal">
+      <span class="chip"><span class="d"></span>OpenAI</span>
+      <span class="chip"><span class="d"></span>Anthropic</span>
+      <span class="chip"><span class="d"></span>Gemini</span>
+      <span class="chip"><span class="d"></span>DeepSeek</span>
+      <span class="chip"><span class="d"></span>本地模型</span>
+    </div>
+    <p class="lede reveal" style="margin-top:38px">与此同时，用户产生的<strong>对话、Prompt、知识库、文档与 Agent</strong>，又散落在彼此割裂的系统里。模型在加速，而围绕模型的基础设施，仍然高度分裂。</p>
+    <p class="frag-note reveal"><span class="x">✕</span> 碎片化 · 重复造轮子 · 无法统一组织</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ VISION ============ -->
+<section data-screen-label="愿景">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">02</span><span class="bar"></span>愿景 / THE VISION</div>
+    <h2 class="head reveal">Polar 希望成为<br>AI 服务的<span class="g">统一控制层</span>。</h2>
+    <p class="vision-stmt reveal">
+      <span class="muted">无论</span>底层模型来自哪里，<br>
+      <span class="muted">无论</span>内容存储在何处，<br>
+      <span class="muted">无论</span> Agent 如何运行——<br>
+      都通过<span class="g">同一个接口</span>，被组织与管理。
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ ANALOGIES ============ -->
+<section data-screen-label="类比">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">03</span><span class="bar"></span>一句话理解 / THINK OF POLAR AS</div>
+    <h2 class="head reveal">把 Polar 想象成——</h2>
+    <div class="analogy stagger reveal">
+      <div class="an-row"><div class="an-name">Notion</div><div class="an-arrow">→</div><div class="an-desc">面向 AI 知识的<b>沉淀空间</b></div></div>
+      <div class="an-row"><div class="an-name">Stripe</div><div class="an-arrow">→</div><div class="an-desc">面向 AI 接口的<b>统一接入</b></div></div>
+      <div class="an-row"><div class="an-name">Vercel</div><div class="an-arrow">→</div><div class="an-desc">面向 AI 基建的<b>部署平台</b></div></div>
+      <div class="an-row"><div class="an-name">GitHub</div><div class="an-arrow">→</div><div class="an-desc">面向 AI 资产的<b>协作仓库</b></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ CORE CONCEPTS ============ -->
+<section data-screen-label="核心概念">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">04</span><span class="bar"></span>核心概念 / CORE CONCEPTS</div>
+    <h2 class="head reveal">五个原语，<br>构成整个系统。</h2>
+    <div class="concepts stagger reveal">
+      <div class="concept">
+        <div class="cn-top"><span class="cn-en">Identity</span><span class="cn-idx">01</span></div>
+        <h3>身份</h3>
+        <p>谁在使用系统。从个人到团队，从组织到权限，一切访问都有清晰的归属。</p>
+        <div class="tags"><span>用户</span><span>团队</span><span>组织</span><span>权限</span></div>
+      </div>
+      <div class="concept">
+        <div class="cn-top"><span class="cn-en">Knowledge</span><span class="cn-idx">02</span></div>
+        <h3>知识</h3>
+        <p>所有内容最终都沉淀为知识资产，可被检索、复用与传承。</p>
+        <div class="tags"><span>Markdown</span><span>对话</span><span>文件</span><span>视频</span><span>Prompt</span></div>
+      </div>
+      <div class="concept">
+        <div class="cn-top"><span class="cn-en">Intelligence</span><span class="cn-idx">03</span></div>
+        <h3>智能</h3>
+        <p>所有模型能力被统一抽象。对用户而言，它们只是不同的「智能提供方」。</p>
+        <div class="tags"><span>OpenAI</span><span>Claude</span><span>Gemini</span><span>DeepSeek</span><span>本地</span></div>
+      </div>
+      <div class="concept">
+        <div class="cn-top"><span class="cn-en">Agents</span><span class="cn-idx">04</span></div>
+        <h3>智能体</h3>
+        <p>Agent 是未来的软件。人不再直接操作系统，而是通过 Agent 完成任务。</p>
+        <div class="tags"><span>运行</span><span>编排</span><span>分发</span></div>
+      </div>
+      <div class="concept">
+        <div class="cn-top"><span class="cn-en">Marketplace</span><span class="cn-idx">05</span></div>
+        <h3>市场</h3>
+        <p>AI 能力终将商品化，可以被发布、共享与交易，像今天的应用商店一样流通。</p>
+        <div class="tags"><span>Prompt</span><span>Agent</span><span>Workflow</span><span>API</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section data-screen-label="架构">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">05</span><span class="bar"></span>未来的软件结构 / ARCHITECTURE</div>
+    <h2 class="head reveal">我们相信，未来的软件<br>会变成<span class="g">这样的层级</span>。</h2>
+    <p class="lede reveal">人提出意图，Agent 负责理解与编排，模型负责推理，工具负责执行，基础设施承载这一切。<strong>Polar，正是贯穿其中的控制平面。</strong></p>
+
+    <div class="arch reveal" id="arch">
+      <div class="layer" data-layer><div class="lnum">01</div><div class="lbody"><div class="lname"><span class="en">User</span><span class="zh">用户</span></div><div class="lrole">提出意图，定义目标</div></div></div>
+      <div class="arch-flow"><svg width="20" height="26" viewBox="0 0 20 26"><line class="arrow-line" x1="10" y1="0" x2="10" y2="18"/><path class="arrow-head" d="M10 26 L4 17 L16 17 Z"/></svg></div>
+      <div class="layer" data-layer><div class="lnum">02</div><div class="lbody"><div class="lname"><span class="en">Agent</span><span class="zh">智能体</span></div><div class="lrole">理解、规划与编排</div></div></div>
+      <div class="arch-flow"><svg width="20" height="26" viewBox="0 0 20 26"><line class="arrow-line" x1="10" y1="0" x2="10" y2="18"/><path class="arrow-head" d="M10 26 L4 17 L16 17 Z"/></svg></div>
+      <div class="layer" data-layer><div class="lnum">03</div><div class="lbody"><div class="lname"><span class="en">LLM</span><span class="zh">大模型</span></div><div class="lrole">推理、生成与判断</div></div></div>
+      <div class="arch-flow"><svg width="20" height="26" viewBox="0 0 20 26"><line class="arrow-line" x1="10" y1="0" x2="10" y2="18"/><path class="arrow-head" d="M10 26 L4 17 L16 17 Z"/></svg></div>
+      <div class="layer" data-layer><div class="lnum">04</div><div class="lbody"><div class="lname"><span class="en">Tools</span><span class="zh">工具</span></div><div class="lrole">连接外部，执行动作</div></div></div>
+      <div class="arch-flow"><svg width="20" height="26" viewBox="0 0 20 26"><line class="arrow-line" x1="10" y1="0" x2="10" y2="18"/><path class="arrow-head" d="M10 26 L4 17 L16 17 Z"/></svg></div>
+      <div class="layer" data-layer><div class="lnum">05</div><div class="lbody"><div class="lname"><span class="en">Infrastructure</span><span class="zh">基础设施</span></div><div class="lrole">存储、计算与承载一切</div></div></div>
+      <div class="cp-brace"><div class="cp-label">Polar · 控制平面</div></div>
+    </div>
+    <p class="arch-anno reveal">// Polar 不取代任何一层，而是<span class="g">把它们连接、编排并统一管理</span>——成为这一结构中的基础设施层。</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ CURRENT FOCUS ============ -->
+<section data-screen-label="当前阶段">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">06</span><span class="bar"></span>当前阶段 / CURRENT FOCUS</div>
+    <h2 class="head reveal">我们现在，<br>专注于四件事。</h2>
+    <div class="focus-grid stagger reveal">
+      <div class="focus-card"><div class="fc-tag"><span class="sq"></span>GATEWAY</div><h4>Unified LLM Gateway</h4><p>统一模型接入层——一个接口，接入所有模型。</p></div>
+      <div class="focus-card"><div class="fc-tag"><span class="sq"></span>CHAT</div><h4>AI Chat Experience</h4><p>统一对话体验——跨模型、跨场景的一致交互。</p></div>
+      <div class="focus-card"><div class="fc-tag"><span class="sq"></span>PERSIST</div><h4>Content Persistence</h4><p>知识沉淀与管理——让每一次对话都留下资产。</p></div>
+      <div class="focus-card"><div class="fc-tag"><span class="sq"></span>DISTRIBUTE</div><h4>API Distribution</h4><p>能力开放与共享——把 AI 能力对外分发。</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ WHAT WE BUILD ============ -->
+<section data-screen-label="我们在做什么">
+  <div class="wrap">
+    <div class="kicker reveal"><span class="num">07</span><span class="bar"></span>我们在做什么 / WHAT WE BUILD</div>
+    <div class="build-stmt">
+      <p class="build-neg reveal">不是另一个<s>聊天机器人</s>。<br>不是另一个<s>内容平台</s>。<br>不是另一个<s>API 网关</s>。</p>
+      <p class="build-pos reveal">而是连接它们的<span class="g">控制平面</span>。
+        <small>Control Plane —— 一个用于组织 AI 能力的系统。</small>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta" data-screen-label="CTA">
+  <div class="wrap">
+    <div class="word reveal">POLAR<span class="dot">.</span></div>
+    <div class="tags stagger reveal">
+      <span>早期探索</span>
+      <span>Building in Public</span>
+      <span>设计 AI 基础设施的未来</span>
+    </div>
+  </div>
+</section>
+
+<div class="foot-bar">
+  <span>POLAR · OPERATING SYSTEM FOR AI SERVICES</span>
+  <span>© 2026 · EARLY EXPLORATION</span>
+</div>
+
+<!-- ============ TWEAKS PANEL ============ -->
+<div id="tweaks" class="tweaks" aria-hidden="true">
+  <div class="tw-head">
+    <span class="tw-title">Tweaks</span>
+    <button class="tw-x" id="twClose" aria-label="关闭">✕</button>
+  </div>
+  <div class="tw-sec">主色调 / Accent</div>
+  <div class="tw-swatches" id="twAccent">
+    <button class="tw-sw" data-c="#3b82f6" data-d="#2563eb" style="--s:#3b82f6"></button>
+    <button class="tw-sw" data-c="#39ff14" data-d="#27c40d" style="--s:#39ff14"></button>
+    <button class="tw-sw" data-c="#ff5a1f" data-d="#e1430a" style="--s:#ff5a1f"></button>
+    <button class="tw-sw" data-c="#e8e6e0" data-d="#bdbab2" style="--s:#e8e6e0"></button>
+  </div>
+  <div class="tw-sec">标题字体 / Display</div>
+  <div class="tw-seg" id="twFont">
+    <button data-f="sans" class="on">无衬线</button>
+    <button data-f="mono">等宽</button>
+  </div>
+  <div class="tw-sec">Hero 打字机 / Typewriter</div>
+  <div class="tw-seg" id="twMotion">
+    <button data-m="on" class="on">开</button>
+    <button data-m="off">关</button>
+  </div>
+</div>
+
+<style>
+.tweaks{position:fixed;right:22px;bottom:22px;z-index:200;width:262px;background:rgba(13,13,16,.94);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:8px;padding:16px 18px 20px;font-family:var(--font-mono);box-shadow:0 24px 60px -20px rgba(0,0,0,.8);display:none}
+.tweaks.show{display:block}
+.tw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.tw-title{font-family:var(--font-lat);font-weight:700;font-size:15px;letter-spacing:.12em;color:var(--text)}
+.tw-x{background:none;border:none;color:var(--text-faint);font-size:13px;cursor:pointer;padding:4px;line-height:1}
+.tw-x:hover{color:var(--text)}
+.tw-sec{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin:18px 0 10px}
+.tw-swatches{display:flex;gap:10px}
+.tw-sw{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--s);cursor:pointer;position:relative;padding:0;transition:transform .15s}
+.tw-sw:hover{transform:scale(1.1)}
+.tw-sw.on{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--s)}
+.tw-seg{display:flex;gap:6px}
+.tw-seg button{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--text-dim);font-family:var(--font-mono);font-size:12.5px;padding:8px 6px;border-radius:4px;cursor:pointer;transition:.2s}
+.tw-seg button:hover{color:var(--text)}
+.tw-seg button.on{background:var(--accent);border-color:var(--accent);color:#060606;font-weight:600}
+body.font-mono h1,body.font-mono h2.head,body.font-mono .vision-stmt,body.font-mono .build-neg,body.font-mono .build-pos{font-family:var(--font-lat)}
+</style>
+
+<script>
+var TWEAKS = /*EDITMODE-BEGIN*/{
+  "accent": "#3b82f6",
+  "accentDeep": "#2563eb",
+  "displayFont": "sans",
+  "typewriter": "on"
+}/*EDITMODE-END*/;
+</script>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ---- apply persisted tweaks on load ---- */
+  var root = document.documentElement;
+  function applyAccent(c,d){ root.style.setProperty('--accent',c); root.style.setProperty('--accent-deep',d||c);
+    // derive glow from accent
+    root.style.setProperty('--accent-glow', hexToGlow(c)); }
+  function hexToGlow(hex){
+    var h=hex.replace('#','');
+    if(h.length===3)h=h.split('').map(function(x){return x+x;}).join('');
+    var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    return 'rgba('+r+','+g+','+b+',.28)';
+  }
+  if(TWEAKS.accent) applyAccent(TWEAKS.accent, TWEAKS.accentDeep);
+  if(TWEAKS.displayFont==='mono') document.body.classList.add('font-mono');
+  var typewriterOn = TWEAKS.typewriter !== 'off';
+
+  /* ---- nav bg on scroll ---- */
+  var nav = document.getElementById('nav');
+  function onScroll(){
+    if(window.scrollY>40){nav.style.borderBottom='1px solid var(--line-soft)';}
+    else{nav.style.borderBottom='1px solid transparent';}
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* ---- reveal on scroll (rect-based, robust everywhere) ---- */
+  var reveals = [].slice.call(document.querySelectorAll('.reveal'));
+  var arch = document.getElementById('arch');
+  var archDone = false;
+  function fireArch(){
+    if(archDone || !arch) return; archDone = true;
+    var layers = arch.querySelectorAll('[data-layer]');
+    layers.forEach(function(l,i){ setTimeout(function(){ l.classList.add('on'); }, reduce?0:i*170+150); });
+  }
+  function checkReveals(){
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    for(var i=reveals.length-1;i>=0;i--){
+      var el = reveals[i];
+      var top = el.getBoundingClientRect().top;
+      if(top < vh*0.9){ el.classList.add('in'); reveals.splice(i,1); }
+    }
+    if(arch && !archDone && arch.getBoundingClientRect().top < vh*0.72) fireArch();
+  }
+  var lastRun = 0;
+  function onScrollReveal(){
+    var now = Date.now();
+    if(now - lastRun < 70) return;
+    lastRun = now;
+    checkReveals();
+  }
+  window.addEventListener('scroll', onScrollReveal, {passive:true});
+  window.addEventListener('resize', onScrollReveal, {passive:true});
+  checkReveals();
+  setTimeout(checkReveals, 120);
+
+  /* ---- HERO typewriter ---- */
+  var typed = document.getElementById('typed');
+  var cursor = document.getElementById('cursor');
+  var foot = document.getElementById('heroFoot');
+  var segments = [
+    {t:'今天，AI 的能力被分散在'},
+    {t:'无数互不相通的系统', cls:'dim'},
+    {t:'里。\n'},
+    {t:'Polar 正在把它们重新组织成一个整体——\n'},
+    {t:'AI 服务的操作系统', cls:'accent'},
+    {t:'。'}
+  ];
+  // build spans
+  var spans = segments.map(function(s){
+    var sp = document.createElement('span');
+    if(s.cls) sp.className = s.cls;
+    typed.insertBefore(sp, cursor);
+    return sp;
+  });
+  // turn \n into <br>
+  function appendChar(span, ch){
+    if(ch==='\n'){ span.appendChild(document.createElement('br')); }
+    else { span.appendChild(document.createTextNode(ch)); }
+  }
+  if(reduce || !typewriterOn){
+    segments.forEach(function(s,i){ for(var c of s.t){ appendChar(spans[i],c); } });
+    foot.classList.add('show');
+    if(!typewriterOn && cursor) cursor.style.display='none';
+  } else {
+    var si=0, ci=0;
+    function step(){
+      if(si>=segments.length){ foot.classList.add('show'); return; }
+      var seg = segments[si], txt = seg.t;
+      if(ci<txt.length){
+        appendChar(spans[si], txt[ci]); ci++;
+        var ch = txt[ci-1];
+        var delay = ch==='\n'?260:(ch==='，'||ch==='。'||ch==='—'?120:46);
+        setTimeout(step, delay);
+      } else { si++; ci=0; setTimeout(step, 40); }
+    }
+    setTimeout(step, 700);
+  }
+
+  /* ---- TWEAKS panel + host protocol ---- */
+  var panel = document.getElementById('tweaks');
+  // reflect persisted selection in controls
+  function syncControls(){
+    document.querySelectorAll('#twAccent .tw-sw').forEach(function(b){ b.classList.toggle('on', b.dataset.c.toLowerCase()===(TWEAKS.accent||'').toLowerCase()); });
+    document.querySelectorAll('#twFont button').forEach(function(b){ b.classList.toggle('on', b.dataset.f===TWEAKS.displayFont); });
+    document.querySelectorAll('#twMotion button').forEach(function(b){ b.classList.toggle('on', b.dataset.m===(TWEAKS.typewriter||'on')); });
+  }
+  syncControls();
+  function persist(edits){ try{ window.parent.postMessage({type:'__edit_mode_set_keys', edits:edits}, '*'); }catch(e){} }
+
+  document.getElementById('twAccent').addEventListener('click', function(e){
+    var b=e.target.closest('.tw-sw'); if(!b)return;
+    TWEAKS.accent=b.dataset.c; TWEAKS.accentDeep=b.dataset.d;
+    applyAccent(b.dataset.c, b.dataset.d); syncControls();
+    persist({accent:b.dataset.c, accentDeep:b.dataset.d});
+  });
+  document.getElementById('twFont').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    TWEAKS.displayFont=b.dataset.f;
+    document.body.classList.toggle('font-mono', b.dataset.f==='mono'); syncControls();
+    persist({displayFont:b.dataset.f});
+  });
+  document.getElementById('twMotion').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    TWEAKS.typewriter=b.dataset.m; syncControls();
+    persist({typewriter:b.dataset.m});
+  });
+  document.getElementById('twClose').addEventListener('click', function(){
+    panel.classList.remove('show');
+    try{ window.parent.postMessage({type:'__edit_mode_dismissed'}, '*'); }catch(e){}
+  });
+  window.addEventListener('message', function(e){
+    var d=e.data||{};
+    if(d.type==='__activate_edit_mode'){ panel.classList.add('show'); }
+    else if(d.type==='__deactivate_edit_mode'){ panel.classList.remove('show'); }
+  });
+  try{ window.parent.postMessage({type:'__edit_mode_available'}, '*'); }catch(e){}
+})();
+</script>
+
+</body>
+</html>
