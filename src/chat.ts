@@ -6,7 +6,6 @@ import { resolveAvatar } from "./lib/avatar.js";
 import { formatDeviceType } from "./lib/client.js";
 import { byId } from "./lib/dom.js";
 import { renderMarkdown } from "./lib/marked.js";
-import { renderBubbleMetaFoot } from "./lib/message-bubble.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { t } from "./lib/i18n.js";
@@ -947,17 +946,18 @@ function renderMessages(messages: ChatMessage[], scrollToBottom = false): void {
       const streamingMeta = isStreamingBot
         ? `<span class="message-meta-streaming">${t("chat.streaming") || "streaming"}<span class="message-streaming-dots"></span></span>`
         : "";
-      const botMetaFooter = isBotReply
-        ? renderBubbleMetaFoot({
-            sender: msg.sender_username,
-            model: botModelMeta,
-            timestamp: formatTime(msg.created_at),
-            latencyMs: isStreamingBot ? undefined : msg.latency_ms,
-            extraParts: [
-              streamingMeta,
-              isFailedBotReply ? escapeHtml(t("chat.failed")) : "",
-            ].filter(Boolean),
-          })
+      const botFootParts = isBotReply
+        ? [
+            escapeHtml(msg.sender_username),
+            escapeHtml(botModelMeta),
+            escapeHtml(formatTime(msg.created_at)),
+            latencyText ? escapeHtml(latencyText) : "",
+            streamingMeta,
+            isFailedBotReply ? escapeHtml(t("chat.failed")) : "",
+          ].filter(Boolean)
+        : [];
+      const botMetaFooter = botFootParts.length
+        ? `<div class="message-meta message-meta-foot">${botFootParts.join(" · ")}</div>`
         : "";
       if (isMine) {
         return `
@@ -1511,23 +1511,6 @@ function autoResizeMessageInput(): void {
   messageInput.style.overflowY = messageInput.scrollHeight > MESSAGE_INPUT_MAX_HEIGHT ? "auto" : "hidden";
 }
 messageInput.addEventListener("input", autoResizeMessageInput);
-// Run once on init so the textarea collapses to one line immediately
-// instead of using the browser's default rows="1" height (which on
-// most engines is line-height × 1 + padding without considering our
-// box-sizing override → looks too tall).
-autoResizeMessageInput();
-
-// Clicking anywhere in the gray message-form bar (padding around the
-// textarea, between the 📎 and send button) focuses the textarea — so
-// users don't have to aim for the small textarea hit area.
-messageForm.addEventListener("click", (event) => {
-  const target = event.target as HTMLElement;
-  if (target.closest("button, a, label, input, textarea, select, .message-send-btn, .message-attach-btn")) {
-    return;
-  }
-  messageInput.focus();
-});
-messageForm.style.cursor = "text";
 
 // Enter sends, Shift+Enter inserts a newline. IME composition is left alone
 // so picking a candidate doesn't accidentally submit the half-typed message.
@@ -1579,20 +1562,9 @@ messageForm.addEventListener("submit", async (event) => {
   await loadChats(activeThreadId);
 });
 
-// Keep in sync with chatAttachmentMaxFileSize in chat_handlers.go.
-// Client-side pre-check so a 200 MB file doesn't have to traverse
-// the wire just to be rejected.
-const ATTACHMENT_MAX_BYTES = 200 * 1024 * 1024;
-
 attachmentInput.addEventListener("change", async () => {
   const file = attachmentInput.files?.[0];
   if (!file || !activeThreadId) {
-    attachmentInput.value = "";
-    return;
-  }
-  if (file.size > ATTACHMENT_MAX_BYTES) {
-    const mb = (file.size / (1024 * 1024)).toFixed(1);
-    chatSubtitle.textContent = `${file.name} ${mb} MB 超过 200 MB 上传上限`;
     attachmentInput.value = "";
     return;
   }
@@ -1621,14 +1593,6 @@ attachmentInput.addEventListener("change", async () => {
       await loadMessages(activeThreadId);
     }
     await loadChats(activeThreadId);
-  } catch (err) {
-    // requestJson throws SyntaxError when the server returns HTML
-    // instead of JSON — most commonly nginx's 413 "Request Entity
-    // Too Large" page, which fires when the dock vhost's
-    // client_max_body_size is below the file size. Surface a usable
-    // hint rather than letting the failure disappear silently.
-    const msg = err instanceof Error ? err.message : String(err);
-    chatSubtitle.textContent = `上传失败：${msg}（如附件较大，请检查 nginx client_max_body_size）`;
   } finally {
     attachmentInput.value = "";
     attachmentBtn.classList.remove("uploading");

@@ -11,7 +11,6 @@ const alertBox = byId<HTMLElement>("markdownAlert");
 const contentEl = byId<HTMLElement>("markdownContent");
 const copyMdBtn = byId<HTMLButtonElement>("markdownCopyMdBtn");
 const copyHtmlBtn = byId<HTMLButtonElement>("markdownCopyHtmlBtn");
-const editLink = byId<HTMLAnchorElement>("markdownEditLink");
 const entryId = new URLSearchParams(window.location.search).get("id");
 
 initStoredTheme();
@@ -121,39 +120,6 @@ async function loadPublicMarkdown(): Promise<void> {
   }
 }
 
-// Wire the top-bar edit link. The static markup defaults to a
-// "log in to edit" anchor pointing at /login.html — but a logged-in
-// viewer clicking that just bounces through login back to the
-// dashboard, never the editor. Probe the owner-scoped authed
-// endpoint (it returns can_edit, and 401 when anonymous) to decide:
-//   - 200 + can_edit  → "Edit" → /editor.html?id=<id>
-//   - 401 (anonymous) → keep the "log in to edit" CTA
-//   - otherwise (logged in but not the owner) → hide the link
-async function setupEditLink(): Promise<void> {
-  if (!entryId) {
-    editLink.hidden = true;
-    return;
-  }
-  const probe = await requestMarkdown(`/api/markdown/${encodeURIComponent(entryId)}`);
-  if (probe.ok && probe.data?.can_edit) {
-    editLink.href = `/editor.html?id=${encodeURIComponent(entryId)}`;
-    editLink.setAttribute("data-i18n", "markdown.edit");
-    editLink.textContent = t("markdown.edit");
-    editLink.hidden = false;
-    return;
-  }
-  if (probe.status === 401) {
-    editLink.href = "/login.html";
-    editLink.setAttribute("data-i18n", "markdown.loginToEdit");
-    editLink.textContent = t("markdown.loginToEdit");
-    editLink.hidden = false;
-    return;
-  }
-  // Logged in but can't edit this doc (e.g. someone else's public
-  // markdown) — no edit affordance.
-  editLink.hidden = true;
-}
-
 copyMdBtn.disabled = true;
 copyHtmlBtn.disabled = true;
 
@@ -167,7 +133,6 @@ copyHtmlBtn.addEventListener("click", () => {
 
 void hydrateSiteBrand();
 void loadPublicMarkdown();
-void setupEditLink();
 
 // Logout
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {

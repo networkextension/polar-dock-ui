@@ -392,7 +392,6 @@ const en: Record<string, string> = {
   // Markdown viewer
   "markdown.title": "Public Markdown",
   "markdown.loginToEdit": "Log in to edit your own documents",
-  "markdown.edit": "Edit",
   "markdown.loading": "Loading content...",
   "markdown.publicReadOnly": "Public read-only document",
   "markdown.readOnlyPreview": "Read-only preview",
@@ -443,7 +442,7 @@ const en: Record<string, string> = {
   "dashboard.settingsCenterTitle": "Settings Center",
   "dashboard.navProfile": "Profile",
   "dashboard.navPersonalization": "Personalization",
-  "dashboard.navSettings": "LLM Config",
+  "dashboard.navSettings": "Settings",
   "dashboard.navSystem": "System Info",
   "dashboard.navBots": "Bot Management",
   "dashboard.navSite": "Site Management",
@@ -548,7 +547,7 @@ const en: Record<string, string> = {
   "dashboard.languageChinese": "Chinese",
   "dashboard.switchToChinese": "Switch to Chinese",
   "dashboard.switchToEnglish": "Switch to English",
-  "dashboard.settingsTitle": "LLM Config",
+  "dashboard.settingsTitle": "Settings",
   "dashboard.botsManagementTitle": "Bot Management",
   "dashboard.botsLead": "Manage each Bot's default model config, description, and dedicated prompt here.",
   "dashboard.siteManagementTitle": "Site Management",
@@ -665,7 +664,6 @@ const en: Record<string, string> = {
   "nav.creation": "Creation",
   "nav.videoStudio": "Video Studio",
   "nav.iosDist": "iOS Distribution",
-  "nav.hosts": "Hosts",
 
   // Topbar / page titles
   "projects.title": "Projects",
@@ -1180,7 +1178,6 @@ const zhCN: Record<string, string> = {
 
   "markdown.title": "公开 Markdown",
   "markdown.loginToEdit": "登录后编辑自己的文档",
-  "markdown.edit": "编辑文档",
   "markdown.loading": "正在加载内容...",
   "markdown.publicReadOnly": "公开只读文档",
   "markdown.readOnlyPreview": "只读预览",
@@ -1230,7 +1227,7 @@ const zhCN: Record<string, string> = {
   "dashboard.settingsCenterTitle": "设置中心",
   "dashboard.navProfile": "Profile",
   "dashboard.navPersonalization": "个性化",
-  "dashboard.navSettings": "LLM 配置",
+  "dashboard.navSettings": "设置",
   "dashboard.navSystem": "系统信息",
   "dashboard.navBots": "Bot 管理",
   "dashboard.navSite": "站点管理",
@@ -1335,7 +1332,7 @@ const zhCN: Record<string, string> = {
   "dashboard.languageChinese": "中文",
   "dashboard.switchToChinese": "切换到中文",
   "dashboard.switchToEnglish": "切换到英文",
-  "dashboard.settingsTitle": "LLM 配置",
+  "dashboard.settingsTitle": "设置",
   "dashboard.botsManagementTitle": "Bot 管理",
   "dashboard.botsLead": "在这里维护 Bot 的默认模型配置、简介和专属 Prompt。",
   "dashboard.siteManagementTitle": "站点管理",
@@ -1452,7 +1449,6 @@ const zhCN: Record<string, string> = {
   "nav.creation": "创作",
   "nav.videoStudio": "视频工作室",
   "nav.iosDist": "iOS 分发",
-  "nav.hosts": "主机",
 
   // Topbar / page titles
   "projects.title": "项目",

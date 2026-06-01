@@ -139,9 +139,6 @@ export type LLMConfigPayload = {
   proxy_url?: string;
   system_prompt: string;
   shared?: boolean;
-  // is_system: marks the row that powers the platform-wide system AI
-  // agent (responderUserID=system). Singleton; mutually exclusive with
-  // `shared`. Replaces the legacy AI_AGENT_* env vars.
   is_system?: boolean;
   // Optional discriminator + extras blob. Defaults to "text" / "{}" on the
   // backend; only video-kind presets (Seedance et al.) need to set these.
@@ -180,15 +177,6 @@ export type BotPayload = {
   llm_config_id: number;
   bot_kind?: "classic" | "passthrough";
   preferred_tool?: string;
-  // model_override (qunliao β): when non-empty, fanout + idle loop
-  // use this model string instead of llm_configs.model. Lets one
-  // (provider, api_key) row power multiple bots with different
-  // model variants — "kimi k2.5 PK kimi k1.5" in the same room.
-  model_override?: string;
-  // host_skill_id (P1d): bind bot replies to a host's skill. null
-  // (or omitted on create) = no binding, legacy path. number > 0 =
-  // dock routes the bot via skill.start dispatch on that host.
-  host_skill_id?: number | null;
 };
 
 export type BotUser = {
@@ -208,10 +196,6 @@ export type BotUser = {
   // in UI when bot is passthrough, helping the user remember which
   // polar-agent --tool= flag pairs with it. Backend doesn't enforce.
   preferred_tool: string;
-  model_override?: string;
-  // host_skill_id (P1d): non-null = bot is bound to a host's skill;
-  // dock routes through the host module's skill.start dispatch.
-  host_skill_id?: number | null;
   // is_auto_registered: created via POST /api/agent/auto-register
   // by a polar-agent docker container at startup. Operator can't
   // edit/delete from UI — managed by the agent token's lifecycle.
