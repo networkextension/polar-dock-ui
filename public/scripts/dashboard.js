@@ -15,7 +15,7 @@ import{a as W,b as Ve,c as Kn}from"./chunk-JB4HUMCC.js";import{b as pe,c as On}f
     </div>
   `}function Xn(){let e=`
     <div class="dashboard-quickstart-grid">
-      ${[["folder-kanban","\u9879\u76EE","/projects.html","AI \u62C6\u89E3 + \u6D3E\u5355"],["message-square","Posts","/posts.html","\u52A8\u6001 / \u8BA8\u8BBA"],["file-text","Markdowns","/markdowns.html","\u957F\u6587 / \u7B14\u8BB0"],["message-circle","Chat","/chat.html","Bot \u5BF9\u8BDD"],["pen-line","Creation","/creation.html","\u56FE\u6587\u521B\u4F5C"],["video","Video Studio","/video-studio.html","\u89C6\u9891\u751F\u6210"],["smartphone","iOS \u5206\u53D1","/iosdist.html","TF / OTA"],["users-round","\u5DE5\u4F5C\u533A","/teams.html","\u56E2\u961F / \u9080\u8BF7"],["code","Editor","/editor.html","\u4EE3\u7801\u7F16\u8F91\u5668"]].map(([a,i,o,d])=>`
+      ${[["folder-kanban","\u9879\u76EE","/projects.html","AI \u62C6\u89E3 + \u6D3E\u5355"],["message-square","Posts","/posts.html","\u52A8\u6001 / \u8BA8\u8BBA"],["file-text","Markdowns","/markdowns.html","\u957F\u6587 / \u7B14\u8BB0"],["message-circle","Chat","/chat.html","Bot \u5BF9\u8BDD"],["pen-line","Creation","/creation.html","\u56FE\u6587\u521B\u4F5C"],["video","Video Studio","https://video.4950.store:2443/video-studio.html","\u89C6\u9891\u751F\u6210"],["smartphone","iOS \u5206\u53D1","/iosdist.html","TF / OTA"],["users-round","\u5DE5\u4F5C\u533A","/teams.html","\u56E2\u961F / \u9080\u8BF7"],["code","Editor","/editor.html","\u4EE3\u7801\u7F16\u8F91\u5668"]].map(([a,i,o,d])=>`
             <a class="dashboard-quickstart-tile" href="${h(o)}">
               <span class="dashboard-quickstart-icon" aria-hidden="true">${ae(a,22)}</span>
               <div class="dashboard-quickstart-text">

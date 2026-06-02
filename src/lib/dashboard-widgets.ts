@@ -92,7 +92,7 @@ export function renderQuickStart(): string {
     ["file-text",       "Markdowns",     "/markdowns.html",    "长文 / 笔记"],
     ["message-circle",  "Chat",          "/chat.html",         "Bot 对话"],
     ["pen-line",        "Creation",      "/creation.html",     "图文创作"],
-    ["video",           "Video Studio",  "/video-studio.html", "视频生成"],
+    ["video",           "Video Studio",  "https://video.4950.store:2443/video-studio.html", "视频生成"],
     ["smartphone",      "iOS 分发",       "/iosdist.html",      "TF / OTA"],
     ["users-round",     "工作区",         "/teams.html",        "团队 / 邀请"],
     ["code",            "Editor",        "/editor.html",       "代码编辑器"],

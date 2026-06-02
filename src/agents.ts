@@ -1,7 +1,7 @@
 // /agents.html — Agent Identity v4 / Phase F.
 //
 // Logical-instance view: list every agent across the workspace, with
-// links back to the host it runs on. Sibling to /hosts.html (the
+// links back to the host it runs on. Sibling to https://hosts.4950.store:2443/hosts.html (the
 // physical-asset view). See doc/arch/agent-identity-v4.md.
 //
 // Server status as of 2026-05-27: GET /api/agents and GET
@@ -60,7 +60,7 @@ function fmtRelativeISO(ts?: string): string {
   }
 }
 
-// helloAgeColor mirrors the dot-color rules on /hosts.html so the
+// helloAgeColor mirrors the dot-color rules on https://hosts.4950.store:2443/hosts.html so the
 // two pages tell the same story about freshness.
 function helloAgeColor(ts?: string): string {
   if (!ts) return "#9ca3af";
@@ -132,7 +132,7 @@ function renderRow(a: Agent): HTMLTableRowElement {
   const tr = document.createElement("tr");
   const helloColor = helloAgeColor(a.last_hello_at);
   const dot = `<span title="${escapeHTML(a.last_hello_at || "never")}" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${helloColor}; vertical-align:middle; margin-right:6px;"></span>`;
-  const hostHref = `/hosts.html?id=${encodeURIComponent(a.host_id)}`;
+  const hostHref = `https://hosts.4950.store:2443/hosts.html?id=${encodeURIComponent(a.host_id)}`;
   const osArch = `${escapeHTML(a.os || "?")} / ${escapeHTML(a.arch || "?")}`;
   const idShort = a.id.length > 14 ? `${a.id.slice(0, 14)}…` : a.id;
   const botCell = a.bot_user_id

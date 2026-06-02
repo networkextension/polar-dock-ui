@@ -75,9 +75,9 @@ const NAV: NavGroup[] = [
   {
     label: "设备",
     items: [
-      { href: "/hosts.html", label: "主机", i18n: "nav.hosts", icon: "server", gate: "site-admin" },
+      { href: "https://hosts.4950.store:2443/hosts.html", label: "主机", i18n: "nav.hosts", icon: "server", gate: "site-admin" },
       { href: "/agents.html", label: "Agents", i18n: "nav.agents", icon: "cpu", gate: "site-admin" },
-      { href: "/wg-tokens.html", label: "WG Mesh", icon: "network", gate: "admin" },
+      { href: "https://wg.4950.store:2443/wg-tokens.html", label: "WG Mesh", icon: "network", gate: "admin" },
     ],
   },
   {

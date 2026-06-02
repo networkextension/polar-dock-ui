@@ -395,7 +395,7 @@ export function ConsoleApp() {
         >
           关闭全部
         </button>
-        <a className="lp-topbar-back" href="/hosts.html">
+        <a className="lp-topbar-back" href="https://hosts.4950.store:2443/hosts.html">
           主机
         </a>
       </div>
