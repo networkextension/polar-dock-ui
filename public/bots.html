@@ -111,59 +111,6 @@
 
         <div class="lp-content" style="display:flex; flex-direction:column; gap:12px; padding:12px; overflow-y:auto;">
 
-          <!-- LLM Config section -->
-          <section class="lp-preview-main" style="min-height:0;">
-            <div class="lp-preview-head">
-              <span class="badge" data-i18n="dashboard.llmConfigBadge">LLM Config</span>
-              <div id="llmConfigStatus" class="status-text"></div>
-            </div>
-            <div class="lp-preview-body">
-              <div class="site-admin-grid site-admin-grid-wide">
-                <form id="llmConfigForm" class="site-settings-form">
-                  <label class="form-label" for="llmProviderPresetSelect">Provider Preset</label>
-                  <select id="llmProviderPresetSelect" class="input"></select>
-                  <div id="llmProviderPresetNote" class="drawer-help"></div>
-                  <a id="llmProviderPresetDocs" class="btn-chip" href="#" target="_blank" rel="noopener noreferrer">Get API Key</a>
-
-                  <label class="form-label" for="llmConfigNameInput" data-i18n="dashboard.llmConfigNameLabel">Config name</label>
-                  <input id="llmConfigNameInput" class="input" type="text" maxlength="60" data-i18n-placeholder="dashboard.llmConfigNamePlaceholder" placeholder="e.g. OpenAI production config" />
-
-                  <label class="form-label" for="llmConfigBaseUrlInput">Base URL</label>
-                  <input id="llmConfigBaseUrlInput" class="input" type="url" maxlength="300" placeholder="https://api.openai.com/v1/chat/completions" />
-
-                  <label class="form-label" for="llmConfigModelInput">Model</label>
-                  <input id="llmConfigModelInput" class="input" type="text" maxlength="120" placeholder="gpt-4.1-mini" />
-
-                  <label class="form-label" for="llmConfigApiKeyInput" data-i18n="dashboard.llmConfigApiKeyLabel">API Key</label>
-                  <input id="llmConfigApiKeyInput" class="input" type="password" maxlength="300" data-i18n-placeholder="dashboard.llmConfigApiKeyPlaceholder" placeholder="Recommended on create; leave empty when editing to keep current value" />
-
-                  <label class="form-label" for="llmConfigProxyUrlInput">Proxy URL（可选）</label>
-                  <input id="llmConfigProxyUrlInput" class="input" type="text" maxlength="300" placeholder="http://127.0.0.1:10082（留空 = 用 dock 默认网络）" />
-
-                  <label class="form-label" for="llmConfigSystemPromptInput" data-i18n="dashboard.llmConfigSystemPromptLabel">Test Prompt (optional)</label>
-                  <textarea id="llmConfigSystemPromptInput" class="input textarea" rows="4" maxlength="5000" data-i18n-placeholder="dashboard.llmConfigSystemPromptPlaceholder" placeholder="Only for testing config connectivity, not used as Bot runtime prompt"></textarea>
-
-                  <label class="form-checkbox" for="llmConfigSharedInput">
-                    <input id="llmConfigSharedInput" type="checkbox" />
-                    <span data-i18n="dashboard.llmConfigSharedLabel">Share this LLM Config with other users</span>
-                  </label>
-
-                  <label class="form-checkbox" for="llmConfigIsSystemInput" title="平台单例：勾上之后这条 config 就是站内 system 助理（chat thread summary / task sharpen / system bot user）使用的模型。同一时间只能有一条。与「分享」互斥。">
-                    <input id="llmConfigIsSystemInput" type="checkbox" />
-                    <span>🛠 系统助理（is_system）— 互斥 shared、平台单例</span>
-                  </label>
-
-                  <div class="site-settings-actions inline-actions">
-                    <button id="llmConfigResetBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigClear">Clear</button>
-                    <button id="llmConfigTestBtn" class="btn-chip" type="button" data-i18n="dashboard.llmConfigTest">Test config</button>
-                    <button id="llmConfigSubmitBtn" class="btn-chip btn-chip-primary" type="submit" data-i18n="dashboard.llmConfigSave">Save config</button>
-                  </div>
-                </form>
-                <ul id="llmConfigList" class="tag-list"></ul>
-              </div>
-            </div>
-          </section>
-
           <!-- Bot User section -->
           <section class="lp-preview-main" style="min-height:0;">
             <div class="lp-preview-head">
