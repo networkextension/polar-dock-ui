@@ -108,9 +108,15 @@ function currentPath(): string {
 }
 
 function isActive(href: string): boolean {
-  const cur = currentPath();
-  if (href === "/grafana/") return cur.startsWith("/grafana");
-  return cur === href;
+  // hrefs from /api/nav are absolute (cross-subdomain). Match on host+path.
+  try {
+    const u = new URL(href, window.location.href);
+    if (u.host !== window.location.host) return false;
+    if (u.pathname === "/grafana/") return currentPath().startsWith("/grafana");
+    return u.pathname === currentPath();
+  } catch {
+    return href === currentPath();
+  }
 }
 
 function itemHTML(it: NavItem): string {
@@ -141,18 +147,33 @@ function ensureStyle(): void {
 }
 
 /**
- * Rebuild `<nav class="lp-nav">` from the NAV config. No-op on pages without a
- * sidebar (login/register/public). Safe to call over the legacy inline nav —
- * it replaces the contents entirely, so every page converges on this menu.
+ * Rebuild `<nav class="lp-nav">` from dock's GET /api/nav — the single source
+ * of truth shared with every module subdomain. Module links come back absolute
+ * (their subdomain) so they don't 404 from the dock origin. Falls back to the
+ * static NAV const if the fetch fails (offline / pre-auth). No-op on pages
+ * without a sidebar. Gated items render hidden+data-(site-)admin-nav so the
+ * existing /api/me reveal in hydrateSidebarFoot shows the allowed ones.
  */
-export function renderSidebar(): void {
+export async function renderSidebar(): Promise<void> {
   const nav = document.querySelector<HTMLElement>("nav.lp-nav");
   if (!nav) return;
   ensureStyle();
-  nav.innerHTML = NAV.map((g) => {
-    const header = g.label ? `<div class="lp-nav-group-label">${escHTML(g.label)}</div>` : "";
-    return header + g.items.map(itemHTML).join("");
-  }).join("");
+  let groups: NavGroup[] = NAV;
+  try {
+    const res = await fetch("/api/nav", { credentials: "include" });
+    if (res.ok) {
+      const body = (await res.json()) as { groups?: NavGroup[] };
+      if (Array.isArray(body.groups) && body.groups.length) groups = body.groups;
+    }
+  } catch {
+    /* keep static NAV fallback */
+  }
+  nav.innerHTML = groups
+    .map((g) => {
+      const header = g.label ? `<div class="lp-nav-group-label">${escHTML(g.label)}</div>` : "";
+      return header + g.items.map(itemHTML).join("");
+    })
+    .join("");
   hydrateIcons(nav);
   applyI18n();
 }

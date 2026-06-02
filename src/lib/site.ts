@@ -2,6 +2,7 @@ import { makeDefaultAvatar } from "./avatar.js";
 import { hydrateIcons } from "./icons.js";
 import { applyI18n, t } from "./i18n.js";
 import { installWorkspaceSwitcher } from "./workspace.js";
+import { renderSidebar } from "./sidebar.js";
 
 type SiteSettings = {
   name?: string;
@@ -162,6 +163,9 @@ export async function hydrateSiteBrand(): Promise<void> {
   hydrateIcons();
   initSidebarToggle();
   initSettingsButton();
+  // Render the shared platform nav (dock /api/nav) BEFORE the foot hydrate,
+  // so hydrateSidebarFoot's /api/me admin-reveal applies to the fresh items.
+  await renderSidebar();
   await hydrateSidebarFoot();
   // Workspace switcher (T4): runs after the foot hydrate so the
   // sidebar is fully laid out. No-op on pages without .lp-nav (e.g.,
