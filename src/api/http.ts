@@ -53,6 +53,38 @@ function mergeHeaders(headers?: HeadersInit): Headers {
 
 const REFRESH_PATH = "/api/token/refresh";
 
+// --- proactive refresh -------------------------------------------------
+//
+// The access cookie is httpOnly, so JS can't read its expiry. login +
+// /api/token/refresh now return `access_expires_in` (seconds); we stash
+// the absolute expiry and a timer refreshes once <1h remains, so an open
+// tab never hits a 401 mid-session. The 401 interceptor stays as the
+// safety net.
+const SESSION_EXP_KEY = "polar_access_expires_at";
+const PROACTIVE_THRESHOLD_MS = 60 * 60 * 1000; // refresh when <1h left
+const PROACTIVE_INTERVAL_MS = 5 * 60 * 1000; // re-check cadence
+
+// noteAccessExpiry records when the current access token expires. Called
+// by login.ts (on login) and runRefresh (on refresh).
+export function noteAccessExpiry(expiresInSec: number): void {
+  try {
+    if (expiresInSec && expiresInSec > 0) {
+      localStorage.setItem(SESSION_EXP_KEY, String(Date.now() + expiresInSec * 1000));
+    }
+  } catch {
+    /* localStorage unavailable — fall back to on-401 refresh */
+  }
+}
+
+function readAccessExpiry(): number {
+  try {
+    const v = localStorage.getItem(SESSION_EXP_KEY);
+    return v ? parseInt(v, 10) : 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Don't try to refresh for these paths — they define the auth boundary
 // themselves. Attempting to refresh a failed /login would loop.
 const AUTH_EXEMPT_PATHS = new Set([
@@ -92,6 +124,16 @@ function runRefresh(originalFetch: typeof window.fetch): Promise<boolean> {
         method: "POST",
         credentials: "include",
       });
+      if (res.ok) {
+        try {
+          const body = (await res.clone().json()) as { access_expires_in?: number };
+          if (typeof body.access_expires_in === "number") {
+            noteAccessExpiry(body.access_expires_in);
+          }
+        } catch {
+          /* body not JSON — ignore, on-401 still works */
+        }
+      }
       return res.ok;
     } catch {
       return false;
@@ -132,6 +174,26 @@ function installAuthInterceptor(): void {
     // will handle the same way any network error does.
     return originalFetch(input, init);
   };
+
+  startProactiveRefresh(originalFetch);
+}
+
+// startProactiveRefresh refreshes the access token before it expires so an
+// open tab never hits a mid-session 401. No-op until an expiry is known
+// (login / first refresh records it); until then the on-401 path covers us.
+function startProactiveRefresh(originalFetch: typeof window.fetch): void {
+  const check = (): void => {
+    const exp = readAccessExpiry();
+    if (!exp) return; // unknown — rely on the 401 interceptor
+    if (exp - Date.now() < PROACTIVE_THRESHOLD_MS) {
+      void runRefresh(originalFetch);
+    }
+  };
+  window.setInterval(check, PROACTIVE_INTERVAL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) check();
+  });
+  check();
 }
 
 installAuthInterceptor();

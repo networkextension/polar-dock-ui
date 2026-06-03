@@ -1,0 +1,2 @@
+import{a as o,b as h}from"./chunk-BY6I6UVC.js";function r(e,n=!1){let t=e==="default"?"default":"mono";return document.documentElement.dataset.theme=t,n&&localStorage.setItem(m,t),t}function T(e=!1){return r(localStorage.getItem(m)||a,e)}function d(e){window.addEventListener("storage",n=>{if(n.key!==m)return;let t=r(n.newValue||a);e?.(t)})}var m,a,i=h(()=>{m="app-theme",a="mono";o(r,"applyTheme");o(T,"initStoredTheme");o(d,"bindThemeSync")});export{r as a,T as b,d as c,i as d};
+//# sourceMappingURL=chunk-LM6RPF4Z.js.map
