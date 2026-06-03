@@ -1,4 +1,5 @@
 import { byId } from "./lib/dom.js";
+import { noteAccessExpiry } from "./api/http.js";
 import { base64URLToBuffer, credentialToJSON } from "./lib/passkey.js";
 import { buildClientHeaders } from "./lib/client.js";
 import { hydrateSiteBrand } from "./lib/site.js";
@@ -41,6 +42,7 @@ form.addEventListener("submit", async (event) => {
       return;
     }
 
+    noteAccessExpiry(data.access_expires_in);
     alertBox.className = "alert success";
     alertBox.textContent = t("login.success");
     window.setTimeout(() => {
