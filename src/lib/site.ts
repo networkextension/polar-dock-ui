@@ -142,14 +142,19 @@ export function initSidebarToggle(): void {
   // showing on top of the content for a beat. Foot icon buttons
   // (settings / logout) get the same treatment so the drawer doesn't
   // linger when the settings center modal opens behind it.
-  app.querySelectorAll<HTMLElement>(
-    ".lp-sidebar .lp-nav-item, .lp-sidebar .lp-foot-icon-btn",
-  ).forEach((el) => {
-    el.addEventListener("click", () => {
-      if (mq.matches) {
-        app.classList.remove("mobile-nav-open");
-      }
-    });
+  //
+  // Delegated on .lp-app so it keeps working after renderSidebar()
+  // replaces the <nav class="lp-nav"> innerHTML (the platform-nav fetch
+  // runs AFTER this init, so binding per-item here would target stale
+  // nodes and silently die — that was the post-refactor regression).
+  app.addEventListener("click", (e) => {
+    if (!mq.matches) {
+      return;
+    }
+    const target = e.target as HTMLElement | null;
+    if (target?.closest(".lp-sidebar .lp-nav-item, .lp-sidebar .lp-foot-icon-btn")) {
+      app.classList.remove("mobile-nav-open");
+    }
   });
 }
 

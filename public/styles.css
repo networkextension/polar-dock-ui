@@ -3494,6 +3494,15 @@ body.lp-page { background: var(--page-bg); padding: 0; display: block; }
 
 /* Responsive */
 @media (max-width: 860px) {
+  /* Mobile: the ☰ toggle is the ONLY way to reach nav, so make it an
+     unmissable, comfortable tap target (≥44px) that can't be clipped by
+     a crowded topbar — solid surface, accent text, never shrinks, and
+     pinned to the left edge of the topbar. */
+  .lp-sidebar-toggle {
+    width: 40px; height: 40px; font-size: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); flex-shrink: 0; order: -1;
+  }
   /* Mobile sidebar = drawer. Default position is off-screen left;
      the lp-sidebar-toggle (☰ in the topbar) flips
      `.mobile-nav-open` on `.lp-app` to slide it in. The user / settings /
