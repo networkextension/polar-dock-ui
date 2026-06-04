@@ -100,6 +100,33 @@
             </p>
             <div id="rolesWrap"></div>
           </div>
+
+          <div class="rbac-section">
+            <h3>资源挂载（南北向）</h3>
+            <p class="rbac-sub" style="margin:0 0 8px;">
+              把其它工作区的资源「挂载」到本工作区，无需复制即可见（需要你同时是来源工作区成员）。
+              生效需站点开启 <code>POLAR_WORKSPACE_MOUNTS</code>；资源 ID 留空 = 整类挂载。
+            </p>
+            <div class="rbac-bar" style="margin-bottom:8px;">
+              <select id="mountSource"></select>
+              <select id="mountKind">
+                <option value="llm_config">LLM 配置</option>
+                <option value="asset">资产</option>
+                <option value="prompt">Prompt</option>
+                <option value="*">全部</option>
+              </select>
+              <input id="mountResId" type="text" placeholder="资源 ID（留空=整类）" style="width:150px; padding:6px 8px; border:1px solid var(--border,#ccc); border-radius:6px;" />
+              <select id="mountMode">
+                <option value="read">只读</option>
+                <option value="readwrite">读写</option>
+              </select>
+              <button id="addMountBtn" class="btn-inline btn-primary" type="button">+ 添加挂载</button>
+            </div>
+            <table class="lp-table">
+              <thead><tr><th>来源工作区</th><th>类型</th><th>资源</th><th>模式</th><th></th></tr></thead>
+              <tbody id="mountsTbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
