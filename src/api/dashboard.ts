@@ -74,6 +74,15 @@ export async function fetchAvailableLLMConfigs() {
   return requestJson<LLMConfigListResponse>("/api/llm-configs/available");
 }
 
+// Site-admin only: mark an LLM config platform-level so it shows in every
+// workspace (listing widens to `workspace_id=$1 OR is_platform=TRUE`).
+export async function setLLMConfigPlatform(id: number, isPlatform: boolean) {
+  return requestJson<{ id: number; is_platform: boolean } & ErrorResponse>(
+    `/api/llm-configs/${id}/platform`,
+    { method: "POST", body: { is_platform: isPlatform } },
+  );
+}
+
 export async function createLLMConfig(payload: LLMConfigPayload) {
   return requestJson<LLMConfigListResponse>("/api/llm-configs", {
     method: "POST",
