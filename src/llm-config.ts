@@ -11,6 +11,7 @@ import {
   createLLMConfig,
   fetchLLMConfigs,
   removeLLMConfig,
+  setLLMConfigPlatform,
   testLLMConfig,
   updateLLMConfig,
 } from "./api/dashboard.js";
@@ -52,6 +53,9 @@ const logoutBtn = byId<HTMLButtonElement>("logoutBtn");
 let editingLLMConfigId: number | null = null;
 let pendingDeleteLLMConfigId: number | null = null;
 let currentLLMConfigs: LLMConfig[] = [];
+// Only site admins may flip the platform-level flag (the button is hidden
+// otherwise; the dock endpoint enforces it regardless).
+let isSiteAdmin = false;
 
 function populateLLMProviderPresets(): void {
   llmProviderPresetSelect.innerHTML = LLM_PROVIDER_PRESETS
@@ -133,10 +137,17 @@ function renderLLMConfigList(configs: LLMConfig[]): void {
   llmConfigList.innerHTML = configs
     .map((config) => {
       const isPending = pendingDeleteLLMConfigId === config.id;
+      // Site-admin only: toggle platform-level visibility (shows in every workspace).
+      const platformBtn = isSiteAdmin
+        ? config.is_platform
+          ? `<button class="btn-inline btn-secondary" type="button" data-action="unset-platform">取消平台级</button>`
+          : `<button class="btn-inline btn-secondary" type="button" data-action="set-platform">设为平台级</button>`
+        : "";
       const actions = isPending
         ? `<button class="btn-inline" type="button" data-action="confirm-delete">${t("common.confirmDelete")}</button>
            <button class="btn-inline btn-secondary" type="button" data-action="cancel-delete">${t("common.cancel")}</button>`
-        : `<button class="btn-inline btn-secondary" type="button" data-action="edit">${t("common.edit")}</button>
+        : `${platformBtn}
+           <button class="btn-inline btn-secondary" type="button" data-action="edit">${t("common.edit")}</button>
            <button class="btn-inline" type="button" data-action="delete">${t("common.delete")}</button>`;
       return `
         <li class="tag-item${isPending ? " tag-item-pending-delete" : ""}" data-llm-config-id="${config.id}">
@@ -147,6 +158,7 @@ function renderLLMConfigList(configs: LLMConfig[]): void {
               ${config.has_api_key ? `<span class="tag-chip">${t("dashboard.keySaved")}</span>` : `<span class="tag-chip">${t("dashboard.noKey")}</span>`}
               ${config.shared ? `<span class="tag-chip">${t("dashboard.shared")}</span>` : `<span class="tag-chip">${t("dashboard.private")}</span>`}
               ${config.is_system ? `<span class="tag-chip" style="background:#fb923c; color:#fff;">🛠 system</span>` : ""}
+              ${config.is_platform ? `<span class="tag-chip" style="background:#2b6cb0; color:#fff;">🌐 平台级</span>` : ""}
             </div>
             <div class="tag-item-meta">${config.base_url}</div>
             <div class="tag-item-desc">${config.system_prompt || t("dashboard.noSystemPrompt")}</div>
@@ -180,6 +192,7 @@ async function bootstrap(): Promise<void> {
   }
 
   welcomeText.textContent = data.username || "";
+  isSiteAdmin = !!(data as { site_admin?: boolean }).site_admin;
   renderSidebarFoot(data);
 
   await loadData();
@@ -260,6 +273,19 @@ llmConfigList.addEventListener("click", async (event) => {
   if (!config) return;
 
   const action = button.dataset.action;
+  if (action === "set-platform" || action === "unset-platform") {
+    const next = action === "set-platform";
+    const { response, data } = await setLLMConfigPlatform(config.id, next);
+    if (!response.ok) {
+      llmConfigStatus.textContent = data.error || "操作失败";
+      return;
+    }
+    llmConfigStatus.textContent = next
+      ? `已将「${config.name}」设为平台级（所有工作区可见）`
+      : `已取消「${config.name}」的平台级`;
+    await loadData();
+    return;
+  }
   if (action === "edit") {
     editingLLMConfigId = config.id;
     const presetID = matchPresetForConfig(config) || LLM_PROVIDER_PRESETS[0].id;
