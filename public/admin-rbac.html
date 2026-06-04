@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>角色与权限 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .rbac-bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+      .rbac-bar select { min-width:200px; }
+      .rbac-section { margin-bottom:22px; }
+      .rbac-section h3 { margin:0 0 8px; font-size:14px; }
+      .rbac-sub { color:var(--muted,#888); font-size:12px; }
+      .rbac-base { display:inline-block; padding:1px 7px; border-radius:10px; background:var(--surface-2,#eef); font-size:12px; }
+      .rbac-chips { display:flex; flex-wrap:wrap; gap:4px; }
+      .rbac-chip { border:1px solid var(--border,#ccc); background:transparent; color:var(--muted,#888);
+        border-radius:12px; padding:1px 9px; font-size:12px; cursor:pointer; }
+      .rbac-chip-on { background:var(--accent,#2b6cb0); color:#fff; border-color:var(--accent,#2b6cb0); }
+      .rbac-chip-base { background:var(--surface-2,#eef); color:var(--text,#333); cursor:default; opacity:.85; }
+      .rbac-role-card { border:1px solid var(--border,#ddd); border-radius:8px; padding:10px 12px; margin-bottom:8px; }
+      .rbac-role-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+      .rbac-role-actions { display:flex; gap:6px; flex-shrink:0; }
+      .rbac-perms { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+      .rbac-perm { background:var(--surface-2,#f2f4f8); border-radius:6px; padding:1px 8px; font-size:12px; }
+      .rbac-tag { font-size:11px; border-radius:6px; padding:0 6px; }
+      .rbac-tag-sys { background:#eef; color:#447; }
+      .rbac-tag-custom { background:#efe; color:#363; }
+      .rbac-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex;
+        align-items:center; justify-content:center; z-index:50; }
+      .rbac-modal-box { background:var(--surface,#fff); border-radius:10px; padding:18px;
+        width:min(640px,92vw); max-height:86vh; overflow:auto; }
+      .rbac-modal-box .row { display:flex; gap:10px; margin-bottom:10px; }
+      .rbac-modal-box .row label { flex:1; display:flex; flex-direction:column; gap:3px; font-size:12px; }
+      .rbac-modal-box input[type=text] { padding:6px 8px; border:1px solid var(--border,#ccc); border-radius:6px; }
+      .rbac-mod { border:1px solid var(--border,#eee); border-radius:8px; padding:8px 10px; margin-bottom:8px; }
+      .rbac-mod-head { font-weight:600; font-size:12px; margin-bottom:4px; text-transform:capitalize; }
+      .rbac-perm-row { display:flex; align-items:center; gap:6px; font-size:12px; padding:2px 0; }
+      .rbac-perm-row code { font-size:11px; }
+      .rbac-modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+      .rbac-sub-cell { font-size:11px; color:var(--muted,#888); }
+    </style>
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+        <nav class="lp-nav"></nav>
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button class="lp-foot-icon-btn" type="button" data-open-settings-center data-settings-target="personalization" title="Settings"><span data-icon="settings"></span></button>
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">角色与权限 · 按工作区管理成员角色与自定义角色</span>
+          <div class="lp-topbar-end" style="display:flex; gap:6px;">
+            <button id="refreshBtn" class="btn-inline btn-secondary" type="button" title="刷新">⟲</button>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding:12px; overflow-y:auto;">
+          <div class="rbac-bar">
+            <span>工作区：</span>
+            <select id="wsSel"></select>
+            <span id="status" class="rbac-sub"></span>
+          </div>
+
+          <div class="rbac-section">
+            <h3>成员角色</h3>
+            <p class="rbac-sub" style="margin:0 0 8px;">
+              基础角色来自团队成员关系（owner/admin/member/viewer，不可在此移除）。
+              点击右侧角色标签可叠加授予 / 撤销额外角色（含自定义角色）。
+            </p>
+            <table class="lp-table">
+              <thead><tr><th>成员</th><th>基础角色</th><th>附加角色</th></tr></thead>
+              <tbody id="membersTbody"></tbody>
+            </table>
+          </div>
+
+          <div class="rbac-section">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3>角色定义</h3>
+              <button id="newRoleBtn" class="btn-inline btn-primary" type="button">+ 新建自定义角色</button>
+            </div>
+            <p class="rbac-sub" style="margin:0 0 8px;">
+              系统角色为全局只读；自定义角色仅在本工作区生效，可编辑其权限集合或删除。
+            </p>
+            <div id="rolesWrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="roleModal" class="rbac-modal" hidden>
+      <div class="rbac-modal-box">
+        <h3 id="roleModalTitle" style="margin:0 0 12px;">新建自定义角色</h3>
+        <div class="row">
+          <label>角色 key（创建后不可改）
+            <input id="roleKey" type="text" placeholder="例如 case_reviewer" />
+          </label>
+          <label>显示名称
+            <input id="roleName" type="text" placeholder="例如 案件审阅员" />
+          </label>
+        </div>
+        <div class="rbac-sub" style="margin-bottom:6px;">勾选该角色拥有的权限：</div>
+        <div id="permMatrix"></div>
+        <div class="rbac-modal-actions">
+          <button id="cancelRoleBtn" class="btn-inline btn-secondary" type="button">取消</button>
+          <button id="saveRoleBtn" class="btn-inline btn-primary" type="button">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/admin-rbac.js"></script>
+  </body>
+</html>

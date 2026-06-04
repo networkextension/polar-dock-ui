@@ -91,6 +91,7 @@ const NAV: NavGroup[] = [
       { href: "/proxy-tokens.html", label: "API Tokens", icon: "key", gate: "admin" },
       { href: "/grafana/", label: "Grafana", icon: "line-chart", gate: "admin", external: true },
       { href: "/admin.html", label: "用户管理", i18n: "nav.userAdmin", icon: "users-cog", gate: "admin" },
+      { href: "/admin-rbac.html", label: "角色与权限", icon: "shield-check", gate: "admin" },
     ],
   },
 ];
