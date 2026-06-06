@@ -81,3 +81,44 @@ export async function assignMemberRole(
     { method: "POST", body },
   );
 }
+
+// ---- workspace mounts (南北向 resource sharing) ------------------------
+
+export interface WorkspaceMount {
+  id: number;
+  workspace_id: string;
+  source_workspace_id: string;
+  resource_kind: string;
+  source_resource_id?: string;
+  mode: string;
+  created_by: string;
+  created_at: string;
+}
+
+export async function fetchMounts(teamID: string) {
+  return requestJson<{ mounts: WorkspaceMount[] }>(
+    `/api/teams/${encodeURIComponent(teamID)}/mounts`,
+  );
+}
+
+export async function createMount(
+  teamID: string,
+  body: {
+    source_workspace_id: string;
+    resource_kind: string;
+    source_resource_id?: string;
+    mode?: string;
+  },
+) {
+  return requestJson<{ id: number }>(
+    `/api/teams/${encodeURIComponent(teamID)}/mounts`,
+    { method: "POST", body },
+  );
+}
+
+export async function deleteMount(teamID: string, mountID: number) {
+  return requestJson<{ deleted: number }>(
+    `/api/teams/${encodeURIComponent(teamID)}/mounts/${mountID}`,
+    { method: "DELETE" },
+  );
+}

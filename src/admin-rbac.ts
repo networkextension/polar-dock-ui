@@ -10,15 +10,19 @@
 
 import {
   assignMemberRole,
+  createMount,
   createRole,
+  deleteMount,
   deleteRole,
   fetchMemberRoles,
+  fetchMounts,
   fetchPermissionCatalog,
   fetchRoles,
   updateRole,
   type MemberRole,
   type RBACPermission,
   type RBACRole,
+  type WorkspaceMount,
 } from "./api/rbac.js";
 import { fetchTeams, fetchTeamMembers } from "./api/teams.js";
 import type { TeamMember, TeamWithRole } from "./types/teams.js";
@@ -48,12 +52,26 @@ const permMatrix = byId<HTMLElement>("permMatrix");
 const saveRoleBtn = byId<HTMLButtonElement>("saveRoleBtn");
 const cancelRoleBtn = byId<HTMLButtonElement>("cancelRoleBtn");
 
+// mounts
+const mountSource = byId<HTMLSelectElement>("mountSource");
+const mountKind = byId<HTMLSelectElement>("mountKind");
+const mountResId = byId<HTMLInputElement>("mountResId");
+const mountMode = byId<HTMLSelectElement>("mountMode");
+const addMountBtn = byId<HTMLButtonElement>("addMountBtn");
+const mountsTbody = byId<HTMLTableSectionElement>("mountsTbody");
+
 let currentWS = "";
 let catalog: RBACPermission[] = [];
 let roles: RBACRole[] = [];
 let members: TeamMember[] = [];
 let memberRoles: MemberRole[] = [];
+let mounts: WorkspaceMount[] = [];
+let allTeams: TeamWithRole[] = [];
 let editingRoleID: number | null = null; // null = creating
+
+function wsName(id: string): string {
+  return allTeams.find((t) => t.id === id)?.name || id;
+}
 
 function esc(s: string): string {
   return s
@@ -74,13 +92,22 @@ async function loadWorkspaces(): Promise<void> {
     setStatus("无法加载工作区列表", true);
     return;
   }
-  const teams: TeamWithRole[] = data.teams ?? [];
+  allTeams = data.teams ?? [];
   const stored = localStorage.getItem(WORKSPACE_KEY) || "";
-  wsSel.innerHTML = teams
+  wsSel.innerHTML = allTeams
     .map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`)
     .join("");
-  currentWS = teams.some((t) => t.id === stored) ? stored : (teams[0]?.id ?? "");
+  currentWS = allTeams.some((t) => t.id === stored) ? stored : (allTeams[0]?.id ?? "");
   wsSel.value = currentWS;
+}
+
+// Populate the mount "source workspace" picker with every workspace except
+// the current target (you mount FROM another workspace INTO this one).
+function renderMountSourceOptions(): void {
+  mountSource.innerHTML = allTeams
+    .filter((t) => t.id !== currentWS)
+    .map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`)
+    .join("");
 }
 
 // ---- data load ----------------------------------------------------------
@@ -89,11 +116,12 @@ async function loadAll(): Promise<void> {
   if (!currentWS) return;
   setStatus("加载中…");
   try {
-    const [catRes, rolesRes, membersRes, mrRes] = await Promise.all([
+    const [catRes, rolesRes, membersRes, mrRes, mountsRes] = await Promise.all([
       fetchPermissionCatalog(),
       fetchRoles(currentWS),
       fetchTeamMembers(currentWS),
       fetchMemberRoles(currentWS),
+      fetchMounts(currentWS),
     ]);
     if (!rolesRes.response.ok) {
       const err = rolesRes.data as unknown as { error?: string };
@@ -111,9 +139,12 @@ async function loadAll(): Promise<void> {
     roles = rolesRes.data.roles ?? [];
     members = membersRes.response.ok ? (membersRes.data.members ?? []) : [];
     memberRoles = mrRes.response.ok ? (mrRes.data.member_roles ?? []) : [];
+    mounts = mountsRes.response.ok ? (mountsRes.data.mounts ?? []) : [];
     renderMembers();
     renderRoles();
-    setStatus(`${members.length} 名成员 · ${roles.length} 个角色 · ${catalog.length} 项权限`);
+    renderMountSourceOptions();
+    renderMounts();
+    setStatus(`${members.length} 名成员 · ${roles.length} 个角色 · ${mounts.length} 个挂载 · ${catalog.length} 项权限`);
   } catch (err) {
     setStatus(`加载失败：${(err as Error).message}`, true);
   }
@@ -305,8 +336,76 @@ async function onDeleteRole(role: RBACRole): Promise<void> {
   }
 }
 
+// ---- mounts -------------------------------------------------------------
+
+const MOUNT_KIND_LABEL: Record<string, string> = {
+  llm_config: "LLM 配置",
+  asset: "资产",
+  prompt: "Prompt",
+  "*": "全部",
+};
+
+function renderMounts(): void {
+  mountsTbody.innerHTML = "";
+  if (!mounts.length) {
+    mountsTbody.innerHTML = `<tr><td colspan="5" class="rbac-sub">暂无挂载</td></tr>`;
+    return;
+  }
+  mounts.forEach((m) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${esc(wsName(m.source_workspace_id))}<div class="rbac-sub-cell">${esc(m.source_workspace_id)}</div></td>
+      <td>${esc(MOUNT_KIND_LABEL[m.resource_kind] || m.resource_kind)}</td>
+      <td>${m.source_resource_id ? `<code>${esc(m.source_resource_id)}</code>` : "<span class=\"rbac-sub\">整类</span>"}</td>
+      <td>${m.mode === "readwrite" ? "读写" : "只读"}</td>
+      <td><button class="btn-inline btn-secondary" data-del-mount="${m.id}" style="color:var(--danger,#c00);">移除</button></td>`;
+    tr.querySelector("[data-del-mount]")?.addEventListener("click", () => void onDeleteMount(m));
+    mountsTbody.appendChild(tr);
+  });
+}
+
+async function onAddMount(): Promise<void> {
+  const src = mountSource.value;
+  if (!src) {
+    setStatus("请选择来源工作区", true);
+    return;
+  }
+  setStatus("添加挂载中…");
+  try {
+    const { response, data } = await createMount(currentWS, {
+      source_workspace_id: src,
+      resource_kind: mountKind.value,
+      source_resource_id: mountResId.value.trim() || undefined,
+      mode: mountMode.value,
+    });
+    if (!response.ok) {
+      setStatus(`添加失败：${(data as unknown as { error?: string }).error || response.status}`, true);
+      return;
+    }
+    mountResId.value = "";
+    await loadAll();
+  } catch (err) {
+    setStatus(`添加失败：${(err as Error).message}`, true);
+  }
+}
+
+async function onDeleteMount(m: WorkspaceMount): Promise<void> {
+  if (!confirm(`移除来自「${wsName(m.source_workspace_id)}」的挂载？`)) return;
+  try {
+    const { response, data } = await deleteMount(currentWS, m.id);
+    if (!response.ok) {
+      setStatus(`移除失败：${(data as unknown as { error?: string }).error || response.status}`, true);
+      return;
+    }
+    await loadAll();
+  } catch (err) {
+    setStatus(`移除失败：${(err as Error).message}`, true);
+  }
+}
+
 // ---- wiring -------------------------------------------------------------
 
+addMountBtn.addEventListener("click", () => void onAddMount());
 wsSel.addEventListener("change", () => {
   currentWS = wsSel.value;
   localStorage.setItem(WORKSPACE_KEY, currentWS);
