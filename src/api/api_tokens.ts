@@ -6,6 +6,8 @@
 import { requestJson } from "./http.js";
 import type {
   ApiScopeCatalogResponse,
+  ApiTokenCallListResponse,
+  ApiTokenCallSummaryResponse,
   ApiTokenCreatePayload,
   ApiTokenCreateResponse,
   ApiTokenListResponse,
@@ -31,4 +33,12 @@ export async function revokeApiToken(id: number) {
   return requestJson<ApiTokenRevokeResponse>(`/api/api-tokens/${id}`, {
     method: "DELETE",
   });
+}
+
+export async function fetchApiTokenCalls(id: number, limit = 100) {
+  return requestJson<ApiTokenCallListResponse>(`/api/api-tokens/${id}/calls?limit=${limit}`);
+}
+
+export async function fetchApiTokenCallsAggregate(id: number, days = 7) {
+  return requestJson<ApiTokenCallSummaryResponse>(`/api/api-tokens/${id}/calls/aggregate?days=${days}`);
 }

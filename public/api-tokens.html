@@ -124,6 +124,29 @@
       </div>
     </div>
 
+    <!-- Usage / audit modal (P2). -->
+    <div id="usageModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width: 760px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="usageTitle">用量</span>
+          <button id="usageCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body">
+          <div id="usageSummary" class="meta-subtitle" style="margin-bottom:8px;">加载中…</div>
+          <table class="lp-table" id="usageTable" hidden>
+            <thead>
+              <tr><th>时间</th><th>方法</th><th>路径</th><th>状态</th><th>延迟</th><th>IP</th></tr>
+            </thead>
+            <tbody id="usageTbody"></tbody>
+          </table>
+          <div id="usageEmpty" class="meta-subtitle" hidden>暂无调用记录。</div>
+        </div>
+        <div class="lp-modal-foot">
+          <button id="usageDoneBtn" type="button" class="btn-inline btn-primary">关闭</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/scripts/api-tokens.js"></script>
   </body>
 </html>
