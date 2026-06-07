@@ -58,6 +58,7 @@
               <tr>
                 <th>名称</th>
                 <th>前缀</th>
+                <th>权限范围</th>
                 <th>创建</th>
                 <th>最近使用</th>
                 <th>状态</th>
@@ -81,7 +82,15 @@
         </div>
         <div class="lp-modal-body">
           <label class="settings-section-title" for="createName" style="font-size:12px;">名称</label>
-          <input id="createName" class="input" type="text" placeholder="e.g. ci-deploy / share.lzhu.cn" style="width:100%; margin-bottom:8px;" />
+          <input id="createName" class="input" type="text" placeholder="e.g. ci-deploy / share.lzhu.cn" style="width:100%; margin-bottom:10px;" />
+
+          <label class="settings-section-title" style="font-size:12px;">权限范围（不勾选 = 完全访问，兼容旧令牌）</label>
+          <label style="display:flex; gap:6px; align-items:center; margin:4px 0 6px 0; cursor:pointer;">
+            <input id="scopeWildcard" type="checkbox" /> <span>完全访问（不含管理员接口）</span>
+          </label>
+          <div id="scopeTree" style="max-height:240px; overflow-y:auto; border:1px solid var(--border,#e5e7eb); border-radius:6px; padding:6px 8px; margin-bottom:8px; font-size:13px;">
+            <div class="meta-subtitle">加载权限列表…</div>
+          </div>
           <div id="createError" class="status-text" style="color: var(--danger, #c00); min-height:16px;"></div>
         </div>
         <div class="lp-modal-foot">

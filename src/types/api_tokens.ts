@@ -28,6 +28,20 @@ export type ApiTokenListResponse = ErrorResponse & {
 
 export type ApiTokenCreatePayload = {
   name: string;
+  scopes?: string[];
+};
+
+// One domain's grantable scopes for the create-token picker, from
+// GET /api/api-token-scopes.
+export type ApiScopeGroup = {
+  domain: string;
+  admin: boolean;
+  scopes: string[];
+};
+
+export type ApiScopeCatalogResponse = ErrorResponse & {
+  groups?: ApiScopeGroup[];
+  wildcard?: string;
 };
 
 // POST returns the freshly-minted secret at the TOP level (`secret`), not

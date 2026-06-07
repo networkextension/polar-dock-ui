@@ -5,6 +5,7 @@
 
 import { requestJson } from "./http.js";
 import type {
+  ApiScopeCatalogResponse,
   ApiTokenCreatePayload,
   ApiTokenCreateResponse,
   ApiTokenListResponse,
@@ -13,6 +14,10 @@ import type {
 
 export async function listApiTokens() {
   return requestJson<ApiTokenListResponse>("/api/api-tokens");
+}
+
+export async function listApiTokenScopes() {
+  return requestJson<ApiScopeCatalogResponse>("/api/api-token-scopes");
 }
 
 export async function createApiToken(payload: ApiTokenCreatePayload) {

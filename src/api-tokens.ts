@@ -11,12 +11,17 @@
 // Pattern mirrors proxy-tokens.ts, trimmed to P0 (name only; no scopes /
 // RPM / audit yet). DOM API only, no framework.
 
-import { createApiToken, listApiTokens, revokeApiToken } from "./api/api_tokens.js";
+import {
+  createApiToken,
+  listApiTokens,
+  listApiTokenScopes,
+  revokeApiToken,
+} from "./api/api_tokens.js";
 import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
-import type { ApiToken } from "./types/api_tokens.js";
+import type { ApiScopeGroup, ApiToken } from "./types/api_tokens.js";
 
 initStoredTheme();
 bindThemeSync();
@@ -36,6 +41,10 @@ const createCancelBtn = byId<HTMLButtonElement>("createCancelBtn");
 const createSubmitBtn = byId<HTMLButtonElement>("createSubmitBtn");
 const createName = byId<HTMLInputElement>("createName");
 const createError = byId<HTMLElement>("createError");
+const scopeTree = byId<HTMLElement>("scopeTree");
+const scopeWildcard = byId<HTMLInputElement>("scopeWildcard");
+
+let scopeGroups: ApiScopeGroup[] = [];
 
 const plaintextModal = byId<HTMLElement>("plaintextModal");
 const plaintextValue = byId<HTMLInputElement>("plaintextValue");
@@ -74,6 +83,23 @@ function renderTokenRow(tok: ApiToken): HTMLTableRowElement {
   code.textContent = tok.prefix + "…";
   code.style.fontSize = "11px";
   cellPrefix.appendChild(code);
+
+  const cellScopes = document.createElement("td");
+  const scopes = tok.scopes ?? [];
+  if (scopes.length === 0) {
+    const span = document.createElement("span");
+    span.className = "meta-subtitle";
+    span.textContent = "完全访问";
+    cellScopes.appendChild(span);
+  } else {
+    scopes.forEach((sc) => {
+      const chip = document.createElement("span");
+      chip.textContent = sc;
+      chip.style.cssText =
+        "display:inline-block; margin:1px 3px 1px 0; padding:1px 6px; border-radius:8px; font-size:11px; background:var(--surface-2,#f3f4f6); border:1px solid var(--border,#e5e7eb);";
+      cellScopes.appendChild(chip);
+    });
+  }
 
   const cellCreated = document.createElement("td");
   cellCreated.textContent = fmtRelative(tok.created_at);
@@ -134,9 +160,61 @@ async function refreshTokenList(): Promise<void> {
   }
 }
 
+function renderScopeTree(): void {
+  scopeTree.innerHTML = "";
+  if (scopeGroups.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "meta-subtitle";
+    empty.textContent = "无可用权限范围。";
+    scopeTree.appendChild(empty);
+    return;
+  }
+  for (const g of scopeGroups) {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; gap:6px; align-items:baseline; padding:2px 0;";
+    const label = document.createElement("span");
+    label.textContent = (g.admin ? "🔒 " : "") + g.domain;
+    label.style.cssText = "min-width:120px; font-weight:500;";
+    row.appendChild(label);
+    for (const sc of g.scopes) {
+      const lbl = document.createElement("label");
+      lbl.style.cssText = "display:inline-flex; gap:3px; align-items:center; margin-right:10px; cursor:pointer;";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "scope-cb";
+      cb.value = sc;
+      const txt = document.createElement("span");
+      // show just the action (read/write); full scope is the value
+      txt.textContent = sc.slice(sc.lastIndexOf(":") + 1);
+      lbl.append(cb, txt);
+      row.appendChild(lbl);
+    }
+    scopeTree.appendChild(row);
+  }
+}
+
+function syncWildcard(): void {
+  const on = scopeWildcard.checked;
+  scopeTree.querySelectorAll<HTMLInputElement>(".scope-cb").forEach((cb) => {
+    cb.disabled = on;
+    if (on) cb.checked = false;
+  });
+  scopeTree.style.opacity = on ? "0.5" : "1";
+}
+
+function selectedScopes(): string[] {
+  if (scopeWildcard.checked) return ["*"];
+  return Array.from(scopeTree.querySelectorAll<HTMLInputElement>(".scope-cb:checked")).map((cb) => cb.value);
+}
+
 function openCreateModal(): void {
   createName.value = "";
   createError.textContent = "";
+  scopeWildcard.checked = false;
+  scopeTree.querySelectorAll<HTMLInputElement>(".scope-cb").forEach((cb) => {
+    cb.checked = false;
+  });
+  syncWildcard();
   createModal.hidden = false;
   createName.focus();
 }
@@ -159,7 +237,7 @@ async function onSubmitCreate(): Promise<void> {
   createSubmitBtn.disabled = true;
   createError.textContent = "";
   try {
-    const { data } = await createApiToken({ name });
+    const { data } = await createApiToken({ name, scopes: selectedScopes() });
     if (data.error) {
       createError.textContent = data.error;
       return;
@@ -209,6 +287,7 @@ async function copyToClipboard(value: string, btn: HTMLButtonElement): Promise<v
   }
 }
 
+scopeWildcard.addEventListener("change", syncWildcard);
 newTokenBtn.addEventListener("click", openCreateModal);
 showRevokedToggle?.addEventListener("change", () => renderTokenTable());
 createCloseBtn.addEventListener("click", closeCreateModal);
@@ -224,9 +303,20 @@ plaintextDoneBtn.addEventListener("click", () => {
 plaintextCopyBtn.addEventListener("click", () => void copyToClipboard(plaintextValue.value, plaintextCopyBtn));
 logoutBtn.addEventListener("click", () => void logout().then(() => (window.location.href = "/login.html")));
 
+async function loadScopeCatalog(): Promise<void> {
+  try {
+    const { data } = await listApiTokenScopes();
+    scopeGroups = data.groups ?? [];
+  } catch {
+    scopeGroups = [];
+  }
+  renderScopeTree();
+}
+
 async function bootstrap(): Promise<void> {
   await hydrateSiteBrand();
   await hydrateSidebarFoot();
+  await loadScopeCatalog();
   await refreshTokenList();
 }
 
