@@ -56,3 +56,32 @@ export type ApiTokenCreateResponse = ErrorResponse & {
 export type ApiTokenRevokeResponse = ErrorResponse & {
   ok?: boolean;
 };
+
+// P2: per-call audit + usage summary.
+export type ApiTokenCall = {
+  id: number;
+  token_id: number;
+  workspace_id: string;
+  method: string;
+  path: string;
+  status_code: number;
+  scope: string;
+  ip: string;
+  latency_ms: number;
+  created_at: string;
+};
+
+export type ApiTokenCallListResponse = ErrorResponse & {
+  calls?: ApiTokenCall[];
+};
+
+export type ApiTokenCallSummary = {
+  calls: number;
+  ok_count: number;
+  err_count: number;
+  last_used?: string;
+};
+
+export type ApiTokenCallSummaryResponse = ErrorResponse & {
+  summary?: ApiTokenCallSummary;
+};

@@ -13,6 +13,8 @@
 
 import {
   createApiToken,
+  fetchApiTokenCalls,
+  fetchApiTokenCallsAggregate,
   listApiTokens,
   listApiTokenScopes,
   revokeApiToken,
@@ -21,7 +23,7 @@ import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
-import type { ApiScopeGroup, ApiToken } from "./types/api_tokens.js";
+import type { ApiScopeGroup, ApiToken, ApiTokenCall } from "./types/api_tokens.js";
 
 initStoredTheme();
 bindThemeSync();
@@ -51,6 +53,15 @@ const plaintextValue = byId<HTMLInputElement>("plaintextValue");
 const plaintextUsage = byId<HTMLElement>("plaintextUsage");
 const plaintextCopyBtn = byId<HTMLButtonElement>("plaintextCopyBtn");
 const plaintextDoneBtn = byId<HTMLButtonElement>("plaintextDoneBtn");
+
+const usageModal = byId<HTMLElement>("usageModal");
+const usageTitle = byId<HTMLElement>("usageTitle");
+const usageSummary = byId<HTMLElement>("usageSummary");
+const usageTable = byId<HTMLTableElement>("usageTable");
+const usageTbody = byId<HTMLTableSectionElement>("usageTbody");
+const usageEmpty = byId<HTMLElement>("usageEmpty");
+const usageCloseBtn = byId<HTMLButtonElement>("usageCloseBtn");
+const usageDoneBtn = byId<HTMLButtonElement>("usageDoneBtn");
 
 // Revoked tokens accumulate (test/rotated keys); hide them by default.
 let allTokens: ApiToken[] = [];
@@ -111,6 +122,13 @@ function renderTokenRow(tok: ApiToken): HTMLTableRowElement {
   cellStatus.textContent = revoked ? `🔴 已撤销 ${fmtRelative(tok.revoked_at)}` : "✓ 启用";
 
   const cellActions = document.createElement("td");
+  const usageBtn = document.createElement("button");
+  usageBtn.type = "button";
+  usageBtn.className = "btn-inline btn-secondary";
+  usageBtn.textContent = "用量";
+  usageBtn.style.marginRight = "4px";
+  usageBtn.addEventListener("click", () => void openUsageModal(tok));
+  cellActions.appendChild(usageBtn);
   if (!revoked) {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -274,6 +292,68 @@ async function onRevoke(tok: ApiToken): Promise<void> {
   }
 }
 
+function statusColor(status: number): string {
+  if (status >= 500) return "#dc2626";
+  if (status >= 400) return "#d97706";
+  if (status >= 200 && status < 300) return "#16a34a";
+  return "#6b7280";
+}
+
+function renderUsageCallRow(c: ApiTokenCall): HTMLTableRowElement {
+  const tr = document.createElement("tr");
+  const mk = (t: string) => {
+    const td = document.createElement("td");
+    td.textContent = t;
+    return td;
+  };
+  tr.appendChild(mk(fmtRelative(c.created_at)));
+  tr.appendChild(mk(c.method));
+  const pathTd = mk(c.path || "—");
+  pathTd.style.cssText = "font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px;";
+  tr.appendChild(pathTd);
+  const stTd = document.createElement("td");
+  const dot = document.createElement("span");
+  dot.style.cssText = `display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; background:${statusColor(c.status_code)};`;
+  stTd.append(dot, document.createTextNode(String(c.status_code)));
+  tr.appendChild(stTd);
+  tr.appendChild(mk(c.latency_ms > 0 ? `${c.latency_ms}ms` : "—"));
+  tr.appendChild(mk(c.ip || "—"));
+  return tr;
+}
+
+async function openUsageModal(tok: ApiToken): Promise<void> {
+  usageTitle.textContent = `用量 — ${tok.name}`;
+  usageSummary.textContent = "加载中…";
+  usageTbody.innerHTML = "";
+  usageTable.hidden = true;
+  usageEmpty.hidden = true;
+  usageModal.hidden = false;
+  try {
+    const [aggResp, callsResp] = await Promise.all([
+      fetchApiTokenCallsAggregate(tok.id, 7),
+      fetchApiTokenCalls(tok.id, 100),
+    ]);
+    const s = aggResp.data.summary;
+    if (s) {
+      const rate = s.calls > 0 ? ((s.ok_count / s.calls) * 100).toFixed(1) : "—";
+      usageSummary.textContent = `近 7 天：总调用 ${s.calls} · 成功率 ${rate}% · 最近使用 ${fmtRelative(s.last_used)}`;
+    } else {
+      usageSummary.textContent = "近 7 天：暂无数据";
+    }
+    const calls = callsResp.data.calls ?? [];
+    calls.forEach((c) => usageTbody.appendChild(renderUsageCallRow(c)));
+    usageTable.hidden = calls.length === 0;
+    usageEmpty.hidden = calls.length !== 0;
+  } catch (err) {
+    usageSummary.textContent = `加载失败：${(err as Error).message}`;
+  }
+}
+
+function closeUsageModal(): void {
+  usageModal.hidden = true;
+  usageTbody.innerHTML = "";
+}
+
 async function copyToClipboard(value: string, btn: HTMLButtonElement): Promise<void> {
   try {
     await navigator.clipboard.writeText(value);
@@ -301,6 +381,8 @@ plaintextDoneBtn.addEventListener("click", () => {
   plaintextValue.value = "";
 });
 plaintextCopyBtn.addEventListener("click", () => void copyToClipboard(plaintextValue.value, plaintextCopyBtn));
+usageCloseBtn.addEventListener("click", closeUsageModal);
+usageDoneBtn.addEventListener("click", closeUsageModal);
 logoutBtn.addEventListener("click", () => void logout().then(() => (window.location.href = "/login.html")));
 
 async function loadScopeCatalog(): Promise<void> {
