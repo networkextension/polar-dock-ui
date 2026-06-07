@@ -41,6 +41,7 @@ const NAV: NavGroup[] = [
     items: [
       { href: "/teams.html", label: "工作区", i18n: "nav.teams", icon: "users-round" },
       { href: "/assets.html", label: "资产", icon: "folder" },
+      { href: "/api-tokens.html", label: "开放 API", icon: "key-round" },
     ],
   },
   {
