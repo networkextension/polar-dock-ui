@@ -14,6 +14,7 @@ export type ApiToken = {
   name: string;
   prefix: string;
   scopes: string[];
+  ip_allowlist?: string[];
   rate_limit_rpm: number;
   status: string; // "active" | "revoked"
   created_at: string;
@@ -29,6 +30,8 @@ export type ApiTokenListResponse = ErrorResponse & {
 export type ApiTokenCreatePayload = {
   name: string;
   scopes?: string[];
+  ip_allowlist?: string[];
+  expires_at?: string;
 };
 
 // One domain's grantable scopes for the create-token picker, from

@@ -59,6 +59,7 @@
                 <th>名称</th>
                 <th>前缀</th>
                 <th>权限范围</th>
+                <th>过期</th>
                 <th>创建</th>
                 <th>最近使用</th>
                 <th>状态</th>
@@ -88,9 +89,21 @@
           <label style="display:flex; gap:6px; align-items:center; margin:4px 0 6px 0; cursor:pointer;">
             <input id="scopeWildcard" type="checkbox" /> <span>完全访问（不含管理员接口）</span>
           </label>
-          <div id="scopeTree" style="max-height:240px; overflow-y:auto; border:1px solid var(--border,#e5e7eb); border-radius:6px; padding:6px 8px; margin-bottom:8px; font-size:13px;">
+          <div id="scopeTree" style="max-height:200px; overflow-y:auto; border:1px solid var(--border,#e5e7eb); border-radius:6px; padding:6px 8px; margin-bottom:10px; font-size:13px;">
             <div class="meta-subtitle">加载权限列表…</div>
           </div>
+
+          <label class="settings-section-title" for="createExpiry" style="font-size:12px;">有效期</label>
+          <select id="createExpiry" class="input" style="width:100%; margin-bottom:10px;">
+            <option value="0">永不过期</option>
+            <option value="30">30 天</option>
+            <option value="90">90 天</option>
+            <option value="365">1 年</option>
+          </select>
+
+          <label class="settings-section-title" for="createIPs" style="font-size:12px;">IP 白名单（每行一个 IP 或 CIDR；留空 = 不限制）</label>
+          <textarea id="createIPs" class="input" rows="2" placeholder="e.g. 203.0.113.7&#10;10.0.0.0/8" style="width:100%; margin-bottom:8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px;"></textarea>
+
           <div id="createError" class="status-text" style="color: var(--danger, #c00); min-height:16px;"></div>
         </div>
         <div class="lp-modal-foot">
