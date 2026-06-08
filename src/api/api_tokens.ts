@@ -35,6 +35,12 @@ export async function revokeApiToken(id: number) {
   });
 }
 
+export async function rotateApiToken(id: number) {
+  return requestJson<ApiTokenCreateResponse>(`/api/api-tokens/${id}/rotate`, {
+    method: "POST",
+  });
+}
+
 export async function fetchApiTokenCalls(id: number, limit = 100) {
   return requestJson<ApiTokenCallListResponse>(`/api/api-tokens/${id}/calls?limit=${limit}`);
 }

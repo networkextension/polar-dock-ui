@@ -18,6 +18,7 @@ import {
   listApiTokens,
   listApiTokenScopes,
   revokeApiToken,
+  rotateApiToken,
 } from "./api/api_tokens.js";
 import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
@@ -45,6 +46,8 @@ const createName = byId<HTMLInputElement>("createName");
 const createError = byId<HTMLElement>("createError");
 const scopeTree = byId<HTMLElement>("scopeTree");
 const scopeWildcard = byId<HTMLInputElement>("scopeWildcard");
+const createExpiry = byId<HTMLSelectElement>("createExpiry");
+const createIPs = byId<HTMLTextAreaElement>("createIPs");
 
 let scopeGroups: ApiScopeGroup[] = [];
 
@@ -112,6 +115,18 @@ function renderTokenRow(tok: ApiToken): HTMLTableRowElement {
     });
   }
 
+  const cellExpiry = document.createElement("td");
+  if (!tok.expires_at) {
+    const span = document.createElement("span");
+    span.className = "meta-subtitle";
+    span.textContent = "永不";
+    cellExpiry.appendChild(span);
+  } else {
+    const expired = new Date(tok.expires_at).getTime() < Date.now();
+    cellExpiry.textContent = (expired ? "🔴 " : "") + fmtRelative(tok.expires_at);
+    if (expired) cellExpiry.style.color = "var(--danger, #c00)";
+  }
+
   const cellCreated = document.createElement("td");
   cellCreated.textContent = fmtRelative(tok.created_at);
 
@@ -130,6 +145,14 @@ function renderTokenRow(tok: ApiToken): HTMLTableRowElement {
   usageBtn.addEventListener("click", () => void openUsageModal(tok));
   cellActions.appendChild(usageBtn);
   if (!revoked) {
+    const rotBtn = document.createElement("button");
+    rotBtn.type = "button";
+    rotBtn.className = "btn-inline btn-secondary";
+    rotBtn.textContent = "轮换";
+    rotBtn.style.marginRight = "4px";
+    rotBtn.addEventListener("click", () => void onRotate(tok));
+    cellActions.appendChild(rotBtn);
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn-inline btn-secondary";
@@ -138,7 +161,7 @@ function renderTokenRow(tok: ApiToken): HTMLTableRowElement {
     cellActions.appendChild(btn);
   }
 
-  tr.append(cellName, cellPrefix, cellCreated, cellLastUsed, cellStatus, cellActions);
+  tr.append(cellName, cellPrefix, cellScopes, cellExpiry, cellCreated, cellLastUsed, cellStatus, cellActions);
   return tr;
 }
 
@@ -233,8 +256,25 @@ function openCreateModal(): void {
     cb.checked = false;
   });
   syncWildcard();
+  createExpiry.value = "0";
+  createIPs.value = "";
   createModal.hidden = false;
   createName.focus();
+}
+
+// Parse the IP-allowlist textarea into entries (one per line, commas ok).
+function parseIPs(): string[] {
+  return createIPs.value
+    .split(/[\n,]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+// Compute an ISO expires_at from the day-count select; "" = never.
+function computeExpiry(): string | undefined {
+  const days = parseInt(createExpiry.value, 10) || 0;
+  if (days <= 0) return undefined;
+  return new Date(Date.now() + days * 86400 * 1000).toISOString();
 }
 
 function closeCreateModal(): void {
@@ -255,7 +295,12 @@ async function onSubmitCreate(): Promise<void> {
   createSubmitBtn.disabled = true;
   createError.textContent = "";
   try {
-    const { data } = await createApiToken({ name, scopes: selectedScopes() });
+    const { data } = await createApiToken({
+      name,
+      scopes: selectedScopes(),
+      ip_allowlist: parseIPs(),
+      expires_at: computeExpiry(),
+    });
     if (data.error) {
       createError.textContent = data.error;
       return;
@@ -289,6 +334,29 @@ async function onRevoke(tok: ApiToken): Promise<void> {
     void refreshTokenList();
   } catch (err) {
     alert(`撤销失败：${(err as Error).message}`);
+  }
+}
+
+async function onRotate(tok: ApiToken): Promise<void> {
+  if (
+    !confirm(
+      `确认轮换 token "${tok.name}" (${tok.prefix}…)？\n会生成新 secret，旧 secret 立即失效；权限范围与限制保持不变。`,
+    )
+  ) {
+    return;
+  }
+  try {
+    const { data } = await rotateApiToken(tok.id);
+    if (data.error || !data.secret) {
+      alert(`轮换失败：${data.error ?? "服务端未返回密钥"}`);
+      return;
+    }
+    plaintextValue.value = data.secret;
+    plaintextUsage.textContent = usageExample(data.secret);
+    plaintextModal.hidden = false;
+    void refreshTokenList();
+  } catch (err) {
+    alert(`轮换失败：${(err as Error).message}`);
   }
 }
 
