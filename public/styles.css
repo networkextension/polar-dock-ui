@@ -4960,10 +4960,12 @@ textarea:focus-visible,
 }
 .rich-toolbar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
   gap: 2px;
-  padding: 5px 6px;
+  padding: 6px 8px;
+  height: auto;
   border-bottom: 1px solid var(--border);
   background: var(--surface-strong);
 }
@@ -4972,8 +4974,7 @@ textarea:focus-visible,
   width: auto;
   flex: 0 0 auto;
   min-width: 28px;
-  height: 28px;
-  padding: 0 7px;
+  padding: 4px 8px;
   border: none;
   background: transparent;
   color: var(--text);
@@ -4981,17 +4982,22 @@ textarea:focus-visible,
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.4;
 }
 .rich-tb-btn:hover { background: var(--surface); }
 .rich-tb-sep {
   width: 1px;
-  align-self: stretch;
-  margin: 2px 4px;
+  height: 16px;
+  display: inline-block;
+  flex: none;
+  margin: 0 2px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
   background: var(--border);
 }
 .post-editor .ProseMirror {
-  min-height: 110px;
+  min-height: 200px;
   max-height: 360px;
   overflow-y: auto;
   padding: 12px 14px;
