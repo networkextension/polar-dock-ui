@@ -1,5 +1,6 @@
 import { buildAssetUrl, resolveAvatar } from "./lib/avatar.js";
 import { byId, query } from "./lib/dom.js";
+import { renderMarkdown } from "./lib/marked.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { fetchTags } from "./api/dashboard.js";
@@ -484,7 +485,7 @@ function createPostCard(post: Post): HTMLElement {
       </div>
       <div class="post-time">${tagSummary}${tagSummary ? " · " : ""}${formatTime(post.created_at)}</div>
     </div>
-    <div class="post-content">${post.content}</div>
+    <div class="post-content md-body">${renderMarkdown(post.content)}</div>
     ${taskSummary}
     <div class="post-images">${images}</div>
     ${videoSection}

@@ -1,4 +1,7 @@
 import { buildAssetUrl, resolveAvatar } from "./lib/avatar.js";
+import { linkifyEscaped } from "./lib/linkify.js";
+import { renderMarkdown } from "./lib/marked.js";
+import { createMarkdownEditor, type MarkdownEditor } from "./lib/rich-editor.js";
 import { formatAssistUsageBadge } from "./lib/assist_usage.js";
 import { byId, query } from "./lib/dom.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
@@ -272,6 +275,7 @@ function setupPostAssistPanel(): void {
       return;
     }
     postContent.value = postAssistResult;
+    postEditor?.setMarkdown(postAssistResult);
     postAssistStatus.textContent = t("post.assistApplied");
   });
 }
@@ -625,7 +629,7 @@ async function loadReplies(postId: number): Promise<void> {
           <img class="avatar-xs" src="${avatar}" alt="${reply.username}" />
           <div class="reply-body">
             <div class="reply-meta">${reply.username} · ${formatTime(reply.created_at)}</div>
-            <div class="reply-content">${reply.content}</div>
+            <div class="reply-content">${linkifyEscaped(reply.content)}</div>
           </div>
         </div>
       `;
@@ -732,7 +736,7 @@ function renderPost(post: Post): void {
       </div>
       <div class="post-time">${formatTime(post.created_at)}</div>
     </div>
-    <div class="post-content">${post.content}</div>
+    <div class="post-content md-body">${renderMarkdown(post.content)}</div>
     ${tagInfo}
     ${taskInfo}
     <div class="post-images">${images}</div>
@@ -1011,7 +1015,7 @@ async function loadTaskResults(postId: number): Promise<void> {
             <a href="${profileUrl(result.user_id)}"><img class="avatar-xs" src="${avatar}" alt="${result.username}" /></a>
             <div class="reply-meta"><a class="post-author-name" href="${profileUrl(result.user_id)}">${result.username}</a> · ${formatTime(result.created_at)}</div>
           </div>
-          ${result.note ? `<div class="post-content">${escapeHtml(result.note)}</div>` : ""}
+          ${result.note ? `<div class="post-content">${linkifyEscaped(result.note)}</div>` : ""}
           ${images ? `<div class="post-images">${images}</div>` : ""}
           ${videos ? `<div class="post-videos">${videos}</div>` : ""}
         </div>
@@ -1159,8 +1163,59 @@ postAttachments.addEventListener("change", async () => {
   renderAttachmentChips();
 });
 
+// Rich-text composer: a Tiptap editor that writes MARKDOWN into the hidden
+// #postContent textarea, so the existing submit path (which reads
+// postContent.value) is unchanged. Toolbar maps to Tiptap commands; StarterKit
+// also gives markdown input rules (**bold**, # heading, - list, > quote) and the
+// usual keyboard shortcuts for free.
+const postEditorHost = byId<HTMLElement>("postEditor");
+const postEditorToolbar = byId<HTMLElement>("postEditorToolbar");
+let postEditor: MarkdownEditor | null = null;
+if (postEditorHost) {
+  postEditor = createMarkdownEditor(postEditorHost, {
+    cssClass: "rich-prose",
+    onChange: (md) => {
+      postContent.value = md;
+    },
+  });
+  wireRichToolbar(postEditorToolbar, postEditor);
+}
+
+function wireRichToolbar(toolbar: HTMLElement | null, ed: MarkdownEditor): void {
+  if (!toolbar) return;
+  toolbar.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-cmd]");
+    if (!btn) return;
+    e.preventDefault();
+    const chain = ed.editor.chain().focus();
+    switch (btn.dataset.cmd) {
+      case "bold": chain.toggleBold().run(); break;
+      case "italic": chain.toggleItalic().run(); break;
+      case "strike": chain.toggleStrike().run(); break;
+      case "h2": chain.toggleHeading({ level: 2 }).run(); break;
+      case "bulletList": chain.toggleBulletList().run(); break;
+      case "orderedList": chain.toggleOrderedList().run(); break;
+      case "blockquote": chain.toggleBlockquote().run(); break;
+      case "code": chain.toggleCode().run(); break;
+      case "codeBlock": chain.toggleCodeBlock().run(); break;
+      case "link": {
+        const prev = ed.editor.getAttributes("link").href as string | undefined;
+        const url = window.prompt("Link URL", prev || "https://");
+        if (url === null) { chain.run(); return; }
+        if (url.trim() === "") { chain.extendMarkRange("link").unsetLink().run(); return; }
+        chain.extendMarkRange("link").setLink({ href: url.trim() }).run();
+        break;
+      }
+      default: chain.run();
+    }
+  });
+}
+
 postForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (postEditor) {
+    postContent.value = postEditor.getMarkdown();
+  }
   const content = postContent.value.trim();
   if (!content) {
     postFormStatus.textContent = t("post.contentRequired");

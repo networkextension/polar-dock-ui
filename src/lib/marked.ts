@@ -1,3 +1,5 @@
+import { linkifyEscaped } from "./linkify.js";
+
 declare global {
   interface Window {
     marked?: {
@@ -134,15 +136,19 @@ export function renderMarkdown(input: string): string {
   if (!input) {
     return "";
   }
+  // Defense-in-depth: if marked is unavailable or throws, fall back to the
+  // escape-then-autolink renderer rather than returning the raw string — the
+  // result is interpolated as innerHTML by callers, so a raw passthrough would
+  // be an injection vector on a CDN/parse failure.
   if (!window.marked) {
-    return input;
+    return linkifyEscaped(input);
   }
   configureMarked();
   try {
     const html = window.marked.parse(input);
     return sanitizeHtml(typeof html === "string" ? html : String(html));
   } catch {
-    return input;
+    return linkifyEscaped(input);
   }
 }
 
