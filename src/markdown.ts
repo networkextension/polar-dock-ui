@@ -12,6 +12,10 @@ const contentEl = byId<HTMLElement>("markdownContent");
 const copyMdBtn = byId<HTMLButtonElement>("markdownCopyMdBtn");
 const copyHtmlBtn = byId<HTMLButtonElement>("markdownCopyHtmlBtn");
 const entryId = new URLSearchParams(window.location.search).get("id");
+// Optional (older HTML may lack it): the topbar affordance reading "Log in to
+// edit" for guests. When an active session is detected it becomes a real "Edit"
+// link into the editor (which enforces ownership server-side).
+const editLink = document.getElementById("markdownEditLink") as HTMLAnchorElement | null;
 
 initStoredTheme();
 bindThemeSync();
@@ -131,8 +135,24 @@ copyHtmlBtn.addEventListener("click", () => {
   void runCopy(copyHtmlBtn, () => contentEl.innerHTML, t("markdown.copyHtml"));
 });
 
+// Auth-aware edit affordance: if the visitor has a live session, turn the
+// "Log in to edit" link into an "Edit" link to the editor. Previously this link
+// was static, so logged-in owners still saw "Log in to edit".
+async function updateEditAffordance(): Promise<void> {
+  if (!editLink || !entryId) {
+    return;
+  }
+  const me = await requestMarkdown("/api/me");
+  if (me.ok) {
+    editLink.href = `/editor.html?id=${encodeURIComponent(entryId)}`;
+    editLink.textContent = t("markdown.edit");
+    editLink.removeAttribute("data-i18n");
+  }
+}
+
 void hydrateSiteBrand();
 void loadPublicMarkdown();
+void updateEditAffordance();
 
 // Logout
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {

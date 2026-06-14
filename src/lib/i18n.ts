@@ -392,6 +392,7 @@ const en: Record<string, string> = {
   // Markdown viewer
   "markdown.title": "Public Markdown",
   "markdown.loginToEdit": "Log in to edit your own documents",
+  "markdown.edit": "Edit",
   "markdown.loading": "Loading content...",
   "markdown.publicReadOnly": "Public read-only document",
   "markdown.readOnlyPreview": "Read-only preview",
@@ -1178,6 +1179,7 @@ const zhCN: Record<string, string> = {
 
   "markdown.title": "公开 Markdown",
   "markdown.loginToEdit": "登录后编辑自己的文档",
+  "markdown.edit": "编辑",
   "markdown.loading": "正在加载内容...",
   "markdown.publicReadOnly": "公开只读文档",
   "markdown.readOnlyPreview": "只读预览",
