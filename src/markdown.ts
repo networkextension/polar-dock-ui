@@ -27,6 +27,12 @@ function applyMarkdownPayload(data: { entry?: { title?: string; is_public?: bool
   metaEl.textContent = data.entry?.is_public ? t("markdown.publicReadOnly") : t("markdown.readOnlyPreview");
   rawMarkdown = data.content || "";
   contentEl.innerHTML = renderMarkdown(rawMarkdown);
+  // The element starts with data-i18n="markdown.loading"; once JS owns its
+  // content, drop the attrs so a later i18n re-hydration pass doesn't clobber
+  // the rendered markdown back to "Loading content..." (the "闪一下" bug).
+  titleEl.removeAttribute("data-i18n");
+  metaEl.removeAttribute("data-i18n");
+  contentEl.removeAttribute("data-i18n");
   copyMdBtn.disabled = false;
   copyHtmlBtn.disabled = false;
 }
@@ -91,6 +97,9 @@ async function requestMarkdown(path: string): Promise<{ ok: boolean; status: num
 }
 
 async function loadPublicMarkdown(): Promise<void> {
+  // JS owns #markdownContent from here on — drop data-i18n so a later i18n
+  // re-hydration can't overwrite our rendered/error content with the loading text.
+  contentEl.removeAttribute("data-i18n");
   if (!entryId) {
     alertBox.className = "alert error";
     alertBox.textContent = t("markdown.missingId");
