@@ -134,7 +134,28 @@ async function redirectIfLoggedIn(): Promise<void> {
   }
 }
 
+// Federated login (Zone Federation): reveal "Login with Polar" only on zones
+// that offer it (GET /api/auth/methods → {oidc, oidc_login_url}). Preserves the
+// ?next= the user was bounced from so we return there after the round-trip.
+async function showFederatedLogin(): Promise<void> {
+  try {
+    const res = await fetch("/api/auth/methods", { credentials: "include" });
+    if (!res.ok) return;
+    const m = await res.json();
+    if (!m.oidc || !m.oidc_login_url) return;
+    const btn = document.getElementById("oidcLoginBtn") as HTMLAnchorElement | null;
+    if (!btn) return;
+    const next = new URLSearchParams(window.location.search).get("next");
+    btn.href = m.oidc_login_url + (next ? "?next=" + encodeURIComponent(next) : "");
+    if (typeof m.oidc_label === "string" && m.oidc_label) btn.textContent = m.oidc_label;
+    btn.hidden = false;
+  } catch {
+    // non-fatal: just leave the button hidden
+  }
+}
+
 void redirectIfLoggedIn();
+void showFederatedLogin();
 void (async () => {
   await hydrateSiteBrand();
   // injectLangToggle anchors next to [data-site-brand]; needs the

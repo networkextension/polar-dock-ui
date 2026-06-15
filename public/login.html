@@ -31,6 +31,8 @@
         </form>
         <button type="button" id="passkeyLoginBtn" class="btn-secondary" data-i18n="login.passkey">Log in with Passkey</button>
         <div id="passkeyStatus" class="status-text" data-i18n="login.passkeyHint">You need to bind a Passkey first</div>
+        <!-- Federated login (Zone Federation): shown only when this zone offers OIDC. -->
+        <a id="oidcLoginBtn" class="btn-secondary" href="/auth/oidc/login" hidden>Login with Polar</a>
         <a class="link" href="/register.html" data-i18n="login.noAccount">No account? Register</a>
       </div>
     </div>
