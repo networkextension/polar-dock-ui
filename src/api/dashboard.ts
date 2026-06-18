@@ -117,12 +117,14 @@ export async function removeLLMConfig(id: number) {
 
 export async function fetchBotUsers(params?: {
   q?: string;
+  group?: string;
   limit?: number;
   offset?: number;
   summary?: boolean;
 }) {
   const qs = new URLSearchParams();
   if (params?.q) qs.set("q", params.q);
+  if (params?.group) qs.set("group", params.group);
   if (params?.limit != null) qs.set("limit", String(params.limit));
   if (params?.offset != null) qs.set("offset", String(params.offset));
   if (params?.summary) qs.set("summary", "1");
