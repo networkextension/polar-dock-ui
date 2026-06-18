@@ -200,14 +200,25 @@ export type BotUser = {
   // by a polar-agent docker container at startup. Operator can't
   // edit/delete from UI — managed by the agent token's lifecycle.
   is_auto_registered?: boolean;
+  // tags (P1b): free-form categories (e.g. Cherry Studio groups), rendered
+  // as filter chips. Always present from the API (defaults to []).
+  tags?: string[];
   created_at: string;
   updated_at: string;
+};
+
+// GroupCount is one bots-list facet entry: a tag and how many bots carry it.
+export type GroupCount = {
+  name: string;
+  count: number;
 };
 
 export type BotListResponse = ErrorResponse & {
   bots?: BotUser[];
   bot?: BotUser;
   total?: number;
+  // groups: the tag facet, only present on the first page (offset 0).
+  groups?: GroupCount[];
 };
 
 export type MarkdownAssistResponse = ErrorResponse & {
