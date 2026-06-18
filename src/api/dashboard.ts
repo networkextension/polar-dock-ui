@@ -115,8 +115,37 @@ export async function removeLLMConfig(id: number) {
   });
 }
 
-export async function fetchBotUsers() {
-  return requestJson<BotListResponse>("/api/bots");
+export async function fetchBotUsers(params?: {
+  q?: string;
+  limit?: number;
+  offset?: number;
+  summary?: boolean;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.q) qs.set("q", params.q);
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+  if (params?.offset != null) qs.set("offset", String(params.offset));
+  if (params?.summary) qs.set("summary", "1");
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return requestJson<BotListResponse>(`/api/bots${suffix}`);
+}
+
+// fetchBotUser loads one bot WITH its full system_prompt — the paginated list
+// (summary=1) omits it; the UI lazy-loads here when a row is expanded.
+export async function fetchBotUser(id: number) {
+  return requestJson<BotListResponse>(`/api/bots/${id}`);
+}
+
+// fetchBotStatusBatch gets agent-attach status for many bots in one POST,
+// replacing the per-bot fan-out that melted the page at hundreds of bots.
+export async function fetchBotStatusBatch(botIds: string[]) {
+  return requestJson<{
+    error?: string;
+    statuses?: Record<string, import("./projects.js").AgentBotStatus>;
+  }>("/api/bots/status", {
+    method: "POST",
+    body: { bot_ids: botIds },
+  });
 }
 
 export async function createBotUser(payload: BotPayload) {

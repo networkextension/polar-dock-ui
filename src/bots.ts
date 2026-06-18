@@ -1,11 +1,12 @@
 import {
   createBotUser,
   fetchAvailableLLMConfigs,
+  fetchBotStatusBatch,
+  fetchBotUser,
   fetchBotUsers,
   removeBotUser,
   updateBotUser,
 } from "./api/dashboard.js";
-import { fetchAgentBotStatus } from "./api/projects.js";
 import { logout, fetchCurrentUser } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
@@ -29,6 +30,11 @@ const botUserResetBtn = byId<HTMLButtonElement>("botUserResetBtn");
 const botUserSubmitBtn = byId<HTMLButtonElement>("botUserSubmitBtn");
 const botUserStatus = byId<HTMLElement>("botUserStatus");
 const botUserList = byId<HTMLUListElement>("botUserList");
+const botSearchInput = byId<HTMLInputElement>("botSearchInput");
+const botListCount = byId<HTMLElement>("botListCount");
+const botPrevBtn = byId<HTMLButtonElement>("botPrevBtn");
+const botNextBtn = byId<HTMLButtonElement>("botNextBtn");
+const botPageInfo = byId<HTMLElement>("botPageInfo");
 
 const welcomeText = byId<HTMLElement>("welcomeText");
 const logoutBtn = byId<HTMLButtonElement>("logoutBtn");
@@ -38,7 +44,14 @@ let editingBotUserId: number | null = null;
 let pendingDeleteBotId: number | null = null;
 let expandedBotId: number | null = null;
 let currentAvailableLLMConfigs: LLMConfig[] = [];
-let currentBotUsers: BotUser[] = [];
+let currentBotUsers: BotUser[] = []; // current page only
+// Server-paginated list state (the workspace may hold hundreds of bots).
+const BOT_PAGE_SIZE = 30;
+let botQuery = "";
+let botOffset = 0;
+let botTotal = 0;
+// Bots whose full system_prompt has been lazy-loaded (list is summary-only).
+const loadedDetailIds = new Set<number>();
 
 // ── Bot User ──────────────────────────────────────────────────────────────────
 function resetBotUserForm(): void {
@@ -139,23 +152,28 @@ function renderBotUserList(bots: BotUser[]): void {
 // when present we show a badge so users realize the bot's configured
 // model field is being bypassed by their local kimi-cli.
 async function hydrateBotAgentBadges(bots: BotUser[]): Promise<void> {
-  await Promise.all(bots.map(async (bot) => {
-    try {
-      const { response, data } = await fetchAgentBotStatus(bot.bot_user_id);
-      if (!response.ok || !data.attached) {
-        return;
+  if (!bots.length) return;
+  try {
+    const { response, data } = await fetchBotStatusBatch(bots.map((b) => b.bot_user_id));
+    if (!response.ok || !data.statuses) {
+      return;
+    }
+    for (const bot of bots) {
+      const status = data.statuses[bot.bot_user_id];
+      if (!status || !status.attached) {
+        continue;
       }
       const slot = document.querySelector<HTMLElement>(
         `[data-bot-agent-badge="${bot.bot_user_id}"]`,
       );
       if (!slot) {
-        return;
+        continue;
       }
-      const caps = data.capabilities || [];
-      const workdir = data.workdir || "";
-      const tool = (data.tool || "").trim();
-      const remoteIP = (data.remote_ip || "").trim();
-      const uptime = formatUptime(data.uptime_sec || 0);
+      const caps = status.capabilities || [];
+      const workdir = status.workdir || "";
+      const tool = (status.tool || "").trim();
+      const remoteIP = (status.remote_ip || "").trim();
+      const uptime = formatUptime(status.uptime_sec || 0);
       const isPassthrough = caps.includes("passthrough") || caps.includes("kimi");
       const detail = `workdir=${workdir}${remoteIP ? ` · ip=${remoteIP}` : ""}${uptime ? ` · uptime=${uptime}` : ""}`;
       const ipChip = remoteIP ? `<span class="tag-chip" title="${escapeAttr(detail)}">${escapeAttr(remoteIP)}</span>` : "";
@@ -166,11 +184,11 @@ async function hydrateBotAgentBadges(bots: BotUser[]): Promise<void> {
       } else {
         slot.innerHTML = `<span class="tag-chip" title="${escapeAttr(detail)}">⚙️ agent 已连接</span>${ipChip}${uptimeChip}`;
       }
-    } catch {
-      // network / 4xx — leave badge slot empty rather than render a
-      // misleading "disconnected" state we can't actually verify.
     }
-  }));
+  } catch {
+    // network / 4xx — leave badges empty rather than render a misleading
+    // "disconnected" state we can't actually verify.
+  }
 }
 
 function escapeAttr(s: string): string {
@@ -192,26 +210,44 @@ function formatUptime(sec: number): string {
   return `${s}s`;
 }
 
-async function loadData(): Promise<void> {
-  const [availableResult, botResult] = await Promise.all([
-    fetchAvailableLLMConfigs(),
-    fetchBotUsers(),
-  ]);
+function updateBotPager(): void {
+  const start = botTotal === 0 ? 0 : botOffset + 1;
+  const end = Math.min(botOffset + currentBotUsers.length, botTotal);
+  botListCount.textContent = botTotal ? `共 ${botTotal} 个` : "";
+  botPageInfo.textContent = botTotal ? `${start}–${end} / ${botTotal}` : "";
+  botPrevBtn.disabled = botOffset <= 0;
+  botNextBtn.disabled = botOffset + BOT_PAGE_SIZE >= botTotal;
+}
 
+// loadBots fetches one server-paginated, summary (no system_prompt) page for
+// the current query + offset, so a workspace with hundreds of bots stays light.
+async function loadBots(): Promise<void> {
+  const botResult = await fetchBotUsers({
+    q: botQuery,
+    limit: BOT_PAGE_SIZE,
+    offset: botOffset,
+    summary: true,
+  });
+  if (botResult.response.ok) {
+    currentBotUsers = botResult.data.bots || [];
+    botTotal = botResult.data.total ?? currentBotUsers.length;
+    renderBotUserList(currentBotUsers);
+    updateBotPager();
+  } else {
+    botUserStatus.textContent = botResult.data.error || t("dashboard.botListLoadFailed");
+    botUserList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.botListLoadFailed")}</li>`;
+  }
+}
+
+async function loadData(): Promise<void> {
+  const availableResult = await fetchAvailableLLMConfigs();
   if (availableResult.response.ok) {
     currentAvailableLLMConfigs = availableResult.data.configs || [];
   } else {
     currentAvailableLLMConfigs = [];
   }
   syncBotConfigOptions(currentAvailableLLMConfigs);
-
-  if (botResult.response.ok) {
-    currentBotUsers = botResult.data.bots || [];
-    renderBotUserList(currentBotUsers);
-  } else {
-    botUserStatus.textContent = botResult.data.error || t("dashboard.botListLoadFailed");
-    botUserList.innerHTML = `<li class="tag-item tag-item-empty">${t("dashboard.botListLoadFailed")}</li>`;
-  }
+  await loadBots();
 }
 
 async function bootstrap(): Promise<void> {
@@ -305,7 +341,26 @@ botUserList.addEventListener("click", async (event) => {
 
   const action = button.dataset.action;
   if (action === "toggle-expand") {
-    expandedBotId = expandedBotId === bot.id ? null : bot.id;
+    if (expandedBotId === bot.id) {
+      expandedBotId = null;
+      renderBotUserList(currentBotUsers);
+      return;
+    }
+    expandedBotId = bot.id;
+    // The list is summary-only (no system_prompt); fetch the full bot once on
+    // first expand and cache it on the in-memory row.
+    if (!loadedDetailIds.has(bot.id)) {
+      try {
+        const { response, data } = await fetchBotUser(bot.id);
+        if (response.ok && data.bot) {
+          bot.system_prompt = data.bot.system_prompt || "";
+          bot.description = data.bot.description || bot.description;
+          loadedDetailIds.add(bot.id);
+        }
+      } catch {
+        // leave prompt empty on failure; expand still shows description
+      }
+    }
     renderBotUserList(currentBotUsers);
     return;
   }
@@ -365,6 +420,27 @@ logoutBtn.addEventListener("click", async () => {
   } finally {
     logoutBtn.disabled = false;
   }
+});
+
+// ── Search + pagination ────────────────────────────────────────────────────
+let searchDebounce: number | undefined;
+botSearchInput.addEventListener("input", () => {
+  window.clearTimeout(searchDebounce);
+  searchDebounce = window.setTimeout(() => {
+    botQuery = botSearchInput.value.trim();
+    botOffset = 0;
+    void loadBots();
+  }, 250);
+});
+botPrevBtn.addEventListener("click", () => {
+  if (botOffset <= 0) return;
+  botOffset = Math.max(0, botOffset - BOT_PAGE_SIZE);
+  void loadBots();
+});
+botNextBtn.addEventListener("click", () => {
+  if (botOffset + BOT_PAGE_SIZE >= botTotal) return;
+  botOffset += BOT_PAGE_SIZE;
+  void loadBots();
 });
 
 initStoredTheme();
