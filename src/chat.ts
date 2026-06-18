@@ -810,6 +810,7 @@ function renderMessages(messages: ChatMessage[], scrollToBottom = false): void {
       const isMine = msg.sender_id === currentUserId;
       const isSystem = msg.sender_id === "system";
       const isBotReply = !isMine && (msg.sender_id === "system" || msg.sender_id.startsWith("bot_"));
+      const alignBotReplyRight = activeIsBotChat && isBotReply;
       const isFailedBotReply = isBotReply && Boolean(msg.failed) && !msg.deleted;
       const isStreamingBot = Boolean(msg.streaming) && !msg.deleted;
       const isSharedMarkdown = msg.message_type === "shared_markdown" && Boolean(msg.markdown_entry_id) && !isStreamingBot;
@@ -929,7 +930,7 @@ function renderMessages(messages: ChatMessage[], scrollToBottom = false): void {
         `;
       }
       return `
-        <div class="message-item other">
+        <div class="message-item other${alignBotReplyRight ? " bot-reply" : ""}">
           <img class="avatar-xs message-avatar" src="${avatar}" alt="${msg.sender_username}" />
           <div class="message-body">
             <div class="message-row">
