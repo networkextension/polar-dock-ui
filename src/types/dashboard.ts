@@ -207,6 +207,7 @@ export type BotUser = {
 export type BotListResponse = ErrorResponse & {
   bots?: BotUser[];
   bot?: BotUser;
+  total?: number;
 };
 
 export type MarkdownAssistResponse = ErrorResponse & {
