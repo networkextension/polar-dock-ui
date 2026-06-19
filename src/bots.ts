@@ -13,7 +13,7 @@ import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { t } from "./lib/i18n.js";
 import { renderMarkdown } from "./lib/marked.js";
-import type { BotPayload, BotUser, LLMConfig } from "./types/dashboard.js";
+import type { BotPayload, BotUser, GroupCount, LLMConfig } from "./types/dashboard.js";
 
 // ── Bot User DOM ─────────────────────────────────────────────────────────────
 const botUserForm = byId<HTMLFormElement>("botUserForm");
@@ -35,6 +35,7 @@ const botListCount = byId<HTMLElement>("botListCount");
 const botPrevBtn = byId<HTMLButtonElement>("botPrevBtn");
 const botNextBtn = byId<HTMLButtonElement>("botNextBtn");
 const botPageInfo = byId<HTMLElement>("botPageInfo");
+const botGroupChips = byId<HTMLElement>("botGroupChips");
 
 const welcomeText = byId<HTMLElement>("welcomeText");
 const logoutBtn = byId<HTMLButtonElement>("logoutBtn");
@@ -48,6 +49,8 @@ let currentBotUsers: BotUser[] = []; // current page only
 // Server-paginated list state (the workspace may hold hundreds of bots).
 const BOT_PAGE_SIZE = 30;
 let botQuery = "";
+let botGroup = ""; // active category filter ("" = all)
+let botGroups: GroupCount[] = []; // facet, refreshed from the first page
 let botOffset = 0;
 let botTotal = 0;
 // Bots whose full system_prompt has been lazy-loaded (list is summary-only).
@@ -219,11 +222,34 @@ function updateBotPager(): void {
   botNextBtn.disabled = botOffset + BOT_PAGE_SIZE >= botTotal;
 }
 
+// renderGroupChips draws the category facet as a chip row: an "All" chip
+// plus one per tag with its count. The active filter is highlighted. The
+// facet only ships on the first page, so we keep the last-seen set and only
+// re-render when it changes (avoids the row flickering during pagination).
+function renderGroupChips(): void {
+  if (!botGroups.length) {
+    botGroupChips.innerHTML = "";
+    return;
+  }
+  const chip = (label: string, value: string): string => {
+    const active = botGroup === value;
+    const cls = active ? "btn-chip btn-chip-primary" : "btn-chip";
+    return `<button type="button" class="${cls}" data-group="${escapeAttr(value)}">${escapeAttr(label)}</button>`;
+  };
+  const parts = [chip("全部", "")];
+  for (const g of botGroups) {
+    parts.push(chip(`${g.name} ${g.count}`, g.name));
+  }
+  botGroupChips.innerHTML = parts.join("");
+}
+
 // loadBots fetches one server-paginated, summary (no system_prompt) page for
-// the current query + offset, so a workspace with hundreds of bots stays light.
+// the current query + group + offset, so a workspace with hundreds of bots
+// stays light. The first page also carries the category facet for the chips.
 async function loadBots(): Promise<void> {
   const botResult = await fetchBotUsers({
     q: botQuery,
+    group: botGroup,
     limit: BOT_PAGE_SIZE,
     offset: botOffset,
     summary: true,
@@ -231,6 +257,11 @@ async function loadBots(): Promise<void> {
   if (botResult.response.ok) {
     currentBotUsers = botResult.data.bots || [];
     botTotal = botResult.data.total ?? currentBotUsers.length;
+    // groups only ride on the first page (offset 0); preserve them otherwise.
+    if (botResult.data.groups) {
+      botGroups = botResult.data.groups;
+      renderGroupChips();
+    }
     renderBotUserList(currentBotUsers);
     updateBotPager();
   } else {
@@ -431,6 +462,16 @@ botSearchInput.addEventListener("input", () => {
     botOffset = 0;
     void loadBots();
   }, 250);
+});
+botGroupChips.addEventListener("click", (event) => {
+  const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-group]");
+  if (!button) return;
+  const next = button.dataset.group ?? "";
+  if (next === botGroup) return;
+  botGroup = next;
+  botOffset = 0;
+  renderGroupChips(); // immediate active-state feedback
+  void loadBots();
 });
 botPrevBtn.addEventListener("click", () => {
   if (botOffset <= 0) return;
