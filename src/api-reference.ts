@@ -6,7 +6,7 @@
 
 import { fetchOpenAPISpec } from "./api/openapi.js";
 import type { OpenAPIOperation, OpenAPISpec } from "./api/openapi.js";
-import { logout } from "./api/session.js";
+import { logout, fetchCurrentUser } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
@@ -184,6 +184,14 @@ downloadSpecBtn.addEventListener("click", downloadSpec);
 logoutBtn.addEventListener("click", () => void logout().then(() => (window.location.href = "/login.html")));
 
 async function bootstrap(): Promise<void> {
+  // Auth gate: this page reads the dock's /api surface, so require a dock
+  // session. Not logged in (401) → bounce to the dock login/register page
+  // instead of rendering an empty "加载失败".
+  const { response } = await fetchCurrentUser();
+  if (!response.ok) {
+    window.location.replace("/login.html");
+    return;
+  }
   await hydrateSiteBrand();
   await hydrateSidebarFoot();
   try {
