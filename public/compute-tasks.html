@@ -7,6 +7,42 @@
     <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/styles.css" />
+    <style>
+      /* page-local styles (only /styles.css is aliased to polar-ui-shared) */
+      .ct-row { cursor: pointer; }
+      .ct-row:hover { background: rgba(127,127,127,0.10); }
+      .ct-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+      .ct-trunc { max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ct-badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px;
+                  font-size: 12px; font-weight: 600; border: 1px solid; line-height: 1.6; }
+      .ct-dot { width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; display: inline-block;
+                animation: ctpulse 1s ease-in-out infinite; }
+      @keyframes ctpulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+      .ct-code { background: #1e1e1e; color: #d4d4d4; border: 1px solid #333; border-radius: 8px;
+                 padding: 10px 12px; overflow: auto; max-height: 360px;
+                 font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+      .ct-code .jk { color: #9cdcfe; } .ct-code .js { color: #ce9178; }
+      .ct-code .jn { color: #b5cea8; } .ct-code .jb { color: #569cd6; }
+      .ct-section-label { font-size: 12px; font-weight: 600; color: var(--text-muted,#888); margin: 14px 0 4px; }
+      .ct-copy { cursor: pointer; border: none; background: transparent; color: var(--text-muted,#888); font-size: 13px; padding: 0 4px; }
+      .ct-copy:hover { color: var(--text,#222); }
+      #detailBackdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.40); z-index: 49; }
+      #detailDrawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(580px, 94vw);
+                      background: var(--surface, #fff); box-shadow: -2px 0 20px rgba(0,0,0,0.22);
+                      z-index: 50; display: flex; flex-direction: column;
+                      transform: translateX(100%); transition: transform 0.18s ease; }
+      #detailDrawer.open { transform: translateX(0); }
+      .ct-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+                        padding: 12px 14px; border-bottom: 1px solid var(--border, #e5e5e5); }
+      .ct-drawer-title { font-weight: 600; display: flex; align-items: center; gap: 6px; min-width: 0; }
+      .ct-drawer-body { padding: 12px 14px; overflow: auto; flex: 1; }
+      .ct-x { border: none; background: transparent; font-size: 20px; line-height: 1; cursor: pointer;
+              color: var(--text-muted,#888); padding: 2px 6px; border-radius: 6px; }
+      .ct-x:hover { background: rgba(127,127,127,0.15); color: var(--text,#222); }
+      .ct-metarow { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+      .ct-art-thumb { max-width: 100%; max-height: 240px; border-radius: 8px; border: 1px solid var(--border,#e5e5e5); }
+      .ct-art-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0; }
+    </style>
   </head>
   <body class="lp-page">
     <div class="lp-app">
@@ -44,14 +80,11 @@
         </div>
 
         <div class="lp-content" style="padding: 12px; overflow-y:auto;">
-          <!-- admin gate message -->
           <div id="denied" class="meta-subtitle" hidden style="color:var(--danger,#c00);"></div>
 
           <div id="board" hidden>
-            <!-- status chips -->
             <div id="chips" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;"></div>
 
-            <!-- submit test task -->
             <div class="settings-section-card" style="margin-bottom:18px;">
               <div class="settings-section-title" style="margin-bottom:8px;">提交测试任务</div>
               <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
@@ -61,7 +94,7 @@
                   <option value="speech.stt">speech.stt</option>
                   <option value="speech.tts">speech.tts</option>
                 </select>
-                <textarea id="inputJson" class="input" rows="3" style="flex:1; min-width:280px; font-family:monospace; font-size:12px;"
+                <textarea id="inputJson" class="input" rows="3" style="flex:1; min-width:280px; font-family:ui-monospace,Menlo,monospace; font-size:12px;"
                   placeholder='input JSON，例如：{"asset_id":10028}  或  {"text":"polar ui works"}  或  {"path":"/Users/local/x.m4a","lang":"zh","model":"large-v3","compute":"ane"}'></textarea>
                 <input id="prioInput" class="input" type="number" value="0" title="priority" style="max-width:80px;" />
                 <button id="submitBtn" class="btn-inline btn-primary" type="button">提交</button>
@@ -69,14 +102,12 @@
               <div id="submitMsg" class="status-text" style="margin-top:6px; font-size:12px;"></div>
             </div>
 
-            <!-- fleet -->
             <div class="settings-section-title" style="margin:0 0 6px 0;">舰队（agents）</div>
             <table class="lp-table" id="fleetTable"><thead>
               <tr><th>agent</th><th>host</th><th>技能</th><th>最近活跃</th></tr>
             </thead><tbody id="fleetTbody"></tbody></table>
             <div id="fleetEmpty" class="meta-subtitle" hidden style="margin-bottom:12px;">（暂无 agent 数据 / 接口不可用）</div>
 
-            <!-- tasks -->
             <div class="settings-section-title" style="margin:18px 0 6px 0;">任务（最近 50）</div>
             <table class="lp-table" id="taskTable"><thead>
               <tr><th>id</th><th>skill</th><th>状态</th><th>agent</th><th>耗时</th><th>创建</th><th>input</th></tr>
@@ -87,16 +118,18 @@
       </div>
     </div>
 
-    <!-- task detail modal -->
-    <div id="detailModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width:720px;">
-        <div class="lp-modal-head">
-          <span class="lp-modal-title" id="detailTitle">任务详情</span>
-          <button id="detailCloseBtn" type="button" class="lp-modal-close">✕</button>
+    <!-- right-side detail drawer (inline-styled; independent of shared CSS) -->
+    <div id="detailBackdrop" hidden></div>
+    <aside id="detailDrawer" aria-hidden="true">
+      <div class="ct-drawer-head">
+        <div class="ct-drawer-title" style="min-width:0;">
+          <span id="detailTitle" class="ct-id ct-trunc">任务详情</span>
+          <button id="detailCopy" class="ct-copy" type="button" title="复制完整 ID">⧉</button>
         </div>
-        <div class="lp-modal-body" id="detailBody" style="max-height:70vh; overflow:auto;"></div>
+        <button id="detailCloseBtn" class="ct-x" type="button" title="关闭">×</button>
       </div>
-    </div>
+      <div class="ct-drawer-body" id="detailBody"></div>
+    </aside>
 
     <script type="module" src="/scripts/compute-tasks.js"></script>
   </body>
