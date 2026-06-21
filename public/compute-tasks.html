@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>算力任务 — Polar-</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/polaris-logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="lp-page">
+    <div class="lp-app">
+      <aside class="lp-sidebar lp-sidebar-wide">
+        <a class="lp-brand" href="/dashboard.html" data-site-brand>
+          <img data-site-icon alt="" />
+          <span class="lp-brand-name" data-site-name>Polar-</span>
+        </a>
+        <nav class="lp-nav">
+          <a class="lp-nav-item" href="/dashboard.html">
+            <span class="lp-nav-icon" data-icon="layout-dashboard">⊞</span><span>Dashboard</span>
+          </a>
+        </nav>
+        <div class="lp-sidebar-foot">
+          <div class="lp-foot-avatar" id="lpFootAvatar">A</div>
+          <div class="lp-foot-info">
+            <div class="lp-foot-name" id="lpFootName">—</div>
+            <div class="lp-foot-role" id="lpFootRole">—</div>
+          </div>
+          <div class="lp-sidebar-foot-actions">
+            <button id="logoutBtn" class="lp-foot-icon-btn" type="button" title="Log out"><span data-icon="log-out"></span></button>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lp-main">
+        <div class="lp-topbar">
+          <span class="lp-topbar-title">算力任务 · 队列与舰队监控（仅管理员）</span>
+          <div class="lp-topbar-end" style="display:flex; gap:6px; align-items:center;">
+            <label style="font-size:12px; color:var(--text-muted,#888); display:flex; gap:4px; align-items:center;">
+              <input id="autoRefresh" type="checkbox" checked /> 自动刷新
+            </label>
+            <button id="refreshBtn" class="btn-inline btn-secondary" type="button" title="刷新">⟲</button>
+          </div>
+        </div>
+
+        <div class="lp-content" style="padding: 12px; overflow-y:auto;">
+          <!-- admin gate message -->
+          <div id="denied" class="meta-subtitle" hidden style="color:var(--danger,#c00);"></div>
+
+          <div id="board" hidden>
+            <!-- status chips -->
+            <div id="chips" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;"></div>
+
+            <!-- submit test task -->
+            <div class="settings-section-card" style="margin-bottom:18px;">
+              <div class="settings-section-title" style="margin-bottom:8px;">提交测试任务</div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
+                <select id="skillSel" class="input" style="max-width:180px;">
+                  <option value="vision.ocr">vision.ocr</option>
+                  <option value="vision.faces">vision.faces</option>
+                  <option value="speech.stt">speech.stt</option>
+                  <option value="speech.tts">speech.tts</option>
+                </select>
+                <textarea id="inputJson" class="input" rows="3" style="flex:1; min-width:280px; font-family:monospace; font-size:12px;"
+                  placeholder='input JSON，例如：{"asset_id":10028}  或  {"text":"polar ui works"}  或  {"path":"/Users/local/x.m4a","lang":"zh","model":"large-v3","compute":"ane"}'></textarea>
+                <input id="prioInput" class="input" type="number" value="0" title="priority" style="max-width:80px;" />
+                <button id="submitBtn" class="btn-inline btn-primary" type="button">提交</button>
+              </div>
+              <div id="submitMsg" class="status-text" style="margin-top:6px; font-size:12px;"></div>
+            </div>
+
+            <!-- fleet -->
+            <div class="settings-section-title" style="margin:0 0 6px 0;">舰队（agents）</div>
+            <table class="lp-table" id="fleetTable"><thead>
+              <tr><th>agent</th><th>host</th><th>技能</th><th>最近活跃</th></tr>
+            </thead><tbody id="fleetTbody"></tbody></table>
+            <div id="fleetEmpty" class="meta-subtitle" hidden style="margin-bottom:12px;">（暂无 agent 数据 / 接口不可用）</div>
+
+            <!-- tasks -->
+            <div class="settings-section-title" style="margin:18px 0 6px 0;">任务（最近 50）</div>
+            <table class="lp-table" id="taskTable"><thead>
+              <tr><th>id</th><th>skill</th><th>状态</th><th>agent</th><th>耗时</th><th>创建</th><th>input</th></tr>
+            </thead><tbody id="taskTbody"></tbody></table>
+            <div id="taskEmpty" class="meta-subtitle" hidden>暂无任务。用上方表单提交一个测试任务。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- task detail modal -->
+    <div id="detailModal" class="lp-modal" hidden>
+      <div class="lp-modal-card" style="max-width:720px;">
+        <div class="lp-modal-head">
+          <span class="lp-modal-title" id="detailTitle">任务详情</span>
+          <button id="detailCloseBtn" type="button" class="lp-modal-close">✕</button>
+        </div>
+        <div class="lp-modal-body" id="detailBody" style="max-height:70vh; overflow:auto;"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/scripts/compute-tasks.js"></script>
+  </body>
+</html>

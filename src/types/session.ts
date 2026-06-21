@@ -2,6 +2,7 @@ export type UserProfile = {
   user_id: string;
   username: string;
   role?: string;
+  site_admin?: boolean;
   email?: string;
   email_verified?: boolean;
   icon_url?: string;
