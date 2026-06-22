@@ -22,6 +22,19 @@
       audio { height:34px; vertical-align:middle; }
       .id-assign { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:8px; }
       .id-mono { font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+      /* one-click person chips (no dropdown) */
+      .id-people { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+      .id-pchip { border:1px solid var(--border,#ccc); background:var(--surface-2,#f6f7f9); color:var(--text,#222);
+        padding:5px 12px; border-radius:999px; cursor:pointer; font-size:13px; line-height:1; }
+      .id-pchip:hover { border-color:var(--accent,#3b82f6); color:var(--accent,#3b82f6); }
+      .id-pchip.best { border-color:var(--accent,#3b82f6); box-shadow:0 0 0 1px var(--accent,#3b82f6) inset; font-weight:600; }
+      .id-pchip .pct { font-size:11px; opacity:.7; margin-left:4px; }
+      .id-pchip-new { border-style:dashed; color:var(--text-muted,#888); }
+      .id-newwrap { display:inline-flex; gap:4px; align-items:center; }
+      /* face thumb + bbox overlay */
+      .id-face { position:relative; display:inline-block; margin-top:8px; max-width:340px; }
+      .id-face img { max-width:340px; max-height:220px; border-radius:8px; display:block; }
+      .id-bbox { position:absolute; border:2px solid #22d3ee; box-shadow:0 0 0 1px rgba(0,0,0,.4); border-radius:2px; pointer-events:none; }
     </style>
   </head>
   <body class="lp-page">
@@ -49,10 +62,11 @@
           <div id="denied" class="meta-subtitle" hidden style="color:var(--danger,#c00);"></div>
           <div id="board" hidden>
             <div class="id-tabs">
-              <button class="id-tab on" data-tab="pending" id="tabPending">🕓 待确认</button>
+              <button class="id-tab on" data-tab="voice" id="tabVoice">🎙 声纹</button>
+              <button class="id-tab" data-tab="face" id="tabFace">🙂 人脸</button>
               <button class="id-tab" data-tab="people" id="tabPeople">👤 人物</button>
             </div>
-            <p class="meta-subtitle" id="hint" style="margin:0 0 12px;">未归纳的声纹样本 —— 放原声对比,选/建人物后归纳。识别仅给候选,确认后才归到具体人。</p>
+            <p class="meta-subtitle" id="hint" style="margin:0 0 12px;">放原声 / 看原图 核对 → 点边上的人名一键归纳(整段说话人或整张脸)。识别只给候选,确认后才归到具体人。</p>
             <div id="view"></div>
           </div>
         </div>

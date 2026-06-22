@@ -9,7 +9,7 @@ export type IdSample = {
   model_id: string;
   dim: number;
   source_asset_id?: number;
-  locator?: { t0?: number; t1?: number; speaker?: string };
+  locator?: { t0?: number; t1?: number; speaker?: string; frame_ts?: number; box?: number[]; face_index?: number };
   captured_from?: string;
   person_id?: string;
   created_at: string;
@@ -35,3 +35,23 @@ export function attributeSample(id: string, body: { person_id?: string; new_pers
   return requestJson<{ ok: boolean; person_id: string }>(
     `/api/identity/samples/${encodeURIComponent(id)}/attribute`, { method: "POST", body });
 }
+// Confirm many samples → one person in one call. Either pass explicit sample_ids
+// (e.g. one face) OR a cluster spec {modality, speaker, source_asset_id?} which
+// confirms EVERY unattributed segment of that speaker server-side (covers all,
+// not just the loaded page).
+export function attributeSamplesBulk(
+  body: {
+    sample_ids?: string[];
+    modality?: string; speaker?: string; source_asset_id?: number;
+    person_id?: string; new_person?: string;
+  },
+) {
+  return requestJson<{ ok: boolean; person_id: string; count: number }>(
+    `/api/identity/samples/attribute-bulk`, { method: "POST", body });
+}
+export type AttrTarget = {
+  sample_ids?: string[]; modality?: string; speaker?: string; source_asset_id?: number;
+};
+// The /audio-url endpoint mints a signed URL for any source asset (audio OR a
+// face keyframe image) — generic media.
+export const sampleMediaURL = sampleAudioURL;
