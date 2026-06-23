@@ -7,8 +7,8 @@
 
 import { fetchCurrentUser, logout } from "./api/session.js";
 import {
-  attributeSamplesBulk, autoLabel, faceClusters, listPeople, listSamples, sampleCandidates,
-  sampleMediaURL, voiceClusters,
+  attributeSamplesBulk, autoLabel, faceClusters, listPeople, listSamples, mergePeople,
+  reassignSamples, sampleCandidates, sampleMediaURL, voiceClusters,
   type AttrTarget, type IdAutoSuggestion, type IdFaceCluster, type IdPerson,
 } from "./api/identity.js";
 import { byId } from "./lib/dom.js";
@@ -268,25 +268,85 @@ async function renderFace(): Promise<void> {
 }
 
 // ── 👤 人物 ──────────────────────────────────────────────────────────────────
+function personOptions(excludeID: string, extra = ""): string {
+  return people.filter((p) => p.id !== excludeID)
+    .map((p) => `<option value="${esc(p.id)}">${esc(p.display_name)}</option>`).join("") + extra;
+}
 async function renderPeople(): Promise<void> {
   hint.hidden = true;
   await loadPeople();
   if (people.length === 0) { view.innerHTML = `<div class="meta-subtitle">还没有人物。去声纹/人脸队列归纳第一条。</div>`; return; }
   view.innerHTML = people.map((p) => `<div class="id-card" data-pid="${esc(p.id)}">
     <div class="id-row"><b>${esc(p.display_name)}</b><span class="id-mono id-meta">${esc(p.id)}</span>
-      <span style="flex:1"></span><button class="btn-inline btn-secondary id-show" type="button">查看样本</button></div>
+      <span style="flex:1"></span>
+      <select class="input id-mergeto" style="max-width:150px;"><option value="">合并到…</option>${personOptions(p.id)}</select>
+      <button class="btn-inline btn-secondary id-merge" type="button">合并</button>
+      <button class="btn-inline btn-secondary id-show" type="button">查看 / 整理样本</button></div>
     <div class="id-psamples"></div></div>`).join("");
   view.querySelectorAll<HTMLDivElement>(".id-card").forEach((card) => {
-    card.querySelector<HTMLButtonElement>(".id-show")!.addEventListener("click", async () => {
-      const pid = card.dataset.pid!;
-      const slot = card.querySelector<HTMLDivElement>(".id-psamples")!;
-      slot.innerHTML = `<span class="meta-subtitle">加载…</span>`;
-      const { data } = await listSamples(`?person_id=${encodeURIComponent(pid)}`);
-      const ss = data.samples || [];
-      const voice = ss.filter((s) => s.modality === "voice").length;
-      const face = ss.filter((s) => s.modality === "face").length;
-      slot.innerHTML = `<div class="id-meta" style="margin-top:6px;">🎙 ${voice} 声纹 · 🙂 ${face} 人脸 · 共 ${ss.length}</div>`;
+    const pid = card.dataset.pid!;
+    card.querySelector<HTMLButtonElement>(".id-merge")!.addEventListener("click", async () => {
+      const into = card.querySelector<HTMLSelectElement>(".id-mergeto")!.value;
+      if (!into) return;
+      const intoName = people.find((p) => p.id === into)?.display_name || into;
+      const selfName = card.querySelector("b")!.textContent;
+      if (!confirm(`把「${selfName}」合并进「${intoName}」？\n本人物的全部声纹+人脸都并过去,然后删除「${selfName}」。`)) return;
+      const { response } = await mergePeople(pid, into);
+      if (response.ok) render(); else alert("合并失败");
     });
+    card.querySelector<HTMLButtonElement>(".id-show")!.addEventListener("click", () => void showSamples(card, pid));
+  });
+}
+
+// Per-person sample tray: check the wrong ones → 移到别人 / 退回待确认 (the split half).
+async function showSamples(card: HTMLDivElement, pid: string): Promise<void> {
+  const slot = card.querySelector<HTMLDivElement>(".id-psamples")!;
+  slot.innerHTML = `<span class="meta-subtitle">加载…</span>`;
+  const { data } = await listSamples(`?person_id=${encodeURIComponent(pid)}&limit=500`);
+  const ss = data.samples || [];
+  const voice = ss.filter((s) => s.modality === "voice").length;
+  const face = ss.filter((s) => s.modality === "face").length;
+  slot.innerHTML = `<div class="id-meta" style="margin:6px 0;">🎙 ${voice} 声纹 · 🙂 ${face} 人脸 · 共 ${ss.length} —— 勾选不是TA的样本 → 移走/退回</div>
+    <div class="id-tools" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+      <select class="input id-moveto" style="max-width:150px;"><option value="">移到…</option>${personOptions(pid, '<option value="__new">+ 新人物</option>')}</select>
+      <button class="btn-inline btn-secondary id-move" type="button">移动选中</button>
+      <button class="btn-inline btn-secondary id-unassign" type="button">退回待确认</button>
+      <span class="id-msg id-meta"></span>
+    </div>
+    <div class="id-grid" style="display:flex;flex-direction:column;gap:4px;"></div>`;
+  const grid = slot.querySelector<HTMLDivElement>(".id-grid")!;
+  grid.innerHTML = ss.map((s) => `<label class="id-row" style="gap:8px;">
+      <input type="checkbox" data-sid="${esc(s.id)}" />
+      <span class="id-meta">${s.modality === "voice" ? "🎙 声纹 " + ms(s.locator?.t0) : "🙂 人脸 帧" + ms(s.locator?.frame_ts)} · ${esc(s.model_id)}</span>
+      <button class="btn-inline btn-secondary id-peek" type="button" data-sid="${esc(s.id)}" data-mod="${esc(s.modality)}">看</button>
+      <span class="id-peekslot"></span>
+    </label>`).join("");
+  grid.querySelectorAll<HTMLButtonElement>(".id-peek").forEach((b) => b.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const out = b.nextElementSibling as HTMLElement;
+    const { response: r, data: d } = await sampleMediaURL(b.dataset.sid!);
+    if (!r.ok) { out.textContent = "取不到"; return; }
+    out.innerHTML = b.dataset.mod === "voice"
+      ? `<audio controls autoplay style="height:28px;vertical-align:middle;" src="${esc(d.url)}"></audio>`
+      : `<img src="${esc(d.url)}" style="max-height:60px;border-radius:4px;vertical-align:middle;" />`;
+  }));
+  const checked = () => Array.from(grid.querySelectorAll<HTMLInputElement>("input[type=checkbox]:checked")).map((i) => i.dataset.sid!);
+  const msg = slot.querySelector<HTMLSpanElement>(".id-msg")!;
+  const after = async () => { await loadPeople(); void showSamples(card, pid); };
+  slot.querySelector<HTMLButtonElement>(".id-move")!.addEventListener("click", async () => {
+    const ids = checked(); if (!ids.length) { msg.textContent = "先勾选"; return; }
+    const sel = slot.querySelector<HTMLSelectElement>(".id-moveto")!.value;
+    let body: { sample_ids: string[]; person_id?: string; new_person?: string };
+    if (sel === "__new") { const n = prompt("新人物姓名")?.trim(); if (!n) return; body = { sample_ids: ids, new_person: n }; }
+    else if (sel) body = { sample_ids: ids, person_id: sel };
+    else { msg.textContent = "选个目标"; return; }
+    const { response } = await reassignSamples(body);
+    if (response.ok) await after(); else msg.textContent = "移动失败";
+  });
+  slot.querySelector<HTMLButtonElement>(".id-unassign")!.addEventListener("click", async () => {
+    const ids = checked(); if (!ids.length) { msg.textContent = "先勾选"; return; }
+    const { response } = await reassignSamples({ sample_ids: ids, unassign: true });
+    if (response.ok) await after(); else msg.textContent = "退回失败";
   });
 }
 

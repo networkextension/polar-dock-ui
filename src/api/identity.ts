@@ -69,6 +69,16 @@ export function voiceClusters() {
   return requestJson<{ clusters: IdVoiceCluster[]; count: number }>(
     "/api/identity/samples/clusters?modality=voice");
 }
+// Merge two people into one (same-person).
+export function mergePeople(from: string, into: string) {
+  return requestJson<{ ok: boolean; moved: number; into: string }>(
+    "/api/identity/people/merge", { method: "POST", body: { from, into } });
+}
+// Move samples (override) to a person / new person / back to 待确认 (unassign).
+export function reassignSamples(body: { sample_ids: string[]; person_id?: string; new_person?: string; unassign?: boolean }) {
+  return requestJson<{ ok: boolean; count: number; person_id: string }>(
+    "/api/identity/samples/reassign", { method: "POST", body });
+}
 export type IdAutoSuggestion = {
   sample_id: string; modality: string; person_id: string; display_name: string; score: number; applied: boolean;
 };
