@@ -69,6 +69,20 @@ export function voiceClusters() {
   return requestJson<{ clusters: IdVoiceCluster[]; count: number }>(
     "/api/identity/samples/clusters?modality=voice");
 }
+export type IdAutoSuggestion = {
+  sample_id: string; modality: string; person_id: string; display_name: string; score: number; applied: boolean;
+};
+// 1-NN label propagation: learn from confirmed samples → auto-apply high-confidence
+// matches + return medium-confidence ones to review. Reversible (attributed_by='auto').
+export function autoLabel(modality: string, opts?: { autoThreshold?: number; suggestThreshold?: number; dryRun?: boolean }) {
+  return requestJson<{
+    applied: IdAutoSuggestion[]; applied_count: number; suggestions: IdAutoSuggestion[];
+    auto_threshold: number; suggest_threshold: number;
+  }>("/api/identity/auto-label", {
+    method: "POST",
+    body: { modality, auto_threshold: opts?.autoThreshold, suggest_threshold: opts?.suggestThreshold, dry_run: opts?.dryRun },
+  });
+}
 export function faceClusters(opts?: { minArea?: number; threshold?: number }) {
   const q = new URLSearchParams();
   if (opts?.minArea != null) q.set("min_area", String(opts.minArea));

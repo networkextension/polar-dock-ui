@@ -7,9 +7,9 @@
 
 import { fetchCurrentUser, logout } from "./api/session.js";
 import {
-  attributeSamplesBulk, faceClusters, listPeople, listSamples, sampleCandidates,
+  attributeSamplesBulk, autoLabel, faceClusters, listPeople, listSamples, sampleCandidates,
   sampleMediaURL, voiceClusters,
-  type AttrTarget, type IdFaceCluster, type IdPerson,
+  type AttrTarget, type IdAutoSuggestion, type IdFaceCluster, type IdPerson,
 } from "./api/identity.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
@@ -107,15 +107,73 @@ async function highlightCandidate(card: HTMLElement, repSampleID: string): Promi
   } catch { /* ignore */ }
 }
 
+// ── ✨ auto-label (shared by 声纹 + 人脸) ────────────────────────────────────
+// Toolbar + a 建议 block. The tab body lives in #idClusters; suggestions in
+// #idSuggest. wireAuto runs the learning loop then re-renders both.
+function autoBarHTML(): string {
+  return `<div class="id-tools" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+      <button id="autoBtn" class="btn-inline btn-primary" type="button">✨ 自动归类</button>
+      <span class="id-meta">学已确认的样本 → 高分自动归、中分给建议(都可撤销)</span>
+      <span id="autoMsg" class="id-meta"></span>
+    </div><div id="idSuggest"></div><div id="idClusters"><div class="meta-subtitle">加载中…</div></div>`;
+}
+function wireAuto(modality: "voice" | "face", refill: () => Promise<void>): void {
+  const btn = byId<HTMLButtonElement>("autoBtn");
+  const msg = byId<HTMLSpanElement>("autoMsg");
+  btn.addEventListener("click", async () => {
+    btn.disabled = true; msg.textContent = "学习中…";
+    const { response, data } = await autoLabel(modality);
+    btn.disabled = false;
+    if (!response.ok) { msg.textContent = "失败"; return; }
+    msg.textContent = `已自动归 ${data.applied_count} 个,建议 ${data.suggestions.length} 条`;
+    renderSuggestions(byId<HTMLDivElement>("idSuggest"), data.suggestions, modality);
+    await loadPeople();
+    await refill();
+  });
+}
+function renderSuggestions(host: HTMLDivElement, sugg: IdAutoSuggestion[], modality: "voice" | "face"): void {
+  if (!sugg.length) { host.innerHTML = ""; return; }
+  host.innerHTML = `<div class="meta-subtitle" style="margin:2px 0 8px;">✨ 建议(机器猜的 —— 核对后点确认,或点别的名字改判)</div>` +
+    sugg.map((s, i) => `<div class="id-card id-sg" data-sg="${i}">
+      <div class="id-row">
+        <span class="id-chip">${modality === "voice" ? "🎙" : "🙂"} 像 <b>${esc(s.display_name)}</b> · ${Math.round(s.score * 100)}%</span>
+        <span style="flex:1"></span>
+        <button class="btn-inline btn-secondary id-show" type="button">${modality === "voice" ? "▶ 放原声" : "🖼 看原图"}</button>
+        <button class="btn-inline btn-primary id-ok" type="button">✓ 确认是 ${esc(s.display_name)}</button>
+      </div>
+      <div class="id-media" style="margin-top:8px;"></div>
+      ${peopleChipsHTML()}
+    </div>`).join("");
+  sugg.forEach((s, i) => {
+    const card = host.querySelector<HTMLDivElement>(`.id-card[data-sg="${i}"]`)!;
+    card.querySelector<HTMLButtonElement>(".id-show")!.addEventListener("click", async () => {
+      const slot = card.querySelector<HTMLDivElement>(".id-media")!;
+      slot.innerHTML = `<span class="meta-subtitle">载入…</span>`;
+      const { response: r, data: d } = await sampleMediaURL(s.sample_id);
+      if (!r.ok) { slot.innerHTML = `<span class="err">取不到</span>`; return; }
+      slot.innerHTML = modality === "voice"
+        ? `<audio controls autoplay preload="none" src="${esc(d.url)}"></audio>`
+        : `<div class="id-face"><img src="${esc(d.url)}" alt="" /></div>`;
+    });
+    const done = () => { card.style.opacity = "0.4"; setTimeout(() => card.remove(), 400); };
+    card.querySelector<HTMLButtonElement>(".id-ok")!.addEventListener("click", async () => {
+      const { response: r } = await attributeSamplesBulk({ sample_ids: [s.sample_id], person_id: s.person_id });
+      if (r.ok) { done(); await loadPeople(); }
+    });
+    // the chips below let you override the guess to a different / new person
+    wireChips(card, { sample_ids: [s.sample_id] });
+    const sel = card.querySelector<HTMLButtonElement>(`.id-pchip[data-pid="${CSS.escape(s.person_id)}"]`);
+    sel?.classList.add("best");
+  });
+}
+
 // ── 🎙 声纹 (server-side speaker clusters: ~1 card per speaker) ──────────────
-async function renderVoice(): Promise<void> {
-  hint.hidden = false;
-  view.innerHTML = `<div class="meta-subtitle">加载中…</div>`;
+async function fillVoiceClusters(host: HTMLDivElement): Promise<void> {
   const { response, data } = await voiceClusters();
-  if (!response.ok) { view.innerHTML = `<div class="err">加载失败 HTTP ${response.status}</div>`; return; }
+  if (!response.ok) { host.innerHTML = `<div class="err">加载失败 HTTP ${response.status}</div>`; return; }
   const cs = data.clusters || [];
-  if (cs.length === 0) { view.innerHTML = `<div class="meta-subtitle">没有待确认的声纹。</div>`; return; }
-  view.innerHTML = cs.map((g, i) => `<div class="id-card" data-idx="${i}">
+  if (cs.length === 0) { host.innerHTML = `<div class="meta-subtitle">没有待确认的声纹。</div>`; return; }
+  host.innerHTML = cs.map((g, i) => `<div class="id-card" data-idx="${i}">
     <div class="id-row">
       <span class="id-chip">🎙 说话人 ${esc(g.speaker)}</span>
       <span class="id-meta">${g.count} 段 · ${ms(g.t0)}–${ms(g.t1)} · ${esc(g.model_id)} · 来源 ${esc(g.captured_from || "—")}</span>
@@ -126,7 +184,7 @@ async function renderVoice(): Promise<void> {
     ${peopleChipsHTML()}
   </div>`).join("");
   cs.forEach((g, i) => {
-    const card = view.querySelector<HTMLDivElement>(`.id-card[data-idx="${i}"]`)!;
+    const card = host.querySelector<HTMLDivElement>(`.id-card[data-idx="${i}"]`)!;
     card.querySelector<HTMLButtonElement>(".id-play")!.addEventListener("click", async () => {
       const slot = card.querySelector<HTMLDivElement>(".id-audio")!;
       slot.innerHTML = `<span class="meta-subtitle">载入音频…</span>`;
@@ -138,6 +196,13 @@ async function renderVoice(): Promise<void> {
     wireChips(card, { modality: "voice", speaker: g.speaker, source_asset_id: g.source_asset_id });
     void highlightCandidate(card, g.rep_sample_id);
   });
+}
+async function renderVoice(): Promise<void> {
+  hint.hidden = false;
+  view.innerHTML = autoBarHTML();
+  const host = byId<HTMLDivElement>("idClusters");
+  await fillVoiceClusters(host);
+  wireAuto("voice", () => fillVoiceClusters(host));
 }
 
 // ── 🙂 人脸 (similarity clusters, ranked by size; singletons collapsed) ──────
@@ -171,29 +236,35 @@ function wireFaceCard(card: HTMLDivElement, c: IdFaceCluster): void {
   wireChips(card, { sample_ids: c.member_ids });
 }
 
-async function renderFace(): Promise<void> {
-  hint.hidden = false;
-  view.innerHTML = `<div class="meta-subtitle">聚类中…</div>`;
+async function fillFaceClusters(host: HTMLDivElement): Promise<void> {
+  host.innerHTML = `<div class="meta-subtitle">聚类中…</div>`;
   const { response, data } = await faceClusters();
-  if (!response.ok) { view.innerHTML = `<div class="err">加载失败 HTTP ${response.status}</div>`; return; }
+  if (!response.ok) { host.innerHTML = `<div class="err">加载失败 HTTP ${response.status}</div>`; return; }
   const cs = data.clusters || [];
-  if (cs.length === 0) { view.innerHTML = `<div class="meta-subtitle">没有待确认的人脸（或都被当作背景过滤）。</div>`; return; }
+  if (cs.length === 0) { host.innerHTML = `<div class="meta-subtitle">没有待确认的人脸（或都被当作背景过滤）。</div>`; return; }
   const main = cs.filter((c) => c.count > 1);
   const singles = cs.filter((c) => c.count === 1);
-  view.innerHTML =
+  host.innerHTML =
     (main.length ? `<div class="meta-subtitle" style="margin:2px 0 8px;">主要人物（按出现次数排序，${main.length}）</div>` +
       main.map((c, i) => faceCardHTML(c, i)).join("") : "") +
     (singles.length ? `<details style="margin-top:10px;"><summary class="meta-subtitle" style="cursor:pointer;">次要 / 一次性人脸（${singles.length}）</summary><div id="idSingles" style="margin-top:8px;"></div></details>` : "");
-  main.forEach((c, i) => wireFaceCard(view.querySelector<HTMLDivElement>(`.id-card[data-idx="${i}"]`)!, c));
+  main.forEach((c, i) => wireFaceCard(host.querySelector<HTMLDivElement>(`.id-card[data-idx="${i}"]`)!, c));
   // singletons rendered lazily when the <details> is opened (keeps it light)
-  const det = view.querySelector<HTMLDetailsElement>("details");
+  const det = host.querySelector<HTMLDetailsElement>("details");
   det?.addEventListener("toggle", () => {
-    const host = byId<HTMLDivElement>("idSingles");
-    if (!det.open || host.dataset.done) return;
-    host.dataset.done = "1";
-    host.innerHTML = singles.map((c, i) => faceCardHTML(c, 1000 + i)).join("");
-    singles.forEach((c, i) => wireFaceCard(host.querySelector<HTMLDivElement>(`.id-card[data-idx="${1000 + i}"]`)!, c));
+    const sh = byId<HTMLDivElement>("idSingles");
+    if (!det.open || sh.dataset.done) return;
+    sh.dataset.done = "1";
+    sh.innerHTML = singles.map((c, i) => faceCardHTML(c, 1000 + i)).join("");
+    singles.forEach((c, i) => wireFaceCard(sh.querySelector<HTMLDivElement>(`.id-card[data-idx="${1000 + i}"]`)!, c));
   }, { once: false });
+}
+async function renderFace(): Promise<void> {
+  hint.hidden = false;
+  view.innerHTML = autoBarHTML();
+  const host = byId<HTMLDivElement>("idClusters");
+  await fillFaceClusters(host);
+  wireAuto("face", () => fillFaceClusters(host));
 }
 
 // ── 👤 人物 ──────────────────────────────────────────────────────────────────
