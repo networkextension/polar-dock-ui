@@ -55,3 +55,25 @@ export type AttrTarget = {
 // The /audio-url endpoint mints a signed URL for any source asset (audio OR a
 // face keyframe image) — generic media.
 export const sampleMediaURL = sampleAudioURL;
+
+// Server-side clusters — the console renders one card per cluster instead of
+// hundreds of per-sample cards.
+export type IdVoiceCluster = {
+  speaker: string; source_asset_id?: number; count: number;
+  rep_sample_id: string; t0: number; t1: number; model_id: string; captured_from?: string;
+};
+export type IdFaceCluster = {
+  rep_sample_id: string; rep_box?: number[]; member_ids: string[]; count: number; avg_area: number; model_id: string;
+};
+export function voiceClusters() {
+  return requestJson<{ clusters: IdVoiceCluster[]; count: number }>(
+    "/api/identity/samples/clusters?modality=voice");
+}
+export function faceClusters(opts?: { minArea?: number; threshold?: number }) {
+  const q = new URLSearchParams();
+  if (opts?.minArea != null) q.set("min_area", String(opts.minArea));
+  if (opts?.threshold != null) q.set("threshold", String(opts.threshold));
+  const qs = q.toString();
+  return requestJson<{ clusters: IdFaceCluster[]; count: number; min_area: number; threshold: number }>(
+    `/api/identity/faces/clusters${qs ? "?" + qs : ""}`);
+}
