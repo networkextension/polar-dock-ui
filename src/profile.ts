@@ -3,6 +3,7 @@ import {
   unblockUser,
   upsertRecommendation,
   updateMyProfile,
+  changePassword,
   fetchUserProfile,
   followUser,
   unfollowUser,
@@ -267,7 +268,43 @@ function renderBioPanel(profile: UserProfileDetail): void {
           <button id="profileBioRefineBtn" class="btn-inline btn-secondary" type="button" title="用 AI 帮我改写">✨ AI 改写</button>
         </div>
       </form>
+      <form id="profilePasswordForm" class="task-result-form" style="margin-top:18px;">
+        <div class="badge">修改密码</div>
+        <label class="form-label" for="pwOld">当前密码</label>
+        <input id="pwOld" class="input" type="password" autocomplete="current-password" />
+        <label class="form-label" for="pwNew">新密码 <span style="color:var(--text-muted); font-weight:normal; font-size:11px;">（至少 6 位）</span></label>
+        <input id="pwNew" class="input" type="password" autocomplete="new-password" minlength="6" />
+        <label class="form-label" for="pwNew2">确认新密码</label>
+        <input id="pwNew2" class="input" type="password" autocomplete="new-password" minlength="6" />
+        <div id="pwStatus" class="status-text"></div>
+        <div class="task-form-actions">
+          <button class="btn-inline btn-secondary" type="submit">更新密码</button>
+        </div>
+      </form>
     `;
+
+    const pwForm = byId<HTMLFormElement>("profilePasswordForm");
+    const pwStatus = byId<HTMLElement>("pwStatus");
+    pwForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const oldp = byId<HTMLInputElement>("pwOld").value;
+      const newp = byId<HTMLInputElement>("pwNew").value;
+      const new2 = byId<HTMLInputElement>("pwNew2").value;
+      pwStatus.classList.remove("status-success", "status-error");
+      if (newp.length < 6) { pwStatus.textContent = "新密码至少 6 位"; pwStatus.classList.add("status-error"); return; }
+      if (newp !== new2) { pwStatus.textContent = "两次新密码不一致"; pwStatus.classList.add("status-error"); return; }
+      if (oldp === newp) { pwStatus.textContent = "新密码不能与当前密码相同"; pwStatus.classList.add("status-error"); return; }
+      pwStatus.textContent = "更新中…";
+      const { response, data } = await changePassword(oldp, newp);
+      if (!response.ok) {
+        pwStatus.textContent = response.status === 401 ? "当前密码不正确" : (data?.error || "更新失败");
+        pwStatus.classList.add("status-error");
+        return;
+      }
+      pwForm.reset();
+      pwStatus.textContent = data?.message || "密码已更新 ✓";
+      pwStatus.classList.add("status-success");
+    });
 
     const form = byId<HTMLFormElement>("profileBioForm");
     const bioInput = byId<HTMLTextAreaElement>("profileBioInput");

@@ -68,6 +68,15 @@ export async function updateMyProfile(bio: string, industry?: string) {
   });
 }
 
+// Self-service password change: verify the current password, set a new one.
+// POST /api/me/password {old_password, new_password}.
+export async function changePassword(oldPassword: string, newPassword: string) {
+  return requestJson<{ message?: string; error?: string }>("/api/me/password", {
+    method: "POST",
+    body: { old_password: oldPassword, new_password: newPassword },
+  });
+}
+
 export async function upsertRecommendation(userId: string, content: string) {
   return requestJson<UserProfileResponse>(`/api/users/${encodeURIComponent(userId)}/recommendations`, {
     method: "POST",
