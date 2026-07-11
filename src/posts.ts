@@ -6,8 +6,8 @@ import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { fetchTags } from "./api/dashboard.js";
 import { t } from "./lib/i18n.js";
 import { logout } from "./api/session.js";
+import { request } from "./api/http.js";
 
-const API_BASE = "";
 const postWelcome = byId<HTMLElement>("postWelcome");
 const postList = byId<HTMLElement>("postList");
 const postLoadMoreBtn = byId<HTMLButtonElement>("postLoadMoreBtn");
@@ -423,7 +423,7 @@ function enhancePostVideos(container: ParentNode): void {
 }
 
 async function loadProfile(): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/me`, { credentials: "include" });
+  const res = await request(`/api/me`);
   if (!res.ok) {
     window.location.href = "/login.html";
     return;
@@ -511,9 +511,8 @@ function createPostCard(post: Post): HTMLElement {
 
   likeBtn.addEventListener("click", async () => {
     const method = post.liked_by_me ? "DELETE" : "POST";
-    const res = await fetch(`${API_BASE}/api/posts/${post.id}/like`, {
+    const res = await request(`/api/posts/${post.id}/like`, {
       method,
-      credentials: "include",
     });
     if (!res.ok) {
       return;
@@ -556,9 +555,8 @@ function createPostCard(post: Post): HTMLElement {
         return;
       }
       deleteBtn.disabled = true;
-      const res = await fetch(`${API_BASE}/api/posts/${post.id}`, {
+      const res = await request(`/api/posts/${post.id}`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (!res.ok) {
         deleteBtn.disabled = false;
@@ -595,9 +593,7 @@ async function loadPosts(reset = false): Promise<void> {
   if (currentScope === "following") {
     params.set("scope", "following");
   }
-  const res = await fetch(`${API_BASE}/api/posts?${params.toString()}`, {
-    credentials: "include",
-  });
+  const res = await request(`/api/posts?${params.toString()}`);
   if (!res.ok) {
     postList.innerHTML = `<div class='post-empty'>${t("posts.loadFailed")}</div>`;
     return;

@@ -16,8 +16,8 @@ import {
 import type { BotUser, LLMConfig } from "./types/dashboard.js";
 import { t } from "./lib/i18n.js";
 import { logout } from "./api/session.js";
+import { request } from "./api/http.js";
 
-const API_BASE = "";
 const postWelcome = byId<HTMLElement>("postWelcome");
 const postDetail = byId<HTMLElement>("postDetail");
 const postForm = byId<HTMLFormElement>("postForm");
@@ -587,7 +587,7 @@ function enhancePostImages(container: ParentNode, images: string[]): void {
 }
 
 async function loadProfile(): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/me`, { credentials: "include" });
+  const res = await request(`/api/me`);
   if (!res.ok) {
     window.location.href = "/login.html";
     return;
@@ -606,9 +606,7 @@ async function loadReplies(postId: number): Promise<void> {
   }
 
   replyList.innerHTML = `<div class='reply-empty'>${t("post.loadingReplies")}</div>`;
-  const res = await fetch(`${API_BASE}/api/posts/${postId}/replies?limit=50`, {
-    credentials: "include",
-  });
+  const res = await request(`/api/posts/${postId}/replies?limit=50`);
   if (!res.ok) {
     replyList.innerHTML = `<div class='reply-empty'>${t("post.repliesLoadFailed")}</div>`;
     return;
@@ -783,9 +781,8 @@ function renderPost(post: Post): void {
 
   likeBtn.addEventListener("click", async () => {
     const method = post.liked_by_me ? "DELETE" : "POST";
-    const res = await fetch(`${API_BASE}/api/posts/${post.id}/like`, {
+    const res = await request(`/api/posts/${post.id}/like`, {
       method,
-      credentials: "include",
     });
     if (!res.ok) {
       return;
@@ -800,9 +797,8 @@ function renderPost(post: Post): void {
       return;
     }
     deleteBtn.disabled = true;
-    const res = await fetch(`${API_BASE}/api/posts/${post.id}`, {
+    const res = await request(`/api/posts/${post.id}`, {
       method: "DELETE",
-      credentials: "include",
     });
     if (!res.ok) {
       deleteBtn.disabled = false;
@@ -832,10 +828,9 @@ function renderPost(post: Post): void {
     if (!content) {
       return;
     }
-    const res = await fetch(`${API_BASE}/api/posts/${post.id}/replies`, {
+    const res = await request(`/api/posts/${post.id}/replies`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ content }),
     });
     if (!res.ok) {
@@ -847,9 +842,8 @@ function renderPost(post: Post): void {
 
   taskApplyBtn?.addEventListener("click", async () => {
     const method = post.task?.applied_by_me ? "DELETE" : "POST";
-    const res = await fetch(`${API_BASE}/api/tasks/${post.id}/apply`, {
+    const res = await request(`/api/tasks/${post.id}/apply`, {
       method,
-      credentials: "include",
     });
     if (!res.ok) {
       return;
@@ -858,9 +852,8 @@ function renderPost(post: Post): void {
   });
 
   taskCloseBtn?.addEventListener("click", async () => {
-    const res = await fetch(`${API_BASE}/api/tasks/${post.id}/close`, {
+    const res = await request(`/api/tasks/${post.id}/close`, {
       method: "POST",
-      credentials: "include",
     });
     if (!res.ok) {
       return;
@@ -873,9 +866,7 @@ function renderPost(post: Post): void {
       return;
     }
     taskApplicantsPanel.innerHTML = `<div class='reply-empty'>${t("post.loadingApplicants")}</div>`;
-    const res = await fetch(`${API_BASE}/api/tasks/${post.id}/applications`, {
-      credentials: "include",
-    });
+    const res = await request(`/api/tasks/${post.id}/applications`);
     if (!res.ok) {
       taskApplicantsPanel.innerHTML = `<div class='reply-empty'>${t("post.applicantsLoadFailed")}</div>`;
       return;
@@ -918,10 +909,9 @@ function renderPost(post: Post): void {
         );
         const messageTemplate = textarea?.value.trim() || "";
         button.disabled = true;
-        const selectRes = await fetch(`${API_BASE}/api/tasks/${post.id}/select-candidate`, {
+        const selectRes = await request(`/api/tasks/${post.id}/select-candidate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             applicant_user_id: applicantUserId,
             message_template: messageTemplate,
@@ -950,9 +940,8 @@ function renderPost(post: Post): void {
     Array.from(taskResultVideos.files || []).forEach((file) => formData.append("videos", file));
     taskResultStatus.textContent = t("post.submittingResult");
     taskResultSubmitBtn.disabled = true;
-    const res = await fetch(`${API_BASE}/api/tasks/${post.id}/results`, {
+    const res = await request(`/api/tasks/${post.id}/results`, {
       method: "POST",
-      credentials: "include",
       body: formData,
     });
     const data = await res.json().catch(() => ({}));
@@ -978,9 +967,7 @@ async function loadTaskResults(postId: number): Promise<void> {
     return;
   }
   container.innerHTML = `<div class='reply-empty'>${t("post.loadingResults")}</div>`;
-  const res = await fetch(`${API_BASE}/api/tasks/${postId}/results`, {
-    credentials: "include",
-  });
+  const res = await request(`/api/tasks/${postId}/results`);
   if (!res.ok) {
     container.innerHTML = `<div class='reply-empty'>${t("post.resultsLoadFailed")}</div>`;
     return;
@@ -1032,9 +1019,7 @@ async function loadPost(): Promise<void> {
     return;
   }
 
-  const res = await fetch(`${API_BASE}/api/posts/${postId}`, {
-    credentials: "include",
-  });
+  const res = await request(`/api/posts/${postId}`);
   if (!res.ok) {
     postDetail.innerHTML = `<div class='post-empty'>${t("post.loadFailed")}</div>`;
     return;
@@ -1139,9 +1124,8 @@ postAttachments.addEventListener("change", async () => {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch(`${API_BASE}/api/attachments`, {
+      const res = await request(`/api/attachments`, {
         method: "POST",
-        credentials: "include",
         body: fd,
       });
       const data = await res.json();
@@ -1255,9 +1239,8 @@ postForm.addEventListener("submit", async (event) => {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/posts`, {
+    const res = await request(`/api/posts`, {
       method: "POST",
-      credentials: "include",
       body: formData,
     });
     const data = await res.json();

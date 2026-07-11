@@ -4,6 +4,7 @@ import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { byId } from "./lib/dom.js";
 import { t } from "./lib/i18n.js";
 import { logout } from "./api/session.js";
+import { request } from "./api/http.js";
 
 const markdownList = byId<HTMLElement>("markdownList");
 const markdownLoadMoreBtn = byId<HTMLButtonElement>("markdownLoadMoreBtn");
@@ -98,7 +99,7 @@ async function loadMarkdowns(reset = false): Promise<void> {
         return `/api/public/markdowns?${qs}`;
     }
   })();
-  const response = await fetch(url, { credentials: "include" });
+  const response = await request(url);
   const data = await response.json();
   if (!response.ok) {
     markdownList.innerHTML = `<div class='post-empty'>${t("markdowns.loadFailed")}</div>`;
