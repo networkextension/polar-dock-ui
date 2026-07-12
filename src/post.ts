@@ -2,6 +2,7 @@ import { buildAssetUrl, resolveAvatar } from "./lib/avatar.js";
 import { linkifyEscaped } from "./lib/linkify.js";
 import { renderMarkdown } from "./lib/marked.js";
 import { createMarkdownEditor, type MarkdownEditor } from "./lib/rich-editor.js";
+import { PolarFigure, PolarGallery, setupDirectiveMarkdownIt } from "./lib/blocks/directive-nodes.js";
 import { formatAssistUsageBadge } from "./lib/assist_usage.js";
 import { byId, query } from "./lib/dom.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
@@ -584,6 +585,22 @@ function enhancePostImages(container: ParentNode, images: string[]): void {
       openImageModal(images, index);
     });
   });
+  enhanceInlineImages(container);
+}
+
+// enhanceInlineImages gives block-editor figures/galleries rendered INSIDE
+// the markdown body the same click-to-zoom as the trailing image grid.
+function enhanceInlineImages(container: ParentNode): void {
+  const inline = Array.from(container.querySelectorAll<HTMLImageElement>(".post-content img"));
+  if (inline.length === 0) return;
+  const gallery = inline.map((el) => el.src);
+  inline.forEach((imageEl, index) => {
+    imageEl.style.cursor = "zoom-in";
+    imageEl.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openImageModal(gallery, index);
+    });
+  });
 }
 
 async function loadProfile(): Promise<void> {
@@ -1154,6 +1171,7 @@ postAttachments.addEventListener("change", async () => {
 // usual keyboard shortcuts for free.
 const postEditorHost = byId<HTMLElement>("postEditor");
 const postEditorToolbar = byId<HTMLElement>("postEditorToolbar");
+const postInlineImages = byId<HTMLInputElement>("postInlineImages");
 let postEditor: MarkdownEditor | null = null;
 if (postEditorHost) {
   postEditor = createMarkdownEditor(postEditorHost, {
@@ -1161,9 +1179,115 @@ if (postEditorHost) {
     onChange: (md) => {
       postContent.value = md;
     },
+    extensions: [PolarFigure, PolarGallery],
+    setupMarkdown: setupDirectiveMarkdownIt,
+    editorProps: {
+      // paste/drop an image anywhere in the editor → eager upload → figure
+      handlePaste: (_view: unknown, event: ClipboardEvent) => {
+        const files = imageFiles(event.clipboardData?.files);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        void insertFigures(files, false);
+        return true;
+      },
+      handleDrop: (_view: unknown, event: DragEvent) => {
+        const files = imageFiles(event.dataTransfer?.files);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        void insertFigures(files, false);
+        return true;
+      },
+    },
   });
   wireRichToolbar(postEditorToolbar, postEditor);
 }
+
+function imageFiles(list: FileList | null | undefined): File[] {
+  return Array.from(list || []).filter((f) => f.type.startsWith("image/"));
+}
+
+// uploadInlineImage eagerly uploads one image (same pattern as the
+// attachments change-handler above) and returns the permanent URLs.
+async function uploadInlineImage(file: File): Promise<{ url: string; medium_url: string } | null> {
+  const fd = new FormData();
+  fd.append("file", file);
+  try {
+    const res = await request("/api/posts/media", { method: "POST", body: fd });
+    const data = await res.json();
+    if (!res.ok || !data.url) {
+      window.alert(data.error || `上传失败：${file.name}`);
+      return null;
+    }
+    return data as { url: string; medium_url: string };
+  } catch {
+    window.alert(`上传失败：${file.name}`);
+    return null;
+  }
+}
+
+function setInlineUploadBusy(busy: boolean): void {
+  postEditorToolbar
+    ?.querySelectorAll<HTMLButtonElement>('[data-cmd="figure"], [data-cmd="gallery"]')
+    .forEach((b) => {
+      b.disabled = busy;
+      b.style.opacity = busy ? "0.5" : "";
+    });
+}
+
+// insertFigures uploads each file and inserts one figure block per image.
+// askCaption=true prompts for a caption when inserting a single image via
+// the toolbar (same interaction as the link button); paste/drop skip it.
+async function insertFigures(files: File[], askCaption: boolean): Promise<void> {
+  if (!postEditor) return;
+  setInlineUploadBusy(true);
+  try {
+    for (const file of files) {
+      const media = await uploadInlineImage(file);
+      if (!media) continue;
+      const caption =
+        askCaption && files.length === 1 ? (window.prompt("图片说明（可留空）", "") || "").trim() : "";
+      postEditor.editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: "polarFigure",
+          attrs: { src: media.url, alt: file.name.replace(/\.[a-z0-9]+$/i, ""), caption, align: "center", width: "" },
+        })
+        .run();
+    }
+  } finally {
+    setInlineUploadBusy(false);
+  }
+}
+
+// insertGallery uploads all files and inserts ONE gallery block.
+async function insertGallery(files: File[]): Promise<void> {
+  if (!postEditor) return;
+  setInlineUploadBusy(true);
+  try {
+    const images: Array<{ src: string; alt: string }> = [];
+    for (const file of files) {
+      const media = await uploadInlineImage(file);
+      if (media) images.push({ src: media.url, alt: file.name.replace(/\.[a-z0-9]+$/i, "") });
+    }
+    if (images.length === 0) return;
+    postEditor.editor.chain().focus().insertContent({ type: "polarGallery", attrs: { images } }).run();
+  } finally {
+    setInlineUploadBusy(false);
+  }
+}
+
+let inlineImageMode: "figure" | "gallery" = "figure";
+postInlineImages?.addEventListener("change", () => {
+  const files = imageFiles(postInlineImages.files);
+  postInlineImages.value = "";
+  if (files.length === 0) return;
+  if (inlineImageMode === "gallery" && files.length > 1) {
+    void insertGallery(files);
+  } else {
+    void insertFigures(files, true);
+  }
+});
 
 function wireRichToolbar(toolbar: HTMLElement | null, ed: MarkdownEditor): void {
   if (!toolbar) return;
@@ -1190,6 +1314,16 @@ function wireRichToolbar(toolbar: HTMLElement | null, ed: MarkdownEditor): void 
         chain.extendMarkRange("link").setLink({ href: url.trim() }).run();
         break;
       }
+      case "figure":
+        inlineImageMode = "figure";
+        chain.run();
+        postInlineImages?.click();
+        return;
+      case "gallery":
+        inlineImageMode = "gallery";
+        chain.run();
+        postInlineImages?.click();
+        return;
       default: chain.run();
     }
   });

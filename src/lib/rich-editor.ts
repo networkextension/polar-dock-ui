@@ -8,7 +8,7 @@
 // which sanitizes) has a small, well-understood attack surface. No DOMPurify /
 // arbitrary-HTML pipeline needed.
 
-import { Editor } from "@tiptap/core";
+import { Editor, type AnyExtension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 
@@ -31,6 +31,17 @@ interface CreateOpts {
   cssClass?: string;
   /** fires on every edit with the current markdown — e.g. to mirror into a hidden textarea. */
   onChange?: (markdown: string) => void;
+  /** extra Tiptap nodes/marks (e.g. the post block-editor's figure/gallery). */
+  extensions?: AnyExtension[];
+  /** extra ProseMirror editorProps (handlePaste/handleDrop for image upload). */
+  editorProps?: Record<string, unknown>;
+  /**
+   * hook to extend the markdown-it instance tiptap-markdown parses with
+   * (custom :::directive containers). Called once after construction;
+   * the instance lives at editor.storage.markdown.parser.md (0.9,
+   * undocumented but stable — validated by the directive spike).
+   */
+  setupMarkdown?: (md: { use: (...args: unknown[]) => void }) => void;
 }
 
 function readMarkdown(editor: Editor): string {
@@ -41,18 +52,33 @@ function readMarkdown(editor: Editor): string {
 export function createMarkdownEditor(host: HTMLElement, opts: CreateOpts = {}): MarkdownEditor {
   const editor = new Editor({
     element: host,
-    extensions: [StarterKit, Markdown.configure({ html: false, tightLists: true })],
+    extensions: [StarterKit, Markdown.configure({ html: false, tightLists: true }), ...(opts.extensions ?? [])],
     content: opts.initial || "",
     editorProps: {
       attributes: {
         class: opts.cssClass || "rich-prose",
         spellcheck: "false",
       },
+      ...(opts.editorProps ?? {}),
     },
     onUpdate: ({ editor: ed }) => {
       opts.onChange?.(readMarkdown(ed));
     },
   });
+
+  if (opts.setupMarkdown) {
+    const storage = editor.storage as {
+      markdown?: { parser?: { md?: { use: (...args: unknown[]) => void } } };
+    };
+    const md = storage.markdown?.parser?.md;
+    if (md) {
+      opts.setupMarkdown(md);
+      // re-ingest initial content so directives in `initial` parse too
+      if (opts.initial) {
+        editor.commands.setContent(opts.initial);
+      }
+    }
+  }
 
   return {
     editor,
