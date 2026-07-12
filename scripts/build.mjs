@@ -94,6 +94,29 @@ async function clean() {
   console.log("Cleaned ui/dist and ui/public/scripts");
 }
 
+// stampHtml rewrites every dist/*.html so local script/css references
+// carry ?v=<buildHash>. Entry bundles and vendor files keep stable
+// filenames, so without this browsers happily serve stale JS across
+// deploys (POLARDOCKU #7) — production nginx serves dist verbatim and
+// never runs server.js's runtime injection. Chunks (chunk-*.js) are
+// already content-hashed by esbuild and need no stamping.
+async function stampHtml(dir, hash) {
+  const names = (await readdir(dir)).filter((n) => n.endsWith(".html"));
+  let stamped = 0;
+  for (const name of names) {
+    const file = path.join(dir, name);
+    const before = await readFile(file, "utf8");
+    const after = before
+      .replace(/src="(\/(?:scripts|vendor)\/[^"?]+\.js)"/g, `src="$1?v=${hash}"`)
+      .replace(/href="([^":]+\.css)"/g, `href="$1?v=${hash}"`);
+    if (after !== before) {
+      await writeFile(file, after, "utf8");
+      stamped += 1;
+    }
+  }
+  console.log(`Stamped ?v=${hash} into ${stamped}/${names.length} HTML pages`);
+}
+
 async function build() {
   await runTypeScriptCheck();
   await rm(publicScriptsDir, { recursive: true, force: true });
@@ -106,6 +129,8 @@ async function build() {
   const pkg = JSON.parse(await readFile(pkgPath, "utf8"));
   const builtAt = new Date().toISOString();
   const buildHash = Date.now().toString(36);
+
+  await stampHtml(distDir, buildHash);
 
   const meta = {
     name: pkg.name,
@@ -158,6 +183,7 @@ async function watch() {
             // a non-ts file under public/ changed too.
             try {
               await cp(publicDir, distDir, { recursive: true });
+              await stampHtml(distDir, Date.now().toString(36));
               const stamp = new Date().toLocaleTimeString();
               console.log(`✓ rebuilt + dist synced (${stamp})`);
             } catch (err) {
