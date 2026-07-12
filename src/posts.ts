@@ -323,6 +323,19 @@ function enhancePostImages(container: ParentNode): void {
       openImageModal(gallery, index);
     });
   });
+  // block-editor figures/galleries live INSIDE the markdown body — give
+  // them the same click-to-zoom as the trailing grid.
+  const inline = Array.from(container.querySelectorAll<HTMLImageElement>(".post-content img"));
+  if (inline.length > 0) {
+    const gallery = inline.map((el) => el.src);
+    inline.forEach((imageEl, index) => {
+      imageEl.style.cursor = "zoom-in";
+      imageEl.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openImageModal(gallery, index);
+      });
+    });
+  }
 }
 
 function ensureVideoModal(): void {

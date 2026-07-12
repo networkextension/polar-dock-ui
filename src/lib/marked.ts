@@ -1,4 +1,5 @@
 import { linkifyEscaped } from "./linkify.js";
+import { polarDirectiveExtension } from "./blocks/marked-directive.js";
 
 declare global {
   interface Window {
@@ -399,6 +400,9 @@ function configureMarked(): void {
   const usedSlugs = new Map<string, number>();
 
   marked.use({
+    // :::figure / :::gallery blocks from the post block editor. Unknown
+    // ::: kinds stay plain text (graceful degradation, by design).
+    extensions: [polarDirectiveExtension()],
     gfm: true,
     breaks: true,
     pedantic: false,

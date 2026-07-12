@@ -1,0 +1,2 @@
+import{a as e,b as a}from"./chunk-PH5GIP5A.js";import{a as t,b as o,c as n,d as g,g as d,h as l}from"./chunk-N3HGZ7XP.js";import"./chunk-LRNBZIOC.js";import"./chunk-TSVSLJUQ.js";import{c as s}from"./chunk-BY6I6UVC.js";var M=s(()=>{a();g();l();var m=document.getElementById("editor"),i=e(m,{extensions:[t,o],setupMarkdown:n});window.__blocks={setMd(r){i.setMarkdown(r)},getMd(){return i.getMarkdown()},render(r){return d(r)}}});export default M();
+//# sourceMappingURL=blocks-test.js.map

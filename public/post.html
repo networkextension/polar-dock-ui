@@ -116,9 +116,13 @@
                   <button type="button" class="rich-tb-btn" data-cmd="link" title="Link">&#128279;</button>
                   <button type="button" class="rich-tb-btn" data-cmd="code" title="Inline code">&lt;/&gt;</button>
                   <button type="button" class="rich-tb-btn" data-cmd="codeBlock" title="Code block">{ }</button>
+                  <span class="rich-tb-sep"></span>
+                  <button type="button" class="rich-tb-btn" data-cmd="figure" title="插入图片（带说明，可粘贴/拖拽）">&#128444;</button>
+                  <button type="button" class="rich-tb-btn" data-cmd="gallery" title="插入图组（多选）">&#8862;</button>
                 </div>
                 <div id="postEditor" class="post-editor rich-prose"></div>
               </div>
+              <input id="postInlineImages" type="file" accept="image/*" multiple hidden />
               <textarea id="postContent" hidden aria-hidden="true" tabindex="-1"></textarea>
 
               <details id="postAssistPanel" class="post-assist-panel">
