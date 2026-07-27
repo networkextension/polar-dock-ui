@@ -139,6 +139,9 @@ function applyReadonlyState(readonly: boolean): void {
   saveBtn.hidden = readonly;
   saveBtn.disabled = readonly;
   welcomeText.textContent = readonly ? t("editor.publicPreview") : entryId ? t("editor.editEntry") : t("editor.newEntry");
+  // Drop the static data-i18n hook so a later applyI18n() pass (sidebar
+  // hydrate) can't reset this contextual text back to the default key.
+  welcomeText.removeAttribute("data-i18n");
   updatePublicHint();
 }
 

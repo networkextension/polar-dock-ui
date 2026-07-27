@@ -16,6 +16,7 @@ import { uploadUserIcon } from "./api/dashboard.js";
 import { fetchCurrentUser, logout, sendEmailVerification } from "./api/session.js";
 import { resolveAvatar } from "./lib/avatar.js";
 import { byId } from "./lib/dom.js";
+import { formatDateTime as formatTime } from "./lib/datetime.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { t } from "./lib/i18n.js";
@@ -38,10 +39,6 @@ bindThemeSync();
 
 function getUserId(): string | null {
   return new URLSearchParams(window.location.search).get("user_id");
-}
-
-function formatTime(value: string): string {
-  return new Date(value).toLocaleString();
 }
 
 function escapeHtml(value: string): string {

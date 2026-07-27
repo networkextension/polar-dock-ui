@@ -1,4 +1,5 @@
 import { buildAssetUrl, resolveAvatar } from "./lib/avatar.js";
+import { formatDateTime as formatTime } from "./lib/datetime.js";
 import { hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import { byId } from "./lib/dom.js";
@@ -31,10 +32,6 @@ let scope: Scope = "own";
 
 initStoredTheme();
 bindThemeSync();
-
-function formatTime(value: string): string {
-  return new Date(value).toLocaleString();
-}
 
 function escapeHtml(value: string): string {
   return value
@@ -99,10 +96,21 @@ async function loadMarkdowns(reset = false): Promise<void> {
         return `/api/public/markdowns?${qs}`;
     }
   })();
-  const response = await request(url);
-  const data = await response.json();
+  let response: Response;
+  let data: { entries?: PublicMarkdownEntry[]; has_more?: boolean; next_offset?: number };
+  try {
+    response = await request(url);
+    data = await response.json();
+  } catch {
+    markdownList.innerHTML = `<div class='post-empty'>${t("markdowns.loadFailed")}</div>`;
+    hasMore = false;
+    markdownLoadMoreBtn.style.display = "none";
+    return;
+  }
   if (!response.ok) {
     markdownList.innerHTML = `<div class='post-empty'>${t("markdowns.loadFailed")}</div>`;
+    hasMore = false;
+    markdownLoadMoreBtn.style.display = "none";
     return;
   }
 

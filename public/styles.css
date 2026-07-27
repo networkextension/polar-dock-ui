@@ -300,6 +300,8 @@ button:hover {
   font-weight: 500;
   font-family: inherit;
   line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
@@ -1184,16 +1186,35 @@ button:hover {
   flex-wrap: wrap;
 }
 
+/* Unified chip for everything in the posts filter bar — the type filters
+   and tag filters used to mix two visual systems (chunky .btn-inline
+   buttons vs .tag-chip badges), which read as two different control kinds. */
+.post-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+  transform: none;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.post-filter-chip:hover { background: var(--surface-strong); color: var(--text); box-shadow: none; transform: none; }
+
 .post-filter-btn.active,
 .post-tag-filter.active {
   background: var(--accent);
+  border-color: var(--accent);
   color: var(--bg);
-}
-
-.post-tag-filter {
-  width: auto;
-  border: none;
-  cursor: pointer;
 }
 
 .post-form-panel {
@@ -3424,6 +3445,16 @@ body.lp-page { background: var(--page-bg); padding: 0; display: block; }
 }
 .lp-brand img { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; }
 .lp-brand-name { font-weight: 700; font-size: 15px; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Brand skeleton — .is-loading is removed by renderSiteBrand() once /api/site-settings resolves. */
+.lp-brand.is-loading img[hidden] { display: block; visibility: hidden; }
+.lp-brand.is-loading .lp-brand-name,
+.site-brand-banner.is-loading .site-brand-name {
+  height: 14px; max-width: 96px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--surface-strong) 25%, var(--border) 50%, var(--surface-strong) 75%);
+  background-size: 200% 100%; animation: lp-brand-shimmer 1.2s linear infinite;
+}
+.site-brand-banner.is-loading .site-brand-name { height: 16px; max-width: 140px; }
+@keyframes lp-brand-shimmer { to { background-position: -200% 0; } }
 .lp-brand-arrow { color: var(--muted); font-size: 11px; flex-shrink: 0; }
 .lp-nav { flex: 1; display: flex; flex-direction: column; padding: 12px 10px; gap: 2px; }
 .lp-nav-item {
@@ -3502,7 +3533,13 @@ body.lp-page { background: var(--page-bg); padding: 0; display: block; }
   font-size: 12px; padding: 3px 10px; border-radius: 20px;
   background: var(--badge-neutral-bg); color: var(--badge-neutral-fg);
   border: 1px solid var(--border); font-weight: 500;
+  /* nowrap + no-shrink: CJK text in a squeezed flex item wraps
+     character-by-character into a vertical strip (uifix v2 §9). */
+  white-space: nowrap; flex-shrink: 0;
 }
+/* Pages that fill the badge after a fetch leave it empty in static HTML —
+   hide it instead of showing a bare pill outline. */
+.lp-mode-badge:empty { display: none; }
 
 /* Content */
 .lp-content { flex: 1; padding: 24px; overflow-y: auto; }
@@ -3995,6 +4032,8 @@ body.lp-page { background: var(--page-bg); padding: 0; display: block; }
   font-weight: 500;
   font-family: inherit;
   line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
@@ -5111,6 +5150,16 @@ textarea:focus-visible,
   border-color: transparent;
 }
 .btn.btn-ghost:hover { background: var(--surface-strong); color: var(--text); }
+
+/* Selected state for .btn toggle groups (e.g. markdowns 我的/工作区/公开
+   scope tabs) — pairs with the is-active class the page scripts toggle.
+   Without this the active tab was visually identical to the others. */
+.btn.is-active {
+  background: var(--surface-strong);
+  color: var(--text);
+  border-color: var(--border);
+  font-weight: 600;
+}
 
 /* .btn.btn-danger reuses the ghost-style .btn-danger redefined
    above; .btn-danger.is-confirm flip is also already defined and

@@ -134,9 +134,12 @@ function itemHTML(it: NavItem): string {
   const label = it.i18n
     ? `<span data-i18n="${escAttr(it.i18n)}">${escHTML(it.label)}</span>`
     : `<span>${escHTML(it.label)}</span>`;
+  // /api/nav items may come back without an icon — keep the (empty) icon
+  // slot for alignment but don't crash escAttr on undefined.
+  const icon = it.icon ? ` data-icon="${escAttr(it.icon)}"` : "";
   return (
     `<a class="${cls}" href="${escAttr(it.href)}"${ext}${gate}${cur}>` +
-    `<span class="lp-nav-icon" data-icon="${escAttr(it.icon)}"></span>${label}</a>`
+    `<span class="lp-nav-icon"${icon}></span>${label}</a>`
   );
 }
 

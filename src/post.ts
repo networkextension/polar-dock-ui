@@ -5,6 +5,7 @@ import { createMarkdownEditor, type MarkdownEditor } from "./lib/rich-editor.js"
 import { PolarFigure, PolarGallery, setupDirectiveMarkdownIt } from "./lib/blocks/directive-nodes.js";
 import { formatAssistUsageBadge } from "./lib/assist_usage.js";
 import { byId, query } from "./lib/dom.js";
+import { formatDateTime as formatTime } from "./lib/datetime.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import {
@@ -157,10 +158,6 @@ bindThemeSync();
 
 function getPostId(): string | null {
   return new URLSearchParams(window.location.search).get("id");
-}
-
-function formatTime(value: string): string {
-  return new Date(value).toLocaleString();
 }
 
 function toISOStringFromLocal(value: string): string {

@@ -9,6 +9,7 @@
 
 import { requestJson } from "../api/http.js";
 import { iconHTML } from "./icons.js";
+import { formatDate, formatDateTime } from "./datetime.js";
 
 export type WidgetMeta = {
   slug: string;
@@ -32,16 +33,11 @@ function escapeHTML(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-// formatTime is the dashboard's defensive Date renderer. Backend
-// timestamps occasionally come back as "" / null / a malformed
-// ISO string (e.g. when an aggregate query couldn't resolve a row);
-// `new Date("").toLocaleString()` produces "Invalid Date" which
-// leaks straight into the UI. We substitute "—" instead.
+// formatTime keeps the widget-local (value, kind) signature; the actual
+// rendering (locale binding + Invalid-Date → "—" defense) lives in
+// lib/datetime.ts, shared with every page.
 function formatTime(s: string | null | undefined, kind: "date" | "datetime" = "datetime"): string {
-  if (!s) return "—";
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return "—";
-  return kind === "date" ? d.toLocaleDateString() : d.toLocaleString();
+  return kind === "date" ? formatDate(s) : formatDateTime(s);
 }
 
 function widgetCard(title: string, body: string, opts: { headerExtra?: string } = {}): string {
