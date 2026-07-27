@@ -7,6 +7,7 @@
 import { request, requestJson } from "./api/http.js";
 import { fetchCurrentUser, logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
+import { formatDateTime } from "./lib/datetime.js";
 import { hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 
@@ -97,8 +98,7 @@ function clearStatus(): void {
 
 function fmtDate(s: string): string {
   try {
-    const d = new Date(s);
-    return d.toLocaleString();
+    return formatDateTime(s);
   } catch {
     return s;
   }

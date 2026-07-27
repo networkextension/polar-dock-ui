@@ -22,11 +22,23 @@ bindThemeSync();
 
 let rawMarkdown = "";
 
+// Once real content (or a real error) has been written, drop the static
+// data-i18n hooks — renderSidebar() re-runs applyI18n() after /api/nav
+// resolves, and it would blindly reset these elements back to the
+// "正在加载内容…" placeholders (the page looked stuck on loading whenever
+// /api/nav finished after the document fetch).
+function detachLoadingPlaceholders(): void {
+  titleEl.removeAttribute("data-i18n");
+  metaEl.removeAttribute("data-i18n");
+  contentEl.removeAttribute("data-i18n");
+}
+
 function applyMarkdownPayload(data: { entry?: { title?: string; is_public?: boolean }; content?: string }): void {
   titleEl.textContent = data.entry?.title || t("markdown.title");
   metaEl.textContent = data.entry?.is_public ? t("markdown.publicReadOnly") : t("markdown.readOnlyPreview");
   rawMarkdown = data.content || "";
   contentEl.innerHTML = renderMarkdown(rawMarkdown);
+  detachLoadingPlaceholders();
   copyMdBtn.disabled = false;
   copyHtmlBtn.disabled = false;
 }
@@ -95,6 +107,7 @@ async function loadPublicMarkdown(): Promise<void> {
     alertBox.className = "alert error";
     alertBox.textContent = t("markdown.missingId");
     contentEl.textContent = t("markdown.loadContentFailed");
+    detachLoadingPlaceholders();
     return;
   }
 
@@ -117,10 +130,12 @@ async function loadPublicMarkdown(): Promise<void> {
     alertBox.className = "alert error";
     alertBox.textContent = publicResult.data.error || t("markdown.loadFailed");
     contentEl.textContent = t("markdown.notFound");
+    detachLoadingPlaceholders();
   } catch {
     alertBox.className = "alert error";
     alertBox.textContent = t("common.networkError");
     contentEl.textContent = t("markdown.loadError");
+    detachLoadingPlaceholders();
   }
 }
 

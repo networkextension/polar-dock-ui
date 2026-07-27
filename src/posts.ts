@@ -1,5 +1,6 @@
 import { buildAssetUrl, resolveAvatar } from "./lib/avatar.js";
 import { byId, query } from "./lib/dom.js";
+import { formatDateTime as formatTime } from "./lib/datetime.js";
 import { renderMarkdown } from "./lib/marked.js";
 import { hydrateSiteBrand, renderSidebarFoot } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
@@ -122,10 +123,6 @@ function formatPostAttachmentSize(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatTime(value: string): string {
-  return new Date(value).toLocaleString();
-}
-
 function profileUrl(userId: string): string {
   return `/profile.html?user_id=${encodeURIComponent(userId)}`;
 }
@@ -164,7 +161,7 @@ function renderTypeFilters(): void {
         !currentTagFilter
         && currentScope === scope
         && (scope === "following" || currentPostTypeFilter === item.value);
-      return `<button class="btn-inline btn-secondary post-filter-btn ${active ? "active" : ""}" data-filter-idx="${idx}" data-post-type="${item.value}" data-scope="${scope}" type="button">${item.label}</button>`;
+      return `<button class="post-filter-chip post-filter-btn ${active ? "active" : ""}" data-filter-idx="${idx}" data-post-type="${item.value}" data-scope="${scope}" type="button">${item.label}</button>`;
     })
     .join("");
   postTypeFilters.querySelectorAll<HTMLButtonElement>(".post-filter-btn").forEach((button) => {
@@ -184,7 +181,7 @@ function renderTagFilters(): void {
   tagFilters.innerHTML = currentTags
     .map(
       (tag) =>
-        `<button class="tag-chip post-tag-filter ${currentTagFilter === tag.id ? "active" : ""}" data-tag-id="${tag.id}" type="button">${tag.name}</button>`
+        `<button class="post-filter-chip post-tag-filter ${currentTagFilter === tag.id ? "active" : ""}" data-tag-id="${tag.id}" type="button">${tag.name}</button>`
     )
     .join("");
   tagFilters.querySelectorAll<HTMLButtonElement>(".post-tag-filter").forEach((button) => {
@@ -636,8 +633,7 @@ postLoadMoreBtn.addEventListener("click", () => {
 });
 
 async function init(): Promise<void> {
-  await hydrateSiteBrand();
-  await loadProfile();
+  await Promise.all([hydrateSiteBrand(), loadProfile()]);
   await loadTags();
   await loadPosts(true);
 }

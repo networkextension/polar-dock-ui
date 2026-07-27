@@ -23,6 +23,7 @@ import {
 import type { AgentLoop } from "./types/room.js";
 import { fetchCurrentUser, logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
+import { formatDateTime } from "./lib/datetime.js";
 import { renderBubble, type BubbleMessage } from "./lib/message-bubble.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
@@ -358,7 +359,7 @@ async function openAgentLoopDialog(roomId: number, botUserId: string, current?: 
   const enabled = confirm(
     `启用 bot 自主发言？\n\n点确定 = 启用，点取消 = 停用。\n` +
       `当前：${current?.enabled ? "已启用" : "未启用"}` +
-      (current?.last_posted_at ? `\n上次发言：${new Date(current.last_posted_at).toLocaleString()}` : ""),
+      (current?.last_posted_at ? `\n上次发言：${formatDateTime(current.last_posted_at)}` : ""),
   );
   if (!enabled && !current) {
     return; // not currently configured + user chose disable → noop

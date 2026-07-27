@@ -29,6 +29,7 @@ import { fetchCurrentUser, logout, sendEmailVerification } from "./api/session.j
 import { formatDeviceType } from "./lib/client.js";
 import { makeDefaultAvatar } from "./lib/avatar.js";
 import { byId, query } from "./lib/dom.js";
+import { formatDateTime } from "./lib/datetime.js";
 import { base64URLToBuffer, credentialToJSON } from "./lib/passkey.js";
 import { LLM_PROVIDER_PRESETS, getPresetByID, matchPresetByBaseURL, matchPresetForConfig, resolvePresetEndpoint, resolvePresetExtras, resolvePresetProviderKind } from "./lib/llm_presets.js";
 import { hydrateSiteBrand, renderSiteBrand, renderSidebarFoot } from "./lib/site.js";
@@ -335,8 +336,8 @@ function renderPasskeys(credentials: PasskeyCredential[] = []): void {
   passkeyRegisterBtn.textContent = "继续绑定";
   passkeyList.innerHTML = credentials
     .map((item) => {
-      const createdAt = new Date(item.created_at).toLocaleString();
-      const updatedAt = new Date(item.updated_at).toLocaleString();
+      const createdAt = formatDateTime(item.created_at);
+      const updatedAt = formatDateTime(item.updated_at);
       return `
         <li>
           <div class="meta-title">已绑定 · ${formatPasskeyLabel(item.credential_id)}</div>
@@ -386,7 +387,7 @@ function formatCertificateMeta(cert?: ApplePushCertificate): string {
   if (!cert?.file_name) {
     return t("dashboard.notUploaded");
   }
-  const uploadedAt = cert.uploaded_at ? new Date(cert.uploaded_at).toLocaleString() : t("dashboard.unknownTime");
+  const uploadedAt = cert.uploaded_at ? formatDateTime(cert.uploaded_at) : t("dashboard.unknownTime");
   return t("dashboard.certMeta", { filename: cert.file_name, time: uploadedAt });
 }
 
@@ -556,7 +557,7 @@ async function loadLoginHistory(): Promise<void> {
 
   loginHistoryList.innerHTML = records
     .map((record) => {
-      const time = new Date(record.logged_in_at).toLocaleString();
+      const time = formatDateTime(record.logged_in_at);
       return `
         <li>
           <div class="meta-title">${record.ip_address || t("dashboard.unknownIp")} · ${formatLoginMethod(record.login_method)} · ${formatDeviceType(record.device_type, t)}</div>
@@ -1572,8 +1573,9 @@ customizeCloseBtn.addEventListener("click", () => {
 });
 
 void (async () => {
-  await hydrateSiteBrand();
-  await loadProfile();
+  // hydrateSiteBrand and loadProfile hit disjoint endpoints/DOM — run them
+  // together so the header doesn't sit on placeholders for extra round-trips.
+  await Promise.all([hydrateSiteBrand(), loadProfile()]);
   await Promise.all([loadLoginHistory(), loadPasskeys(), loadSiteAdminData(), loadAndRenderWidgets()]);
 
   // Open settings modal if redirected from another page with ?settings=

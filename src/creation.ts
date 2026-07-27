@@ -341,14 +341,16 @@ window.addEventListener("keydown", (event) => {
 });
 
 async function init(): Promise<void> {
-  await hydrateSiteBrand();
-  await loadProfile();
   renderPublicLabel();
-  await loadAssistOptions();
-  await loadEntry();
+  // The editor mount (loadEntry) must not queue behind the sidebar/nav
+  // fetches — a slow /api/nav used to leave the body area blank.
+  await Promise.all([hydrateSiteBrand(), loadProfile(), loadAssistOptions(), loadEntry()]);
 }
 
-void init();
+void init().catch((err) => {
+  console.error("creation init failed", err);
+  setAlert("error", t("creation.loadFailed"));
+});
 
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   try {

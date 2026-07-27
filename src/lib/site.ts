@@ -16,9 +16,11 @@ type SidebarUser = {
   icon_url?: string;
 };
 
+// Empty name on purpose: when /api/site-settings fails we leave the brand
+// blank rather than flash a hardcoded default that looks like real data.
 const fallbackSite: Required<SiteSettings> = {
-  name: "Polar-",
-  description: "AI-assisted product prototyping workspace",
+  name: "",
+  description: "",
   icon_url: "",
 };
 
@@ -48,16 +50,22 @@ export function renderSiteBrand(site?: SiteSettings): void {
     if (iconEl) {
       iconEl.src = iconSrc;
       iconEl.alt = `${safeSite.name} ${t("brand.icon")}`;
+      iconEl.hidden = false;
     }
+    container.classList.remove("is-loading");
   });
 
-  // Pages that opt in via <title data-site-title>...</title> get the
-  // configured site name written into document.title. Other pages
-  // keep whatever static title their HTML already has (e.g.
-  // <title data-i18n-title="login.title">Login</title>).
+  // Pages that opt in via <title data-site-title>页面名</title> get the
+  // configured site name appended: "页面名 — <site>". An empty title
+  // becomes just the site name. Other pages keep whatever static title
+  // their HTML already has (e.g. <title data-i18n-title="login.title">).
   const titleEl = document.querySelector<HTMLTitleElement>("title[data-site-title]");
-  if (titleEl) {
-    titleEl.textContent = safeSite.name;
+  if (titleEl && safeSite.name) {
+    if (titleEl.dataset.pageTitle === undefined) {
+      titleEl.dataset.pageTitle = (titleEl.textContent || "").trim();
+    }
+    const page = titleEl.dataset.pageTitle;
+    titleEl.textContent = page ? `${page} — ${safeSite.name}` : safeSite.name;
   }
 }
 
@@ -168,6 +176,15 @@ export async function hydrateSiteBrand(): Promise<void> {
   hydrateIcons();
   initSidebarToggle();
   initSettingsButton();
+  // Fire the site-settings fetch before the nav/foot hydrates so the brand
+  // skeleton resolves after one round-trip instead of queueing behind
+  // /api/nav + /api/me.
+  const brandDone = document.querySelector("[data-site-brand]")
+    ? fetch("/api/site-settings", { credentials: "include" })
+        .then((response) => (response.ok ? response.json() : null))
+        .catch(() => null)
+        .then((data) => renderSiteBrand(data?.site))
+    : null;
   // Render the shared platform nav (dock /api/nav) BEFORE the foot hydrate,
   // so hydrateSidebarFoot's /api/me admin-reveal applies to the fresh items.
   await renderSidebar();
@@ -177,20 +194,8 @@ export async function hydrateSiteBrand(): Promise<void> {
   // login / register / public invite preview).
   void installWorkspaceSwitcher();
 
-  if (!document.querySelector("[data-site-brand]")) {
-    return;
-  }
-
-  try {
-    const response = await fetch("/api/site-settings", { credentials: "include" });
-    if (!response.ok) {
-      renderSiteBrand();
-      return;
-    }
-    const data = await response.json();
-    renderSiteBrand(data.site);
-  } catch {
-    renderSiteBrand();
+  if (brandDone) {
+    await brandDone;
   }
 }
 

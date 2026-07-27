@@ -3,6 +3,7 @@ import { fetchBotUsers } from "./api/dashboard.js";
 import { requestJson } from "./api/http.js";
 import { fetchCurrentUser, logout } from "./api/session.js";
 import { resolveAvatar } from "./lib/avatar.js";
+import { formatDateTime } from "./lib/datetime.js";
 import { formatDeviceType } from "./lib/client.js";
 import { byId } from "./lib/dom.js";
 import { linkifyEscaped } from "./lib/linkify.js";
@@ -338,7 +339,7 @@ function formatTime(value?: string): string {
   if (!value) {
     return "";
   }
-  return new Date(value).toLocaleString();
+  return formatDateTime(value);
 }
 
 function formatPresence(chat: ChatSummary): string {
