@@ -285,11 +285,13 @@ button:hover {
 }
 
 /* Slim ghost-style chip used in chat headers and quick-action toolbars.
-   Lighter than .btn-inline: smaller padding, thinner border, normal weight. */
+   Lighter than .btn-inline: smaller padding, thinner border, normal weight.
+   width:auto shields against the global `button { width: 100% }` form rule. */
 .btn-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: auto;
   gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
@@ -4022,6 +4024,7 @@ body.lp-page { background: var(--page-bg); padding: 0; display: block; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: auto;
   gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
