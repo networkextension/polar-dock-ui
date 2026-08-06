@@ -117,7 +117,7 @@ async function onApply(teamID: string, name: string, label: string): Promise<voi
 }
 
 refreshBtn.addEventListener("click", () => void refresh());
-document.getElementById("logoutBtn")?.addEventListener("click", () => void logout());
+document.getElementById("logoutBtn")?.addEventListener("click", () => void logout().then(() => window.location.replace("/login.html")));
 
 (async () => {
   hydrateSiteBrand();

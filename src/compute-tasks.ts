@@ -306,7 +306,7 @@ async function main(): Promise<void> {
   board.hidden = false;
   refreshBtn.addEventListener("click", () => void refreshAll());
   submitBtn.addEventListener("click", () => void onSubmit());
-  logoutBtn.addEventListener("click", () => void logout());
+  logoutBtn.addEventListener("click", () => void logout().then(() => window.location.replace("/login.html")));
   detailCloseBtn.addEventListener("click", closeDrawer);
   detailBackdrop.addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });

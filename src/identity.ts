@@ -374,7 +374,7 @@ async function main(): Promise<void> {
   tabFace.addEventListener("click", () => { TAB = "face"; render(); });
   tabPeople.addEventListener("click", () => { TAB = "people"; render(); });
   refreshBtn.addEventListener("click", render);
-  logoutBtn.addEventListener("click", () => void logout());
+  logoutBtn.addEventListener("click", () => void logout().then(() => window.location.replace("/login.html")));
   render();
 }
 

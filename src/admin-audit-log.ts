@@ -247,7 +247,7 @@ filterResetBtn.addEventListener("click", () => {
   void refresh();
 });
 logoutBtn?.addEventListener("click", () => {
-  void logout();
+  void logout().then(() => window.location.replace("/login.html"));
 });
 
 // Auto-refresh every 30s. Skip while a fetch is already in flight

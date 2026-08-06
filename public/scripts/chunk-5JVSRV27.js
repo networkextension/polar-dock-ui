@@ -1,2 +1,0 @@
-import{g as r,l as a}from"./chunk-3U7UJ53Z.js";import{a as e,b as u}from"./chunk-BY6I6UVC.js";function i(){return r()==="en"?"en-US":"zh-CN"}function o(n){if(n==null||n==="")return null;let t=n instanceof Date?n:new Date(n);return Number.isNaN(t.getTime())?null:t}function s(n){let t=o(n);return t?t.toLocaleString(i()):"\u2014"}function c(n){let t=o(n);return t?t.toLocaleDateString(i()):"\u2014"}var f=u(()=>{a();e(i,"locale");e(o,"parse");e(s,"formatDateTime");e(c,"formatDate")});export{s as a,c as b,f as c};
-//# sourceMappingURL=chunk-5JVSRV27.js.map

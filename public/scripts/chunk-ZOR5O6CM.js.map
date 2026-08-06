@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/api/session.ts"],
-  "sourcesContent": ["import { request, requestJson } from \"./http.js\";\nimport type { EmailVerificationResponse, UserProfile } from \"../types/session.js\";\n\nexport async function fetchCurrentUser() {\n  return requestJson<UserProfile>(\"/api/me\");\n}\n\nexport async function logout() {\n  return request(\"/api/logout\", { method: \"POST\" });\n}\n\nexport async function sendEmailVerification() {\n  return requestJson<EmailVerificationResponse>(\"/api/email-verification/send\", {\n    method: \"POST\",\n  });\n}\n"],
-  "mappings": "qGAGA,eAAsBA,GAAmB,CACvC,OAAOC,EAAyB,SAAS,CAC3C,CAEA,eAAsBC,GAAS,CAC7B,OAAOC,EAAQ,cAAe,CAAE,OAAQ,MAAO,CAAC,CAClD,CAEA,eAAsBC,GAAwB,CAC5C,OAAOH,EAAuC,+BAAgC,CAC5E,OAAQ,MACV,CAAC,CACH,CAfA,IAAAI,EAAAC,EAAA,KAAAC,IAGsBC,EAAAR,EAAA,oBAIAQ,EAAAN,EAAA,UAIAM,EAAAJ,EAAA",
-  "names": ["fetchCurrentUser", "requestJson", "logout", "request", "sendEmailVerification", "init_session", "__esmMin", "init_http", "__name"]
-}

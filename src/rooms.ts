@@ -507,7 +507,7 @@ function connectWS(): void {
 // ---- bootstrap ----
 roomRefreshBtn.addEventListener("click", () => void loadRooms());
 logoutBtn?.addEventListener("click", () => {
-  void logout();
+  void logout().then(() => window.location.replace("/login.html"));
 });
 
 (async () => {
