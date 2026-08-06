@@ -1,0 +1,2 @@
+import{b as i,c as t,d as r,e as s}from"./chunk-C6HRAGLJ.js";import{n as o,p as a}from"./chunk-QM6K7MLO.js";import{a as e,b as n}from"./chunk-BY6I6UVC.js";async function m(){return r("/api/me")}async function u(){try{return await t("/api/logout",{method:"POST"})}finally{i(),o("")}}async function l(){return r("/api/email-verification/send",{method:"POST"})}var c=n(()=>{s();a();e(m,"fetchCurrentUser");e(u,"logout");e(l,"sendEmailVerification")});export{m as a,u as b,l as c,c as d};
+//# sourceMappingURL=chunk-5BUHJZZT.js.map

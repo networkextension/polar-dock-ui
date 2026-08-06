@@ -76,6 +76,20 @@ export function noteAccessExpiry(expiresInSec: number): void {
   }
 }
 
+// clearAccessExpiry drops the recorded expiry. Called by logout() — leaving
+// a stale "session is still valid" stamp behind keeps startProactiveRefresh
+// hammering /api/token/refresh against a revoked session on any page that
+// doesn't navigate away. With the key gone readAccessExpiry() returns 0 and
+// the timer's check() short-circuits, so no separate stop-the-timer plumbing
+// is needed.
+export function clearAccessExpiry(): void {
+  try {
+    localStorage.removeItem(SESSION_EXP_KEY);
+  } catch {
+    /* localStorage unavailable — nothing was stored either */
+  }
+}
+
 function readAccessExpiry(): number {
   try {
     const v = localStorage.getItem(SESSION_EXP_KEY);

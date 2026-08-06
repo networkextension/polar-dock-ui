@@ -104,7 +104,7 @@ async function onReject(id: string, name: string): Promise<void> {
 }
 
 refreshBtn.addEventListener("click", () => void refresh());
-document.getElementById("logoutBtn")?.addEventListener("click", () => void logout());
+document.getElementById("logoutBtn")?.addEventListener("click", () => void logout().then(() => window.location.replace("/login.html")));
 
 (async () => {
   hydrateSiteBrand();

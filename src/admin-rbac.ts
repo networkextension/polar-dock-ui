@@ -418,7 +418,7 @@ cancelRoleBtn.addEventListener("click", () => closeRoleModal());
 modal.addEventListener("click", (e) => {
   if (e.target === modal) closeRoleModal();
 });
-document.getElementById("logoutBtn")?.addEventListener("click", () => void logout());
+document.getElementById("logoutBtn")?.addEventListener("click", () => void logout().then(() => window.location.replace("/login.html")));
 
 (async () => {
   hydrateSiteBrand();

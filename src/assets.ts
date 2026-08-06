@@ -11,6 +11,7 @@ import {
   listShareLinks,
   uploadAsset,
 } from "./api/assets.js";
+import { logout } from "./api/session.js";
 import { byId } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
@@ -353,8 +354,10 @@ refreshBtn.addEventListener("click", () => {
 });
 
 byId<HTMLButtonElement>("logoutBtn")?.addEventListener("click", async () => {
-  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-  location.href = "/login.html";
+  // dock's route is /api/logout — this used to POST /api/auth/logout, which
+  // 404s, so the button cleared nothing and the session stayed alive.
+  await logout();
+  location.replace("/login.html");
 });
 
 void (async () => {

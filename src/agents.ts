@@ -299,7 +299,9 @@ function initFilters(): void {
   hydrateSiteBrand();
   hydrateSidebarFoot();
   const logoutBtn = document.getElementById("logoutBtn") as HTMLButtonElement | null;
-  logoutBtn?.addEventListener("click", () => { void logout(); });
+  logoutBtn?.addEventListener("click", () => {
+    void logout().then(() => window.location.replace("/login.html"));
+  });
 
   initFilters();
 

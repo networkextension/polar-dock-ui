@@ -361,7 +361,7 @@ refreshBtn.addEventListener("click", () => {
   void refreshRequests();
 });
 logoutBtn?.addEventListener("click", () => {
-  void logout();
+  void logout().then(() => window.location.replace("/login.html"));
 });
 
 (async () => {
