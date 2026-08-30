@@ -156,10 +156,10 @@
 
     <!-- Create modal -->
     <div id="createModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 480px;">
+      <div class="lp-modal-card" style="max-width: 480px;" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
         <div class="lp-modal-head">
-          <span class="lp-modal-title">新建 Plugin</span>
-          <button id="createCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <span class="lp-modal-title" id="createModalTitle">新建 Plugin</span>
+          <button id="createCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <div class="settings-section-card" style="margin-bottom: 12px;">
@@ -185,10 +185,10 @@
 
     <!-- Plaintext display modal (create / rotate) -->
     <div id="plaintextModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 560px;">
+      <div class="lp-modal-card" style="max-width: 560px;" role="dialog" aria-modal="true" aria-labelledby="plaintextModalTitle">
         <div class="lp-modal-head">
-          <span class="lp-modal-title">⚠️ 一次性显示 — 请立即复制保存</span>
-          <button id="plaintextCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <span class="lp-modal-title" id="plaintextModalTitle">⚠️ 一次性显示 — 请立即复制保存</span>
+          <button id="plaintextCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <p class="meta-subtitle" style="margin: 0 0 8px 0;">

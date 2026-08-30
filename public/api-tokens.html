@@ -76,10 +76,10 @@
 
     <!-- Create modal: name only (P0). -->
     <div id="createModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 480px;">
+      <div class="lp-modal-card" style="max-width: 480px;" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
         <div class="lp-modal-head">
-          <span class="lp-modal-title">新建 API Token</span>
-          <button id="createCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <span class="lp-modal-title" id="createModalTitle">新建 API Token</span>
+          <button id="createCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <label class="settings-section-title" for="createName" style="font-size:12px;">名称</label>
@@ -115,9 +115,9 @@
 
     <!-- Show-once secret modal. -->
     <div id="plaintextModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 560px;">
+      <div class="lp-modal-card" style="max-width: 560px;" role="dialog" aria-modal="true" aria-labelledby="plaintextModalTitle">
         <div class="lp-modal-head">
-          <span class="lp-modal-title">令牌已创建</span>
+          <span class="lp-modal-title" id="plaintextModalTitle">令牌已创建</span>
         </div>
         <div class="lp-modal-body">
           <p class="status-text" style="color: var(--danger, #c00); margin: 0 0 8px 0;">
@@ -139,10 +139,10 @@
 
     <!-- Usage / audit modal (P2). -->
     <div id="usageModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 760px;">
+      <div class="lp-modal-card" style="max-width: 760px;" role="dialog" aria-modal="true" aria-labelledby="usageTitle">
         <div class="lp-modal-head">
           <span class="lp-modal-title" id="usageTitle">用量</span>
-          <button id="usageCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <button id="usageCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <div id="usageSummary" class="meta-subtitle" style="margin-bottom:8px;">加载中…</div>

@@ -90,8 +90,8 @@
 
     <!-- Edit-quota modal -->
     <div id="editQuotaModal" hidden class="lp-modal">
-      <div class="lp-modal-card" style="max-width:420px;">
-        <h3 style="margin:0 0 4px;">编辑配额：<span id="editQuotaTitle"></span></h3>
+      <div class="lp-modal-card" style="max-width:420px;" role="dialog" aria-modal="true" aria-labelledby="editQuotaModalTitle">
+        <h3 style="margin:0 0 4px;" id="editQuotaModalTitle">编辑配额：<span id="editQuotaTitle"></span></h3>
         <div id="editQuotaCurrent" class="meta-subtitle" style="margin-bottom:12px;"></div>
         <label>新配额（GB）
           <input type="number" id="editQuotaInput" class="input" min="0" step="0.01" />
@@ -106,8 +106,8 @@
 
     <!-- Add-provider modal -->
     <div id="addProviderModal" hidden class="lp-modal">
-      <div class="lp-modal-card" style="max-width:480px;">
-        <h3 style="margin:0 0 12px;">新增 Provider</h3>
+      <div class="lp-modal-card" style="max-width:480px;" role="dialog" aria-modal="true" aria-labelledby="addProviderModalTitle">
+        <h3 style="margin:0 0 12px;" id="addProviderModalTitle">新增 Provider</h3>
         <div style="display:grid; gap:8px;">
           <label>slug（唯一标识）
             <input type="text" id="addProviderSlug" class="input" placeholder="zen-prov-1" />
