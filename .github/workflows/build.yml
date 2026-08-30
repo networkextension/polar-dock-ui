@@ -8,7 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # ci-mac @ .82 的 polar-cloud macOS VM（repo 级 self-hosted runner，
+    # 与 polar-WindTunnel / polar-firewall 同机）。
+    # 本仓是私有仓：跑 ubuntu-latest 会被账单拦下（4 秒零步骤，
+    # "recent account payments have failed"），自建 runner 不计费。
+    runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 10
 
     steps:

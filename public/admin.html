@@ -117,7 +117,7 @@
             </div>
             <div class="lp-preview-body">
               <div class="toolbar" style="margin-bottom: 12px;">
-                <input id="searchInput" class="input" type="text" data-i18n-placeholder="admin.searchPlaceholder" placeholder="按用户名 / 邮箱 / 用户ID 搜索" />
+                <input id="searchInput" class="input" type="text" data-i18n-placeholder="admin.searchPlaceholder" placeholder="按用户名 / 邮箱 / 用户ID 搜索"  aria-label="按用户名 / 邮箱 / 用户ID 搜索" data-i18n-aria-label="admin.searchPlaceholder"/>
                 <button id="searchBtn" class="btn-inline btn-secondary" type="button" data-i18n="admin.search">搜索</button>
                 <button id="resetBtn" class="btn-inline btn-secondary" type="button" data-i18n="admin.reset">重置</button>
               </div>
@@ -143,8 +143,8 @@
               <div class="settings-section-card" style="margin-bottom: 12px;">
                 <div class="settings-section-title" data-i18n="admin.changePassword">修改密码</div>
                 <div class="toolbar" style="margin-top: 8px; flex-direction: column; align-items: stretch;">
-                  <input id="newPassword" class="input" type="password" data-i18n-placeholder="admin.newPasswordPlaceholder" placeholder="新密码（至少6位）" />
-                  <input id="confirmPassword" class="input" type="password" data-i18n-placeholder="admin.confirmPasswordPlaceholder" placeholder="确认新密码" />
+                  <input id="newPassword" class="input" type="password" data-i18n-placeholder="admin.newPasswordPlaceholder" placeholder="新密码（至少6位）"  aria-label="新密码（至少6位）" data-i18n-aria-label="admin.newPasswordPlaceholder"/>
+                  <input id="confirmPassword" class="input" type="password" data-i18n-placeholder="admin.confirmPasswordPlaceholder" placeholder="确认新密码"  aria-label="确认新密码" data-i18n-aria-label="admin.confirmPasswordPlaceholder"/>
                   <button id="updatePasswordBtn" class="btn-inline btn-secondary" type="button" data-i18n="admin.updatePassword">更新密码</button>
                 </div>
                 <div id="passwordStatus" class="status-text"></div>

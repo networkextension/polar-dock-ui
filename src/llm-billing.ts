@@ -18,7 +18,7 @@ import {
   listMyProxyTokens,
 } from "./api/llm_proxy.js";
 import { logout } from "./api/session.js";
-import { byId } from "./lib/dom.js";
+import { byId, byIdOpt } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
 import type {
@@ -84,57 +84,57 @@ interface MeResponse {
 
 const billingStatus = byId<HTMLElement>("billingStatus");
 
-const marketTable = byId<HTMLTableElement>("marketTable");
-const marketTbody = byId<HTMLTableSectionElement>("marketTbody");
-const marketEmpty = byId<HTMLElement>("marketEmpty");
-const marketLoading = byId<HTMLElement>("marketLoading");
-const marketCount = byId<HTMLElement>("marketCount");
+const marketTable = byIdOpt<HTMLTableElement>("marketTable");
+const marketTbody = byIdOpt<HTMLTableSectionElement>("marketTbody");
+const marketEmpty = byIdOpt<HTMLElement>("marketEmpty");
+const marketLoading = byIdOpt<HTMLElement>("marketLoading");
+const marketCount = byIdOpt<HTMLElement>("marketCount");
 
-const adminPricingSection = byId<HTMLElement>("adminPricingSection");
-const adminQuotasSection = byId<HTMLElement>("adminQuotasSection");
-const adminAppsSection = byId<HTMLElement>("adminAppsSection");
-const quotasTable = byId<HTMLTableElement>("quotasTable");
-const quotasTbody = byId<HTMLTableSectionElement>("quotasTbody");
-const quotasEmpty = byId<HTMLElement>("quotasEmpty");
-const quotasCount = byId<HTMLElement>("quotasCount");
-const appsTable = byId<HTMLTableElement>("appsTable");
-const appsTbody = byId<HTMLTableSectionElement>("appsTbody");
-const appsEmpty = byId<HTMLElement>("appsEmpty");
-const appsCount = byId<HTMLElement>("appsCount");
+const adminPricingSection = byIdOpt<HTMLElement>("adminPricingSection");
+const adminQuotasSection = byIdOpt<HTMLElement>("adminQuotasSection");
+const adminAppsSection = byIdOpt<HTMLElement>("adminAppsSection");
+const quotasTable = byIdOpt<HTMLTableElement>("quotasTable");
+const quotasTbody = byIdOpt<HTMLTableSectionElement>("quotasTbody");
+const quotasEmpty = byIdOpt<HTMLElement>("quotasEmpty");
+const quotasCount = byIdOpt<HTMLElement>("quotasCount");
+const appsTable = byIdOpt<HTMLTableElement>("appsTable");
+const appsTbody = byIdOpt<HTMLTableSectionElement>("appsTbody");
+const appsEmpty = byIdOpt<HTMLElement>("appsEmpty");
+const appsCount = byIdOpt<HTMLElement>("appsCount");
 
-const pricingModal = byId<HTMLElement>("pricingModal");
-const pricingTitle = byId<HTMLElement>("pricingTitle");
-const pricingCloseBtn = byId<HTMLButtonElement>("pricingCloseBtn");
-const pricingCancelBtn = byId<HTMLButtonElement>("pricingCancelBtn");
-const pricingSubmitBtn = byId<HTMLButtonElement>("pricingSubmitBtn");
-const pricingInput = byId<HTMLInputElement>("pricingInput");
-const pricingOutput = byId<HTMLInputElement>("pricingOutput");
-const pricingError = byId<HTMLElement>("pricingError");
+const pricingModal = byIdOpt<HTMLElement>("pricingModal");
+const pricingTitle = byIdOpt<HTMLElement>("pricingTitle");
+const pricingCloseBtn = byIdOpt<HTMLButtonElement>("pricingCloseBtn");
+const pricingCancelBtn = byIdOpt<HTMLButtonElement>("pricingCancelBtn");
+const pricingSubmitBtn = byIdOpt<HTMLButtonElement>("pricingSubmitBtn");
+const pricingInput = byIdOpt<HTMLInputElement>("pricingInput");
+const pricingOutput = byIdOpt<HTMLInputElement>("pricingOutput");
+const pricingError = byIdOpt<HTMLElement>("pricingError");
 
-const applyModal = byId<HTMLElement>("applyModal");
-const applyTitle = byId<HTMLElement>("applyTitle");
-const applyCloseBtn = byId<HTMLButtonElement>("applyCloseBtn");
-const applyCancelBtn = byId<HTMLButtonElement>("applyCancelBtn");
-const applySubmitBtn = byId<HTMLButtonElement>("applySubmitBtn");
-const applyNote = byId<HTMLInputElement>("applyNote");
-const applyError = byId<HTMLElement>("applyError");
+const applyModal = byIdOpt<HTMLElement>("applyModal");
+const applyTitle = byIdOpt<HTMLElement>("applyTitle");
+const applyCloseBtn = byIdOpt<HTMLButtonElement>("applyCloseBtn");
+const applyCancelBtn = byIdOpt<HTMLButtonElement>("applyCancelBtn");
+const applySubmitBtn = byIdOpt<HTMLButtonElement>("applySubmitBtn");
+const applyNote = byIdOpt<HTMLInputElement>("applyNote");
+const applyError = byIdOpt<HTMLElement>("applyError");
 
-const quotaModal = byId<HTMLElement>("quotaModal");
-const quotaTitle = byId<HTMLElement>("quotaTitle");
-const quotaCloseBtn = byId<HTMLButtonElement>("quotaCloseBtn");
-const quotaCancelBtn = byId<HTMLButtonElement>("quotaCancelBtn");
-const quotaSubmitBtn = byId<HTMLButtonElement>("quotaSubmitBtn");
-const quotaBudget = byId<HTMLInputElement>("quotaBudget");
-const quotaError = byId<HTMLElement>("quotaError");
+const quotaModal = byIdOpt<HTMLElement>("quotaModal");
+const quotaTitle = byIdOpt<HTMLElement>("quotaTitle");
+const quotaCloseBtn = byIdOpt<HTMLButtonElement>("quotaCloseBtn");
+const quotaCancelBtn = byIdOpt<HTMLButtonElement>("quotaCancelBtn");
+const quotaSubmitBtn = byIdOpt<HTMLButtonElement>("quotaSubmitBtn");
+const quotaBudget = byIdOpt<HTMLInputElement>("quotaBudget");
+const quotaError = byIdOpt<HTMLElement>("quotaError");
 
-const rechargeModal = byId<HTMLElement>("rechargeModal");
-const rechargeTitle = byId<HTMLElement>("rechargeTitle");
-const rechargeCloseBtn = byId<HTMLButtonElement>("rechargeCloseBtn");
-const rechargeCancelBtn = byId<HTMLButtonElement>("rechargeCancelBtn");
-const rechargeSubmitBtn = byId<HTMLButtonElement>("rechargeSubmitBtn");
-const rechargeAmount = byId<HTMLInputElement>("rechargeAmount");
-const rechargeNote = byId<HTMLInputElement>("rechargeNote");
-const rechargeError = byId<HTMLElement>("rechargeError");
+const rechargeModal = byIdOpt<HTMLElement>("rechargeModal");
+const rechargeTitle = byIdOpt<HTMLElement>("rechargeTitle");
+const rechargeCloseBtn = byIdOpt<HTMLButtonElement>("rechargeCloseBtn");
+const rechargeCancelBtn = byIdOpt<HTMLButtonElement>("rechargeCancelBtn");
+const rechargeSubmitBtn = byIdOpt<HTMLButtonElement>("rechargeSubmitBtn");
+const rechargeAmount = byIdOpt<HTMLInputElement>("rechargeAmount");
+const rechargeNote = byIdOpt<HTMLInputElement>("rechargeNote");
+const rechargeError = byIdOpt<HTMLElement>("rechargeError");
 
 const logoutBtn = byId<HTMLButtonElement>("logoutBtn");
 
@@ -561,30 +561,30 @@ function readActiveWorkspaceID(): string {
 // because the two pages have separate ts bundles and the render code
 // is small. Worth factoring out if a third page wants it.
 
-const myTokensTable = byId<HTMLTableElement>("myTokensTable");
-const myTokensTbody = byId<HTMLTableSectionElement>("myTokensTbody");
-const myTokensEmpty = byId<HTMLElement>("myTokensEmpty");
-const myTokensLoading = byId<HTMLElement>("myTokensLoading");
-const myTokensCount = byId<HTMLElement>("myTokensCount");
-const myTokensShowRevokedToggle = byId<HTMLInputElement>("myTokensShowRevokedToggle");
+const myTokensTable = byIdOpt<HTMLTableElement>("myTokensTable");
+const myTokensTbody = byIdOpt<HTMLTableSectionElement>("myTokensTbody");
+const myTokensEmpty = byIdOpt<HTMLElement>("myTokensEmpty");
+const myTokensLoading = byIdOpt<HTMLElement>("myTokensLoading");
+const myTokensCount = byIdOpt<HTMLElement>("myTokensCount");
+const myTokensShowRevokedToggle = byIdOpt<HTMLInputElement>("myTokensShowRevokedToggle");
 
 let myAllTokens: LLMProxyToken[] = [];
 let myAggregateByTokenID = new Map<number, LLMProxyCallAggregate[]>();
 
-const auditModal = byId<HTMLElement>("auditModal");
-const auditTitle = byId<HTMLElement>("auditTitle");
-const auditSubtitle = byId<HTMLElement>("auditSubtitle");
-const auditCloseBtn = byId<HTMLButtonElement>("auditCloseBtn");
-const auditDays = byId<HTMLSelectElement>("auditDays");
-const auditDaysGroup = byId<HTMLElement>("auditDaysGroup");
-const auditRefreshBtn = byId<HTMLButtonElement>("auditRefreshBtn");
-const auditStatus = byId<HTMLElement>("auditStatus");
-const auditAggregateTable = byId<HTMLTableElement>("auditAggregateTable");
-const auditAggregateTbody = byId<HTMLTableSectionElement>("auditAggregateTbody");
-const auditAggregateEmpty = byId<HTMLElement>("auditAggregateEmpty");
-const auditCallsTable = byId<HTMLTableElement>("auditCallsTable");
-const auditCallsTbody = byId<HTMLTableSectionElement>("auditCallsTbody");
-const auditCallsEmpty = byId<HTMLElement>("auditCallsEmpty");
+const auditModal = byIdOpt<HTMLElement>("auditModal");
+const auditTitle = byIdOpt<HTMLElement>("auditTitle");
+const auditSubtitle = byIdOpt<HTMLElement>("auditSubtitle");
+const auditCloseBtn = byIdOpt<HTMLButtonElement>("auditCloseBtn");
+const auditDays = byIdOpt<HTMLSelectElement>("auditDays");
+const auditDaysGroup = byIdOpt<HTMLElement>("auditDaysGroup");
+const auditRefreshBtn = byIdOpt<HTMLButtonElement>("auditRefreshBtn");
+const auditStatus = byIdOpt<HTMLElement>("auditStatus");
+const auditAggregateTable = byIdOpt<HTMLTableElement>("auditAggregateTable");
+const auditAggregateTbody = byIdOpt<HTMLTableSectionElement>("auditAggregateTbody");
+const auditAggregateEmpty = byIdOpt<HTMLElement>("auditAggregateEmpty");
+const auditCallsTable = byIdOpt<HTMLTableElement>("auditCallsTable");
+const auditCallsTbody = byIdOpt<HTMLTableSectionElement>("auditCallsTbody");
+const auditCallsEmpty = byIdOpt<HTMLElement>("auditCallsEmpty");
 
 let auditCurrentToken: LLMProxyToken | null = null;
 

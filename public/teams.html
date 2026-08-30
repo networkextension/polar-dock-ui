@@ -142,13 +142,13 @@
 
                 <!-- Tab: basic info -->
                 <section data-teams-pane="info" style="display:flex; flex-direction:column; gap:12px;">
-                  <label class="form-label">名称</label>
+                  <label class="form-label" for="teamsInfoName">名称</label>
                   <input id="teamsInfoName" class="input" type="text" maxlength="120" />
 
-                  <label class="form-label">描述</label>
+                  <label class="form-label" for="teamsInfoDescription">描述</label>
                   <textarea id="teamsInfoDescription" class="input textarea" rows="3" maxlength="500" placeholder="这个工作区是做什么的？"></textarea>
 
-                  <label class="form-label">头像 URL（可选）</label>
+                  <label class="form-label" for="teamsInfoAvatarURL">头像 URL（可选）</label>
                   <input id="teamsInfoAvatarURL" class="input" type="url" maxlength="500" placeholder="https://..." />
 
                   <div id="teamsInfoStatus" class="status-text"></div>
@@ -172,11 +172,11 @@
                     <div style="font-weight:600; font-size:13px;">邀请新成员</div>
                     <form id="teamsInviteForm" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
                       <div style="flex:1; min-width:240px;">
-                        <label class="form-label">邮箱（支持多个：换行 / 逗号 / 分号 分隔）</label>
+                        <label for="teamsInviteEmail" class="form-label">邮箱（支持多个：换行 / 逗号 / 分号 分隔）</label>
                         <textarea id="teamsInviteEmail" class="input" rows="3" required placeholder="alice@example.com&#10;bob@example.com, carol@example.com"></textarea>
                       </div>
                       <div style="min-width:120px;">
-                        <label class="form-label">角色</label>
+                        <label class="form-label" for="teamsInviteRole">角色</label>
                         <select id="teamsInviteRole" class="input">
                           <option value="member">成员</option>
                           <option value="admin">管理员</option>
@@ -200,7 +200,7 @@
                 <!-- Tab: logs -->
                 <section data-teams-pane="logs" hidden style="display:flex; flex-direction:column; gap:10px;">
                   <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <label style="font-size:12px; color:var(--text-muted,#888);">按分类筛选：</label>
+                    <label style="font-size:12px; color:var(--text-muted,#888);" for="teamsLogsCategory">按分类筛选：</label>
                     <select id="teamsLogsCategory" class="input" style="width:auto; min-width:140px; font-size:12px;">
                       <option value="">全部</option>
                       <option value="team_audit">team_audit · 工作区操作</option>
@@ -225,7 +225,7 @@
                       <div class="status-text">所有者一旦转让，你将自动降为管理员。被转让方必须已经是工作区成员。</div>
                       <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
                         <div style="flex:1; min-width:200px;">
-                          <label class="form-label">新所有者</label>
+                          <label class="form-label" for="teamsTransferTarget">新所有者</label>
                           <select id="teamsTransferTarget" class="input">
                             <option value="">选择一位成员...</option>
                           </select>

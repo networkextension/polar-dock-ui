@@ -184,10 +184,10 @@
 
     <!-- Apply modal (member) -->
     <div id="applyModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 460px;">
+      <div class="lp-modal-card" style="max-width: 460px;" role="dialog" aria-modal="true" aria-labelledby="applyTitle">
         <div class="lp-modal-head">
           <span class="lp-modal-title" id="applyTitle">申请 LLM 配置</span>
-          <button id="applyCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <button id="applyCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <p class="meta-subtitle" style="margin: 0 0 10px 0;" id="applyHint">
@@ -208,10 +208,10 @@
 
     <!-- Pricing edit modal (admin opens from marketplace row) -->
     <div id="pricingModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 460px;">
+      <div class="lp-modal-card" style="max-width: 460px;" role="dialog" aria-modal="true" aria-labelledby="pricingTitle">
         <div class="lp-modal-head">
           <span class="lp-modal-title" id="pricingTitle">编辑单价</span>
-          <button id="pricingCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <button id="pricingCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <div class="settings-section-card" style="margin-bottom: 12px;">
@@ -233,10 +233,10 @@
 
     <!-- Recharge modal (admin opens from marketplace row) -->
     <div id="rechargeModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 460px;">
+      <div class="lp-modal-card" style="max-width: 460px;" role="dialog" aria-modal="true" aria-labelledby="rechargeTitle">
         <div class="lp-modal-head">
           <span class="lp-modal-title" id="rechargeTitle">充值</span>
-          <button id="rechargeCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <button id="rechargeCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <p class="meta-subtitle" style="margin: 0 0 10px 0;" id="rechargeHint">
@@ -262,11 +262,11 @@
 
     <!-- Audit modal — proxy-token call history -->
     <div id="auditModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="width: 95vw; max-width: 1400px;">
+      <div class="lp-modal-card" style="width: 95vw; max-width: 1400px;" role="dialog" aria-modal="true" aria-labelledby="auditTitle">
         <div class="lp-modal-head" style="flex-direction: column; align-items: stretch; gap: 4px;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
             <span class="lp-modal-title" id="auditTitle">审计日志</span>
-            <button id="auditCloseBtn" type="button" class="lp-modal-close">✕</button>
+            <button id="auditCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
           </div>
           <div id="auditSubtitle" class="meta-subtitle" style="display: flex; align-items: center; gap: 6px;"></div>
         </div>
@@ -278,7 +278,7 @@
               <button type="button" class="audit-day-btn" data-days="7" style="padding: 4px 12px; background: transparent; border: none; border-right: 1px solid var(--border, #d1d5db); cursor: pointer; font-size: 13px;">7d</button>
               <button type="button" class="audit-day-btn" data-days="30" style="padding: 4px 12px; background: transparent; border: none; cursor: pointer; font-size: 13px;">30d</button>
             </div>
-            <select id="auditDays" hidden>
+            <select id="auditDays" hidden aria-label="自定义天数">
               <option value="1">1</option>
               <option value="7" selected>7</option>
               <option value="30">30</option>

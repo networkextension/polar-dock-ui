@@ -156,7 +156,7 @@
             </div>
             <div style="border-top: 1px solid var(--border, #ddd); padding: 8px;">
               <form id="sendForm" style="display:flex; gap:6px;">
-                <input id="sendInput" class="input" type="text" placeholder="说点什么... (@bot_name 召唤 bot, P1)" autocomplete="off" style="flex:1;" disabled />
+                <input id="sendInput" class="input" type="text" placeholder="说点什么... (@bot_name 召唤 bot, P1)" autocomplete="off" style="flex:1;" disabled  aria-label="说点什么... (@bot_name 召唤 bot, P1)"/>
                 <button id="sendBtn" class="btn-inline btn-primary" type="submit" disabled>发送</button>
               </form>
             </div>
@@ -181,10 +181,10 @@
 
     <!-- New room modal -->
     <div id="newRoomModal" class="lp-modal" hidden>
-      <div class="lp-modal-card" style="max-width: 420px;">
+      <div class="lp-modal-card" style="max-width: 420px;" role="dialog" aria-modal="true" aria-labelledby="newRoomModalTitle">
         <div class="lp-modal-head">
-          <span class="lp-modal-title">新建房间</span>
-          <button id="newRoomCloseBtn" type="button" class="lp-modal-close">✕</button>
+          <span class="lp-modal-title" id="newRoomModalTitle">新建房间</span>
+          <button id="newRoomCloseBtn" type="button" class="lp-modal-close" aria-label="关闭">✕</button>
         </div>
         <div class="lp-modal-body">
           <div class="settings-section-card" style="margin-bottom: 12px;">
