@@ -1651,6 +1651,15 @@ export function applyI18n(): void {
       (el as HTMLInputElement).placeholder = value;
     }
   });
+  // aria-label 同样需要随语言切换 —— 图标按钮 / 无可见标签的输入框
+  // 靠它提供可访问名称,硬编码会把名称冻结在写入时的语言。
+  document.querySelectorAll<HTMLElement>("[data-i18n-aria-label]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria-label")!;
+    const value = hasI18nKey(key);
+    if (value !== undefined) {
+      el.setAttribute("aria-label", value);
+    }
+  });
   document.querySelectorAll<HTMLElement>("[data-i18n-title]").forEach((el) => {
     const key = el.getAttribute("data-i18n-title")!;
     const value = hasI18nKey(key);
