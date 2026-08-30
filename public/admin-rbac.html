@@ -74,7 +74,7 @@
         <div class="lp-content" style="padding:12px; overflow-y:auto;">
           <div class="rbac-bar">
             <span>工作区：</span>
-            <select id="wsSel"></select>
+            <select id="wsSel" aria-label="工作区"></select>
             <span id="status" class="rbac-sub"></span>
           </div>
 
@@ -108,15 +108,15 @@
               生效需站点开启 <code>POLAR_WORKSPACE_MOUNTS</code>；资源 ID 留空 = 整类挂载。
             </p>
             <div class="rbac-bar" style="margin-bottom:8px;">
-              <select id="mountSource"></select>
-              <select id="mountKind">
+              <select id="mountSource" aria-label="来源工作区"></select>
+              <select id="mountKind" aria-label="资源类型">
                 <option value="llm_config">LLM 配置</option>
                 <option value="asset">资产</option>
                 <option value="prompt">Prompt</option>
                 <option value="*">全部</option>
               </select>
               <input id="mountResId" type="text" placeholder="资源 ID（留空=整类）" style="width:150px; padding:6px 8px; border:1px solid var(--border,#ccc); border-radius:6px;"  aria-label="资源 ID（留空=整类）"/>
-              <select id="mountMode">
+              <select id="mountMode" aria-label="挂载模式">
                 <option value="read">只读</option>
                 <option value="readwrite">读写</option>
               </select>

@@ -88,15 +88,15 @@
             <div class="settings-section-card" style="margin-bottom:18px;">
               <div class="settings-section-title" style="margin-bottom:8px;">提交测试任务</div>
               <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
-                <select id="skillSel" class="input" style="max-width:180px;">
+                <select id="skillSel" class="input" style="max-width:180px;" aria-label="技能">
                   <option value="vision.ocr">vision.ocr</option>
                   <option value="vision.faces">vision.faces</option>
                   <option value="speech.stt">speech.stt</option>
                   <option value="speech.tts">speech.tts</option>
                 </select>
                 <textarea id="inputJson" class="input" rows="3" style="flex:1; min-width:280px; font-family:ui-monospace,Menlo,monospace; font-size:12px;"
-                  placeholder='input JSON，例如：{"asset_id":10028}  或  {"text":"polar ui works"}  或  {"path":"/Users/local/x.m4a","lang":"zh","model":"large-v3","compute":"ane"}'></textarea>
-                <input id="prioInput" class="input" type="number" value="0" title="priority" style="max-width:80px;" />
+                  placeholder='input JSON，例如：{"asset_id":10028}  或  {"text":"polar ui works"}  或  {"path":"/Users/local/x.m4a","lang":"zh","model":"large-v3","compute":"ane"}' aria-label="输入 JSON"></textarea>
+                <input id="prioInput" class="input" type="number" value="0" title="priority" style="max-width:80px;"  aria-label="优先级"/>
                 <button id="submitBtn" class="btn-inline btn-primary" type="button">提交</button>
               </div>
               <div id="submitMsg" class="status-text" style="margin-top:6px; font-size:12px;"></div>

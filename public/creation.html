@@ -120,10 +120,10 @@
 
           <div id="creationAssistBubble" class="creation-assist-bubble" hidden>
             <div class="creation-assist-bubble-row">
-              <select id="creationAssistBot" class="input"></select>
-              <select id="creationAssistLLM" class="input"></select>
+              <select id="creationAssistBot" class="input" aria-label="润色用 Bot" data-i18n-aria-label="creation.assistBotAriaLabel"></select>
+              <select id="creationAssistLLM" class="input" aria-label="润色用 LLM" data-i18n-aria-label="creation.assistLlmAriaLabel"></select>
             </div>
-            <input id="creationAssistInstruction" class="input" type="text" data-i18n-placeholder="creation.assistInstructionPlaceholder" placeholder="Optional: how should I polish this?" />
+            <input id="creationAssistInstruction" class="input" type="text" data-i18n-placeholder="creation.assistInstructionPlaceholder" placeholder="Optional: how should I polish this?"  aria-label="润色要求" data-i18n-aria-label="creation.assistInstructionAriaLabel"/>
             <div class="creation-assist-presets">
               <button class="btn-inline btn-secondary creation-assist-preset" data-preset="tighter" type="button" data-i18n="creation.presetTighter">Tighter</button>
               <button class="btn-inline btn-secondary creation-assist-preset" data-preset="formal" type="button" data-i18n="creation.presetFormal">More formal</button>

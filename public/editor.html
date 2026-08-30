@@ -134,11 +134,11 @@
               <!-- Legacy hidden checkbox kept for any code that still binds
                    to it (publicToggle is referenced from editor.ts during
                    the migration); visibility-select is the source of truth. -->
-              <input id="publicToggle" type="checkbox" hidden />
+              <input id="publicToggle" type="checkbox" hidden  aria-label="公开（默认仅自己可见）" data-i18n-aria-label="editor.publicToggleAriaLabel"/>
               <div id="publicHint" class="status-text" data-i18n="editor.publicByDefault">默认仅自己可见。</div>
             </div>
             <div class="editor-main">
-              <textarea id="contentInput" data-i18n-placeholder="editor.contentPlaceholder" placeholder="Enter Markdown content here..."></textarea>
+              <textarea id="contentInput" data-i18n-placeholder="editor.contentPlaceholder" placeholder="Enter Markdown content here..." aria-label="Markdown 内容" data-i18n-aria-label="editor.contentAriaLabel"></textarea>
             </div>
           </div>
         </div>

@@ -800,6 +800,15 @@ const en: Record<string, string> = {
   "admin.loginMethodPassword": "Password",
   "admin.online": "online",
   "admin.createdAt": "Created: {{time}}",
+  "creation.assistBotAriaLabel": "Assist bot",
+  "creation.assistLlmAriaLabel": "Assist LLM",
+  "creation.assistInstructionAriaLabel": "Assist instruction",
+  "chat.modelSelectAriaLabel": "Current model",
+  "chat.messageAriaLabel": "Message",
+  "editor.publicToggleAriaLabel": "Public (private by default)",
+  "editor.contentAriaLabel": "Markdown content",
+  "post.inlineImagesAriaLabel": "Insert images",
+  "post.contentAriaLabel": "Content",
 };
 
 const zhCN: Record<string, string> = {
@@ -1586,6 +1595,15 @@ const zhCN: Record<string, string> = {
   "admin.loginMethodPassword": "密码",
   "admin.online": "online",
   "admin.createdAt": "创建时间: {{time}}",
+  "creation.assistBotAriaLabel": "润色用 Bot",
+  "creation.assistLlmAriaLabel": "润色用 LLM",
+  "creation.assistInstructionAriaLabel": "润色要求",
+  "chat.modelSelectAriaLabel": "当前模型",
+  "chat.messageAriaLabel": "消息",
+  "editor.publicToggleAriaLabel": "公开（默认仅自己可见）",
+  "editor.contentAriaLabel": "Markdown 内容",
+  "post.inlineImagesAriaLabel": "插入图片",
+  "post.contentAriaLabel": "正文",
 };
 
 const locales: Record<Lang, Record<string, string>> = { en, "zh-CN": zhCN };
