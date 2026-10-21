@@ -31,7 +31,24 @@ export type ApiTokenCreatePayload = {
   name: string;
   scopes?: string[];
   ip_allowlist?: string[];
+  rate_limit_rpm?: number; // omitted = server default
   expires_at?: string;
+};
+
+// PATCH /api/api-tokens/:id — any subset; an absent key leaves the field
+// unchanged, `expires_at: null` means "never expires". The secret is not
+// touched (machines keep the same polar_… key); the response is the updated
+// token without a secret.
+export type ApiTokenUpdatePayload = {
+  name?: string;
+  scopes?: string[];
+  ip_allowlist?: string[];
+  rate_limit_rpm?: number;
+  expires_at?: string | null;
+};
+
+export type ApiTokenUpdateResponse = ErrorResponse & {
+  token?: ApiToken;
 };
 
 // One domain's grantable scopes for the create-token picker, from

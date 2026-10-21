@@ -12,6 +12,8 @@ import type {
   ApiTokenCreateResponse,
   ApiTokenListResponse,
   ApiTokenRevokeResponse,
+  ApiTokenUpdatePayload,
+  ApiTokenUpdateResponse,
 } from "../types/api_tokens.js";
 
 export async function listApiTokens() {
@@ -25,6 +27,15 @@ export async function listApiTokenScopes() {
 export async function createApiToken(payload: ApiTokenCreatePayload) {
   return requestJson<ApiTokenCreateResponse>("/api/api-tokens", {
     method: "POST",
+    body: payload,
+  });
+}
+
+// Edit name / scopes / IP allowlist / rate limit / expiry in place; the
+// secret stays the same. Only the keys present in `payload` are changed.
+export async function updateApiToken(id: number, payload: ApiTokenUpdatePayload) {
+  return requestJson<ApiTokenUpdateResponse>(`/api/api-tokens/${id}`, {
+    method: "PATCH",
     body: payload,
   });
 }
