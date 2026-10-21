@@ -21,10 +21,10 @@ import {
   rotateApiToken,
 } from "./api/api_tokens.js";
 import { logout } from "./api/session.js";
-import { byId } from "./lib/dom.js";
+import { byId, byIdOpt } from "./lib/dom.js";
 import { hydrateSidebarFoot, hydrateSiteBrand } from "./lib/site.js";
 import { bindThemeSync, initStoredTheme } from "./lib/theme.js";
-import type { ApiScopeGroup, ApiToken, ApiTokenCall } from "./types/api_tokens.js";
+import type { ApiModuleScopes, ApiScopeGroup, ApiToken, ApiTokenCall } from "./types/api_tokens.js";
 
 initStoredTheme();
 bindThemeSync();
@@ -46,10 +46,16 @@ const createName = byId<HTMLInputElement>("createName");
 const createError = byId<HTMLElement>("createError");
 const scopeTree = byId<HTMLElement>("scopeTree");
 const scopeWildcard = byId<HTMLInputElement>("scopeWildcard");
+const scopeWildcardHint = byIdOpt<HTMLElement>("scopeWildcardHint");
 const createExpiry = byId<HTMLSelectElement>("createExpiry");
 const createIPs = byId<HTMLTextAreaElement>("createIPs");
 
 let scopeGroups: ApiScopeGroup[] = [];
+// Plugin-module scopes from registered manifests (catalog `modules`; absent
+// on older docks). Rendered after the dock's own groups, one section each.
+let scopeModules: ApiModuleScopes[] = [];
+// Scope id -> human label (module scopes only), used by the token list chips.
+const scopeLabels = new Map<string, { label: string; sensitive: boolean }>();
 
 const plaintextModal = byId<HTMLElement>("plaintextModal");
 const plaintextValue = byId<HTMLInputElement>("plaintextValue");
@@ -108,7 +114,13 @@ function renderTokenRow(tok: ApiToken): HTMLTableRowElement {
   } else {
     scopes.forEach((sc) => {
       const chip = document.createElement("span");
-      chip.textContent = sc;
+      const known = scopeLabels.get(sc);
+      if (known) {
+        chip.textContent = (known.sensitive ? "⚠ " : "") + known.label;
+        chip.title = sc;
+      } else {
+        chip.textContent = sc;
+      }
       chip.style.cssText =
         "display:inline-block; margin:1px 3px 1px 0; padding:1px 6px; border-radius:8px; font-size:11px; background:var(--surface-2,#f3f4f6); border:1px solid var(--border,#e5e7eb);";
       cellScopes.appendChild(chip);
@@ -203,7 +215,7 @@ async function refreshTokenList(): Promise<void> {
 
 function renderScopeTree(): void {
   scopeTree.innerHTML = "";
-  if (scopeGroups.length === 0) {
+  if (scopeGroups.length === 0 && scopeModules.length === 0) {
     const empty = document.createElement("div");
     empty.className = "meta-subtitle";
     empty.textContent = "无可用权限范围。";
@@ -232,6 +244,126 @@ function renderScopeTree(): void {
     }
     scopeTree.appendChild(row);
   }
+  for (const m of scopeModules) {
+    scopeTree.appendChild(renderModuleSection(m));
+  }
+  if (scopeWildcardHint) scopeWildcardHint.hidden = scopeModules.length === 0;
+}
+
+// Global input styles stretch checkboxes inside wrapping flex rows; pin them.
+const MODULE_CB_STYLE = "width:auto; flex:none; margin:0;";
+
+function moduleTitle(m: ApiModuleScopes): string {
+  const dn = (m.display_name ?? "").trim();
+  return dn && dn !== m.module ? `${dn} (${m.module})` : m.module;
+}
+
+function moduleCheckboxes(module: string): HTMLInputElement[] {
+  return Array.from(scopeTree.querySelectorAll<HTMLInputElement>(".scope-cb")).filter(
+    (cb) => cb.dataset.module === module && cb.dataset.moduleAll !== "1",
+  );
+}
+
+// "<module>:*" checked -> the module's individual boxes are implied; grey them.
+function syncModuleAll(module: string): void {
+  const all = Array.from(scopeTree.querySelectorAll<HTMLInputElement>(".scope-cb")).find(
+    (cb) => cb.dataset.module === module && cb.dataset.moduleAll === "1",
+  );
+  const on = !!all?.checked && !scopeWildcard.checked;
+  moduleCheckboxes(module).forEach((cb) => {
+    if (scopeWildcard.checked) return;
+    cb.disabled = on;
+    if (on) cb.checked = false;
+  });
+}
+
+function applyPreset(module: string, scopes: string[]): void {
+  const want = new Set(scopes);
+  scopeTree.querySelectorAll<HTMLInputElement>(".scope-cb").forEach((cb) => {
+    if (cb.dataset.module !== module) return;
+    cb.checked = want.has(cb.value);
+  });
+  syncModuleAll(module);
+}
+
+function renderModuleSection(m: ApiModuleScopes): HTMLElement {
+  const section = document.createElement("div");
+  section.style.cssText =
+    "margin-top:8px; padding-top:6px; border-top:1px dashed var(--border,#e5e7eb);";
+
+  const head = document.createElement("div");
+  head.style.cssText = "display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding:2px 0;";
+  const title = document.createElement("span");
+  title.textContent = "🧩 " + moduleTitle(m);
+  title.style.cssText = "font-weight:600; margin-right:6px;";
+  head.appendChild(title);
+
+  const allLbl = document.createElement("label");
+  allLbl.style.cssText = "display:inline-flex; gap:3px; align-items:center; margin-right:10px; cursor:pointer; white-space:nowrap;";
+  allLbl.title = `${m.module}:*`;
+  const allCb = document.createElement("input");
+  allCb.type = "checkbox";
+  allCb.style.cssText = MODULE_CB_STYLE;
+  allCb.className = "scope-cb";
+  allCb.value = `${m.module}:*`;
+  allCb.dataset.module = m.module;
+  allCb.dataset.moduleAll = "1";
+  allCb.addEventListener("change", () => syncModuleAll(m.module));
+  const allTxt = document.createElement("span");
+  allTxt.textContent = "本模块全部";
+  allLbl.append(allCb, allTxt);
+  head.appendChild(allLbl);
+
+  const presets = m.presets ?? [];
+  if (presets.length > 0) {
+    const pl = document.createElement("span");
+    pl.className = "meta-subtitle";
+    pl.textContent = "预设：";
+    head.appendChild(pl);
+    for (const p of presets) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-inline btn-secondary scope-preset-btn";
+      btn.style.cssText = "font-size:12px; padding:1px 8px;";
+      btn.textContent = p.name;
+      btn.title = `只勾选「${p.name}」的 ${p.scopes.length} 项权限（不影响其它模块与 dock 权限）\n` + p.scopes.join("\n");
+      btn.addEventListener("click", () => applyPreset(m.module, p.scopes));
+      head.appendChild(btn);
+    }
+  }
+  section.appendChild(head);
+
+  for (const g of m.groups ?? []) {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; flex-wrap:wrap; gap:6px; align-items:baseline; padding:2px 0;";
+    const label = document.createElement("span");
+    label.textContent = g.group;
+    label.style.cssText = "min-width:120px; font-weight:500;";
+    row.appendChild(label);
+    for (const sc of g.scopes) {
+      const lbl = document.createElement("label");
+      lbl.style.cssText = "display:inline-flex; gap:3px; align-items:center; margin-right:10px; cursor:pointer; white-space:nowrap;";
+      lbl.title = sc.id;
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.style.cssText = MODULE_CB_STYLE;
+      cb.className = "scope-cb";
+      cb.value = sc.id;
+      cb.dataset.module = m.module;
+      const txt = document.createElement("span");
+      txt.textContent = sc.name || sc.id;
+      lbl.append(cb, txt);
+      if (sc.sensitive) {
+        const warn = document.createElement("span");
+        warn.textContent = "⚠ 敏感";
+        warn.style.cssText = "font-size:11px; color:var(--danger,#c00);";
+        lbl.appendChild(warn);
+      }
+      row.appendChild(lbl);
+    }
+    section.appendChild(row);
+  }
+  return section;
 }
 
 function syncWildcard(): void {
@@ -240,6 +372,10 @@ function syncWildcard(): void {
     cb.disabled = on;
     if (on) cb.checked = false;
   });
+  scopeTree.querySelectorAll<HTMLButtonElement>(".scope-preset-btn").forEach((btn) => {
+    btn.disabled = on;
+  });
+  if (!on) scopeModules.forEach((m) => syncModuleAll(m.module));
   scopeTree.style.opacity = on ? "0.5" : "1";
 }
 
@@ -457,8 +593,20 @@ async function loadScopeCatalog(): Promise<void> {
   try {
     const { data } = await listApiTokenScopes();
     scopeGroups = data.groups ?? [];
+    scopeModules = Array.isArray(data.modules) ? data.modules : [];
   } catch {
     scopeGroups = [];
+    scopeModules = [];
+  }
+  scopeLabels.clear();
+  for (const m of scopeModules) {
+    const mt = (m.display_name ?? "").trim() || m.module;
+    scopeLabels.set(`${m.module}:*`, { label: `${mt}·全部`, sensitive: false });
+    for (const g of m.groups ?? []) {
+      for (const sc of g.scopes) {
+        scopeLabels.set(sc.id, { label: `${mt}·${sc.name || sc.id}`, sensitive: !!sc.sensitive });
+      }
+    }
   }
   renderScopeTree();
 }

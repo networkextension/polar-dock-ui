@@ -42,9 +42,40 @@ export type ApiScopeGroup = {
   scopes: string[];
 };
 
+// A registered plugin module's scopes, from its manifest
+// (PUT /internal/v1/modules/{module}/manifest). Scope ids look like
+// "<module>:<res>:<action>"; `name` is the human label to show.
+export type ApiModuleScope = {
+  id: string;
+  name: string;
+  sensitive?: boolean;
+};
+
+export type ApiModuleScopeGroup = {
+  group: string;
+  scopes: ApiModuleScope[];
+};
+
+// A named bundle of a module's scopes (e.g. 现场机 / 分析系统); clicking it
+// in the picker checks exactly these scopes within that module.
+export type ApiModulePreset = {
+  id: string;
+  name: string;
+  scopes: string[];
+};
+
+export type ApiModuleScopes = {
+  module: string;
+  display_name?: string;
+  groups?: ApiModuleScopeGroup[];
+  presets?: ApiModulePreset[];
+};
+
 export type ApiScopeCatalogResponse = ErrorResponse & {
   groups?: ApiScopeGroup[];
   wildcard?: string;
+  // Absent on docks that predate module manifests — treat as [].
+  modules?: ApiModuleScopes[];
 };
 
 // POST returns the freshly-minted secret at the TOP level (`secret`), not
