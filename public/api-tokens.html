@@ -89,7 +89,8 @@
           <label style="display:flex; gap:6px; align-items:center; margin:4px 0 6px 0; cursor:pointer;">
             <input id="scopeWildcard" type="checkbox" /> <span>完全访问（不含管理员接口）</span>
           </label>
-          <div id="scopeTree" style="max-height:200px; overflow-y:auto; border:1px solid var(--border,#e5e7eb); border-radius:6px; padding:6px 8px; margin-bottom:10px; font-size:13px;">
+          <div id="scopeWildcardHint" class="meta-subtitle" hidden style="font-size:11px; margin:-2px 0 6px 0;">注意：「*」同样覆盖下方各模块的全部权限（含 ⚠ 敏感项）。只给某个模块授权时请勿勾选完全访问，改用模块预设或逐项勾选。</div>
+          <div id="scopeTree" style="max-height:320px; overflow-y:auto; border:1px solid var(--border,#e5e7eb); border-radius:6px; padding:6px 8px; margin-bottom:10px; font-size:13px;">
             <div class="meta-subtitle">加载权限列表…</div>
           </div>
 

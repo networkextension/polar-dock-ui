@@ -1,0 +1,2 @@
+import{a as t,b as o}from"./chunk-BY6I6UVC.js";function u(e){let n=document.getElementById(e);if(!n)throw new Error(`Missing required element: #${e}`);return n}function i(e,n){let r=e.querySelector(n);if(!r)throw new Error(`Missing required element: ${n}`);return r}function l(e){return document.getElementById(e)}var s=o(()=>{t(u,"byId");t(i,"query");t(l,"byIdOpt")});export{u as a,i as b,l as c,s as d};
+//# sourceMappingURL=chunk-YAYVMLV2.js.map
