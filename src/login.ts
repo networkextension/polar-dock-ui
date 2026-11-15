@@ -5,6 +5,9 @@ import { buildClientHeaders } from "./lib/client.js";
 import { hydrateSiteBrand } from "./lib/site.js";
 import { injectLangToggle, t } from "./lib/i18n.js";
 
+import { loginReturn } from "./lib/login-return.js";
+
+const returnTo = loginReturn(window.location.search, window.location.origin);
 const API_BASE = "";
 const form = byId<HTMLFormElement>("loginForm");
 const alertBox = byId<HTMLElement>("alert");
@@ -46,7 +49,7 @@ form.addEventListener("submit", async (event) => {
     alertBox.className = "alert success";
     alertBox.textContent = t("login.success");
     window.setTimeout(() => {
-      window.location.href = "/dashboard.html";
+      window.location.href = returnTo;
     }, 600);
   } catch {
     alertBox.className = "alert error";
@@ -112,7 +115,7 @@ passkeyLoginBtn.addEventListener("click", async () => {
     if (finishRes.ok) {
       passkeyStatus.textContent = t("login.passkeySuccess");
       window.setTimeout(() => {
-        window.location.href = "/dashboard.html";
+        window.location.href = returnTo;
       }, 600);
       return;
     }
@@ -127,7 +130,7 @@ async function redirectIfLoggedIn(): Promise<void> {
   try {
     const res = await fetch("/api/me", { credentials: "include" });
     if (res.ok) {
-      window.location.replace("/dashboard.html");
+      window.location.replace(returnTo);
     }
   } catch {
     // Ignore bootstrap failures here.
@@ -145,8 +148,10 @@ async function showFederatedLogin(): Promise<void> {
     if (!m.oidc || !m.oidc_login_url) return;
     const btn = document.getElementById("oidcLoginBtn") as HTMLAnchorElement | null;
     if (!btn) return;
-    const next = new URLSearchParams(window.location.search).get("next");
-    btn.href = m.oidc_login_url + (next ? "?next=" + encodeURIComponent(next) : "");
+    const next = "/login.html?return=" + encodeURIComponent(returnTo);
+    const loginURL = new URL(m.oidc_login_url, window.location.origin);
+    loginURL.searchParams.set("next", next);
+    btn.href = loginURL.href;
     if (typeof m.oidc_label === "string" && m.oidc_label) btn.textContent = m.oidc_label;
     btn.hidden = false;
   } catch {
